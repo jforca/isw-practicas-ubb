@@ -1,0 +1,197 @@
+{
+	"material-icon-theme.folders.associations": {
+		"domain": "core",
+		"entities": "class",
+		"infrastructure": "stack",
+		"usecases": "contract",
+		"atoms": "custom",
+		"molecules": "cluster",
+		"organisms": "layout",
+		"presenters": "meta",
+		"implementations": "resource",
+		"adapters": "context",
+		"webapp": "command",
+		"dto": "element",
+		"users": "admin",
+		"user": "admin",
+		"reference": "docs",
+	},
+	"material-icon-theme.opacity": 1,
+	"material-icon-theme.folders.customClones": [
+		{
+			"name": "components-atoms",
+			"base": "react-components",
+			"color": "light-green-400",
+			"folderNames": ["atoms"],
+			"rootFolderNames": ["atoms"]
+		},
+		{
+			"name": "components-molecules",
+			"base": "react-components",
+			"color": "purple-400",
+			"folderNames": ["molecules"],
+			"rootFolderNames": ["molecules"]
+		},
+		{
+			"name": "components-organisms",
+			"base": "react-components",
+			"color": "teal-400",
+			"folderNames": ["organisms"],
+			"rootFolderNames": ["organisms"]
+		},
+		{
+			"name": "components-pages",
+			"base": "react-components",
+			"color": "indigo-400",
+			"folderNames": ["pages"],
+			"rootFolderNames": ["pages"]
+		},
+		{
+			"name": "components-templates",
+			"base": "react-components",
+			"color": "pink-400",
+			"folderNames": ["templates"],
+			"rootFolderNames": ["templates"]
+		},
+		{
+			"name": "web",
+			"base": "desktop",
+			"color": "pink-400",
+			"folderNames": ["webapp"],
+			"rootFolderNames": ["webapp"]
+		},
+		{
+			"name": "website",
+			"base": "desktop",
+			"color": "blue-400",
+			"folderNames": ["website"],
+			"rootFolderNames": ["website"]
+		},
+		{
+			"name": "repositories",
+			"base": "app",
+			"color": "green-400",
+			"folderNames": ["repositories"],
+			"rootFolderNames": ["repositories"]
+		},
+		{
+			"name": "usecases",
+			"base": "app",
+			"color": "blue-400",
+			"folderNames": ["usecases"],
+			"rootFolderNames": ["usecases"]
+		},
+		{
+			"name": "env",
+			"base": "config",
+			"color": "green-400",
+			"folderNames": ["env"],
+			"rootFolderNames": ["env"]
+		},
+		{
+			"name": "typescript",
+			"base": "config",
+			"color": "blue-400",
+			"folderNames": ["typescript"],
+			"rootFolderNames": ["typescript"]
+		},
+		{
+			"name": "entities",
+			"base": "core",
+			"color": "pink-400",
+			"folderNames": ["entities"],
+			"rootFolderNames": ["entities"]
+		},
+		{
+			"name": "errors",
+			"base": "core",
+			"color": "red-400",
+			"folderNames": ["errors"],
+			"rootFolderNames": ["errors"]
+		},
+		{
+			"name": "validations",
+			"base": "core",
+			"color": "indigo-400",
+			"folderNames": ["validations"],
+			"rootFolderNames": ["validations"]
+		},
+		{
+			"name": "infrastructure",
+			"base": "database",
+			"color": "deep-orange-400",
+			"folderNames": ["infrastructure"],
+			"rootFolderNames": ["infrastructure"]
+		},
+		{
+			"name": "db",
+			"base": "database",
+			"color": "pink-400",
+			"folderNames": ["db"],
+			"rootFolderNames": ["db"]
+		},
+		{
+			"name": "external",
+			"base": "database",
+			"color": "green-400",
+			"folderNames": ["external"],
+			"rootFolderNames": ["external"]
+		},
+		{
+			"name": "adapters",
+			"base": "interface",
+			"color": "teal-400",
+			"folderNames": ["adapters"],
+			"rootFolderNames": ["adapters"]
+		},
+		{
+			"name": "implementations",
+			"base": "interface",
+			"color": "orange-400",
+			"folderNames": ["implementations"],
+			"rootFolderNames": ["implementations"]
+		},
+		{
+			"name": "presenters",
+			"base": "interface",
+			"color": "green-400",
+			"folderNames": ["presenters"],
+			"rootFolderNames": ["presenters"]
+		},
+		{
+			"name": "nextjs",
+			"base": "next",
+			"color": "blue-gray-600",
+			"folderNames": ["nextjs"],
+			"rootFolderNames": ["nextjs"]
+		},
+		{
+			"name": "nestjs",
+			"base": "javascript",
+			"color": "red-400",
+			"folderNames": ["nestjs"],
+			"rootFolderNames": ["nestjs"]
+		},
+		{
+			"name": "gateway",
+			"base": "context",
+			"color": "purple-400",
+			"folderNames": ["gateway"],
+			"rootFolderNames": ["gateway"]
+		},
+		{
+			"name": "stores",
+			"base": "rules",
+			"color": "pink-400",
+			"folderNames": ["stores"],
+			"rootFolderNames": ["stores"]
+		},
+		{
+			"name": "orpc",
+			"base": "api",
+			"color": "blue-400",
+			"folderNames": ["orpc"],
+			"rootFolderNames": ["orpc"]
+		}
+	]
+}

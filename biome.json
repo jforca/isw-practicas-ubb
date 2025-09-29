@@ -1,0 +1,230 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.2.4/schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
+	"files": {
+		"ignoreUnknown": true,
+		"includes": [
+			"**",
+			"!**/*.css",
+			"!**/*.sass",
+			"!**/*.scss",
+			"!**/*.html",
+			"!**/*.md",
+			"!**/*.yaml",
+			"!**/*.yml",
+			"!**/*.ico",
+			"!**/.gitkeep",
+			"!**/.husky",
+			"!**/rspack.config.js",
+			"!**/main.js",
+			"!**/*._.js",
+			"!**/index.js",
+			"!**/babel.config.js",
+			"!**/.tamagui",
+			"!**/.vscode",
+			"!**/dist",
+			"!**/@generated/server.ts"
+		]
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab",
+		"lineWidth": 60,
+		"useEditorconfig": true
+	},
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": {
+					"level": "off",
+					"options": {
+						"groups": [
+							":NODE:",
+							":PACKAGE:",
+							[":PATH:", "#*", "#*/**"],
+							"."
+						]
+					}
+				}
+			}
+		}
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"performance": {
+				"noImgElement": "off"
+			},
+			"correctness": {
+				"noUnusedVariables": {
+					"level": "error",
+					"options": {}
+				},
+				"noUnusedImports": {
+					"level": "error",
+					"options": {}
+				},
+				"noUnusedFunctionParameters": {
+					"level": "error",
+					"options": {}
+				}
+			},
+			"complexity": {
+				"noForEach": "off",
+				"noUselessFragments": "error"
+			},
+			"style": {
+				"useNodejsImportProtocol": "off",
+				"noNonNullAssertion": "off",
+				"useImportType": "off",
+				"useFilenamingConvention": {
+					"level": "error",
+					"options": {
+						"filenameCases": ["kebab-case"]
+					}
+				},
+				"useNamingConvention": {
+					"level": "error",
+					"options": {
+						"strictCase": false,
+						"conventions": [
+							{
+								"selector": {
+									"kind": "variable"
+								},
+								"formats": [
+									"camelCase",
+									"PascalCase",
+									"CONSTANT_CASE"
+								]
+							},
+							{
+								"selector": {
+									"kind": "function"
+								},
+								"formats": ["PascalCase", "camelCase"]
+							},
+							{
+								"selector": {
+									"kind": "class"
+								},
+								"formats": ["PascalCase"]
+							},
+							{
+								"selector": {
+									"kind": "classGetter"
+								},
+								"formats": ["PascalCase", "camelCase"]
+							},
+							{
+								"selector": {
+									"kind": "classSetter"
+								},
+								"formats": ["PascalCase", "camelCase"]
+							},
+							{
+								"selector": {
+									"kind": "classMethod"
+								},
+								"formats": ["PascalCase", "camelCase"]
+							},
+							{
+								"selector": {
+									"kind": "classProperty"
+								},
+								"formats": ["camelCase", "snake_case"]
+							},
+							{
+								"selector": {
+									"kind": "interface"
+								},
+								"match": "I(.*)|(.*?)Error",
+								"formats": ["PascalCase"]
+							},
+							{
+								"selector": {
+									"kind": "typeMethod"
+								},
+								"formats": ["PascalCase", "camelCase"]
+							},
+							{
+								"selector": {
+									"kind": "typeAlias"
+								},
+								"match": "T(.*)|(.*?)Error",
+								"formats": ["PascalCase"]
+							},
+							{
+								"selector": {
+									"kind": "objectLiteralProperty"
+								},
+								"formats": [
+									"snake_case",
+									"camelCase",
+									"CONSTANT_CASE"
+								]
+							}
+						]
+					}
+				}
+			},
+			"suspicious": {
+				"noExplicitAny": "error"
+			}
+		},
+		"includes": [
+			"**",
+			"!**/test",
+			"!**/public",
+			"!**/coverage",
+			"!**/dist",
+			"!**/build",
+			"!**/out",
+			"!**/node_modules",
+			"!**/cypress",
+			"!**/.next",
+			"!**/.husky",
+			"!**/.nyc_output",
+			"!**/drizzle",
+			"!**/docs",
+			"!**/.vscode",
+			"!**/.expo",
+			"!**/static"
+		]
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "single"
+		},
+		"parser": {
+			"unsafeParameterDecoratorsEnabled": true
+		}
+	},
+	"css": {
+		"formatter": {
+			"enabled": true,
+			"indentStyle": "tab",
+			"lineWidth": 60
+		},
+		"linter": {
+			"enabled": true
+		}
+	},
+	"html": {
+		"formatter": {
+			"enabled": false
+		}
+	},
+	"json": {
+		"formatter": {
+			"enabled": true,
+			"indentStyle": "tab",
+			"lineWidth": 60
+		}
+	}
+}

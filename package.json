@@ -1,0 +1,27 @@
+{
+	"name": "isw_practicas_ubb",
+	"version": "1.0.0",
+	"description": "",
+	"scripts": {
+		"dev": "turbo run dev",
+		"build": "turbo run build",
+		"check": "pnpm biome check --write .",
+		"clean": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && rm -rf pnpm-lock.yaml && pnpm i",
+		"prepare": "husky"
+	},
+	"dependencies": {},
+	"devDependencies": {
+		"@biomejs/biome": "catalog:base",
+		"husky": "catalog:base",
+		"turbo": "catalog:base",
+		"typescript": "catalog:base"
+	},
+	"engines": {
+		"node": ">=22",
+		"pnpm": ">=10"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"packageManager": "pnpm@10.16.0"
+}
