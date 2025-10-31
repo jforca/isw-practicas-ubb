@@ -5,6 +5,7 @@
 	"scripts": {
 		"dev": "turbo run dev",
 		"build": "turbo run build",
+		"start": "turbo run start",
 		"check": "pnpm biome check --write .",
 		"clean": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && rm -rf pnpm-lock.yaml && pnpm i",
 		"prepare": "husky"

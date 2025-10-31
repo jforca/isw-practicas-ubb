@@ -3,10 +3,9 @@
 	"version": "1.0.0",
 	"description": "Proyecto backend",
 	"scripts": {
-		"build": "tsc",
-		"start": "node dist/index.js",
-		"dev": "cross-env NODE_ENV=development nodemon --watch \"src/**/*.ts\" --exec ts-node src/index.ts",
-		"dev:rs": "tsx watch --tsconfig tsconfig.json --env-file=.env.development src/index.ts"
+		"build": "rspack build",
+		"start": "node --env-file=.env.production dist/main.js",
+		"dev": "tsx watch --tsconfig tsconfig.json --env-file=.env.development src/index.ts"
 	},
 	"authors": [
 		"Cesar Salazar"
@@ -27,7 +26,6 @@
 	],
 	"dependencies": {
 		"bcrypt": "^6.0.0",
-		"dotenv": "^17.2.2",
 		"express": "^5.1.0",
 		"jsonwebtoken": "^9.0.2",
 		"morgan": "^1.10.1",

@@ -18,7 +18,22 @@
 		"declaration": false,
 		"noEmit": false,
 		"paths": {
-			"@lib/*": ["./lib/*"]
+			"@config": ["./src/config"],
+			"@config/*": ["./src/config/*"],
+			"@controllers": ["./src/controllers"],
+			"@controllers/*": ["./src/controllers/*"],
+			"@entities": ["./src/entities"],
+			"@entities/*": ["./src/entities/*"],
+			"@handlers": ["./src/handlers"],
+			"@handlers/*": ["./src/handlers/*"],
+			"@lib": ["./src/lib"],
+			"@lib/*": ["./src/lib/*"],
+			"@middleware": ["./src/middleware"],
+			"@middleware/*": ["./src/middleware/*"],
+			"@routes": ["./src/routes"],
+			"@routes/*": ["./src/routes/*"],
+			"@services": ["./src/services"],
+			"@services/*": ["./src/services/*"]
 		}
 	},
 	"include": ["src/**/*"],

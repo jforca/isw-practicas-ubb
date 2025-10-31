@@ -1,0 +1,16 @@
+@import 'tailwindcss';
+@plugin "daisyui";
+
+html, body {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    scroll-behavior: smooth;
+}
+
+#root {
+    height: 100%;
+}

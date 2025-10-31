@@ -20,6 +20,7 @@
 			"!**/.gitkeep",
 			"!**/.husky",
 			"!**/rspack.config.js",
+			"!**/rspack.config.mjs",
 			"!**/main.js",
 			"!**/*._.js",
 			"!**/index.js",

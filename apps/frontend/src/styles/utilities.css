@@ -1,0 +1,55 @@
+/*Container Overwritten*/
+@utility container {
+    @apply !w-[90%] mx-auto !max-w-[73rem];
+}
+
+/*Buttons*/
+@utility btn-outline {
+    @apply border-primary-content hover:border-primary;
+}
+
+/*Text*/
+@utility title-1 {
+    @apply text-7xl leading-21;
+}
+@utility title-2 {
+    @apply text-4xl;
+}
+@utility subtitle-1 {
+    @apply text-xl;
+}
+@utility subtitle-2 {
+    @apply text-base;
+}
+@utility paragraph-1 {
+    @apply text-sm;
+}
+@utility paragraph-2 {
+    @apply text-xs;
+}
+
+/*Sections*/
+@utility section-xl {
+    @apply flex flex-col gap-32;
+}
+
+@utility section-lg {
+    @apply flex flex-col gap-16;
+}
+
+@utility section-base {
+    @apply flex flex-col gap-8;
+}
+
+@utility section-sm {
+    @apply flex flex-col gap-4;
+}
+
+@utility section-xs {
+    @apply flex flex-col gap-2;
+}
+
+/*Grid*/
+@utility grid-fluid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 justify-items-center gap-8;
+}

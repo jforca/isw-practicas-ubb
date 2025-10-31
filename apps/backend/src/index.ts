@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import '@lib/env';
 import express, { Request, Response } from 'express';
 import morgan from 'morgan';
 import { connectDB } from './config/db.config';

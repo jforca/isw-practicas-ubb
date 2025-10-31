@@ -1,20 +1,11 @@
 import { DataSource } from 'typeorm';
-import {
-	DATABASE,
-	DB_USERNAME,
-	HOST,
-	PASSWORD,
-	DB_PORT,
-} from './env.config';
+import { env } from '@lib/env';
+import { User } from '@entities';
 
 export const AppDataSource = new DataSource({
 	type: 'postgres',
-	host: `${HOST}`,
-	port: DB_PORT,
-	username: `${DB_USERNAME}`,
-	password: `${PASSWORD}`,
-	database: `${DATABASE}`,
-	entities: [`src/entities/*.{ts,js}`],
+	url: env.DATABASE_URL,
+	entities: [User],
 	synchronize: true,
 	logging: false,
 });
