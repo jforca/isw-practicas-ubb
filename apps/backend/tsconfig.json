@@ -12,12 +12,14 @@
 		"experimentalDecorators": true,
 		"strictPropertyInitialization": false,
 		"outDir": "./dist",
-		"rootDir": "./src",
 		"strict": true,
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
 		"declaration": false,
-		"noEmit": false
+		"noEmit": false,
+		"paths": {
+			"@lib/*": ["./lib/*"]
+		}
 	},
 	"include": ["src/**/*"],
 	"exclude": ["node_modules", "dist"]

@@ -11,16 +11,16 @@ export class User {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@Column({ length: 30 })
+	@Column({ type: 'varchar', length: 30 })
 	name: string;
 
-	@Column({ length: 60, unique: true })
+	@Column({ type: 'varchar', length: 60, unique: true })
 	email: string;
 
-	@Column({ length: 255 })
+	@Column({ type: 'varchar', length: 255 })
 	password: string;
 
-	@Column({ default: false })
+	@Column({ type: 'boolean', default: false })
 	is_verified: boolean;
 
 	@CreateDateColumn()

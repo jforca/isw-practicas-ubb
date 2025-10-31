@@ -15,6 +15,7 @@
 		"react-dom": "^19.1.1",
 		"react-router": "^7.9.3",
 		"tailwindcss": "^4.1.13",
+		"@packages/schema": "workspace:*",
 		"@t3-oss/env-core": "catalog:base",
 		"cross-env": "catalog:base",
 		"zod": "catalog:base"
