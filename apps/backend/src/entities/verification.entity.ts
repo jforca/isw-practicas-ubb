@@ -7,21 +7,18 @@ import {
 } from 'typeorm';
 
 @Entity()
-export class User {
+export class Verification {
 	@PrimaryColumn({ type: 'text' })
 	id: string;
 
 	@Column({ type: 'text' })
-	name: string;
+	identifier: string;
 
-	@Column({ type: 'text', unique: true })
-	email: string;
+	@Column({ type: 'text' })
+	value: string;
 
-	@Column({ type: 'bool', default: false })
-	emailVerified: boolean;
-
-	@Column({ type: 'text', nullable: true })
-	image: string;
+	@Column({ type: 'timestamp' })
+	expiresAt: Date;
 
 	@CreateDateColumn()
 	createdAt: Date;

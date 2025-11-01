@@ -3,16 +3,21 @@ import express, { Request, Response } from 'express';
 import morgan from 'morgan';
 import { connectDB } from './config/db.config';
 import { routerApi } from './routes/index.routes';
+import { toNodeHandler } from 'better-auth/node';
+import { auth } from '@lib/auth';
 
 const app = express();
-app.use(express.json());
+
 app.use(morgan('dev'));
+app.use(express.json());
 
 // Ruta principal de bienvenida
 app.get('/', (req: Request, res: Response) => {
 	console.log(req.headers);
 	res.send('¡Bienvenido a mi API REST con TypeORM!');
 });
+
+app.all('/api/auth/*splat', toNodeHandler(auth));
 
 // Inicializa la conexión a la base de datos
 connectDB()

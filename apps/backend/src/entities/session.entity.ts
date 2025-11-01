@@ -4,24 +4,30 @@ import {
 	CreateDateColumn,
 	UpdateDateColumn,
 	PrimaryColumn,
+	ForeignKey,
 } from 'typeorm';
+import { User } from './user.entity';
 
 @Entity()
-export class User {
+export class Session {
 	@PrimaryColumn({ type: 'text' })
 	id: string;
 
-	@Column({ type: 'text' })
-	name: string;
+	@Column({ type: 'timestamp' })
+	expiresAt: Date;
 
 	@Column({ type: 'text', unique: true })
-	email: string;
-
-	@Column({ type: 'bool', default: false })
-	emailVerified: boolean;
+	token: string;
 
 	@Column({ type: 'text', nullable: true })
-	image: string;
+	ipAddress: string;
+
+	@Column({ type: 'text', nullable: true })
+	userAgent: string;
+
+	@Column({ type: 'text' })
+	@ForeignKey(() => User)
+	userId: string;
 
 	@CreateDateColumn()
 	createdAt: Date;

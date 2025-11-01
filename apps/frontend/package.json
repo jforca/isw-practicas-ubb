@@ -12,6 +12,7 @@
 		"@packages/schema": "workspace:*",
 		"@t3-oss/env-core": "catalog:base",
 		"@tailwindcss/vite": "^4.1.13",
+		"better-auth": "catalog:base",
 		"cross-env": "catalog:base",
 		"react": "^19.1.1",
 		"react-dom": "^19.1.1",

@@ -1,11 +1,16 @@
 import { DataSource } from 'typeorm';
 import { env } from '@lib/env';
-import { User } from '@entities';
+import {
+	User,
+	Account,
+	Session,
+	Verification,
+} from '@entities';
 
 export const AppDataSource = new DataSource({
 	type: 'postgres',
 	url: env.DATABASE_URL,
-	entities: [User],
+	entities: [User, Account, Session, Verification],
 	synchronize: true,
 	logging: false,
 });
@@ -14,7 +19,7 @@ export async function connectDB() {
 	try {
 		await AppDataSource.initialize();
 		console.log(
-			'=> Conexión exitosa a la base de datos PostgreSQL!',
+			'✅ Conexión exitosa a la base de datos PostgreSQL!',
 		);
 	} catch (error) {
 		console.error(

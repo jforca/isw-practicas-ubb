@@ -25,23 +25,25 @@
 		"educacion"
 	],
 	"dependencies": {
+		"@packages/schema": "workspace:*",
+		"@t3-oss/env-core": "catalog:base",
 		"bcrypt": "^6.0.0",
+		"better-auth": "catalog:base",
+		"cors": "^2.8.5",
+		"cross-env": "catalog:base",
 		"express": "^5.1.0",
 		"jsonwebtoken": "^9.0.2",
 		"morgan": "^1.10.1",
 		"pg": "^8.16.3",
 		"reflect-metadata": "^0.2.2",
 		"typeorm": "^0.3.27",
-		"@packages/schema": "workspace:*",
-		"@t3-oss/env-core": "catalog:base",
-		"cross-env": "catalog:base",
 		"zod": "catalog:base"
 	},
 	"devDependencies": {
 		"@rspack/cli": "^1.6.0",
 		"@rspack/core": "^1.6.0",
-		"tsx": "^4.19.2",
 		"@types/bcrypt": "^6.0.0",
+		"@types/cors": "^2.8.19",
 		"@types/express": "^4.17.13",
 		"@types/jsonwebtoken": "^9.0.7",
 		"@types/morgan": "^1.9.10",
@@ -49,6 +51,7 @@
 		"@types/pg": "^8.11.10",
 		"nodemon": "^3.1.10",
 		"ts-node": "^10.9.2",
+		"tsx": "^4.19.2",
 		"typescript": "catalog:base"
 	}
 }
