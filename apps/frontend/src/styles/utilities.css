@@ -1,6 +1,6 @@
 /*Container Overwritten*/
 @utility container {
-    @apply !w-[90%] mx-auto !max-w-[73rem];
+    @apply w-[90%]! mx-auto max-w-292!;
 }
 
 /*Buttons*/

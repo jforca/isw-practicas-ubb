@@ -6,6 +6,5 @@ export const env = createEnv({
 	client: {
 		VITE_BACKEND_URL: z.url(),
 	},
-
 	runtimeEnv: import.meta.env,
 });

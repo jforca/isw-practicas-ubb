@@ -11,22 +11,21 @@
 	"dependencies": {
 		"@packages/schema": "workspace:*",
 		"@t3-oss/env-core": "catalog:base",
-		"@tailwindcss/vite": "^4.1.13",
+		"@tailwindcss/vite": "^4.1.16",
 		"better-auth": "catalog:base",
-		"cross-env": "catalog:base",
-		"react": "^19.1.1",
-		"react-dom": "^19.1.1",
-		"react-router": "^7.9.3",
-		"tailwindcss": "^4.1.13",
+		"react": "^19.2.0",
+		"react-dom": "^19.2.0",
+		"react-router": "^7.9.5",
+		"tailwindcss": "^4.1.16",
 		"zod": "catalog:base"
 	},
 	"devDependencies": {
-		"@types/react": "^19.1.13",
-		"@types/react-dom": "^19.1.9",
-		"@vitejs/plugin-react": "^5.0.3",
-		"daisyui": "^5.3.10",
-		"globals": "^16.4.0",
+		"@types/react": "^19.2.2",
+		"@types/react-dom": "^19.2.2",
+		"@vitejs/plugin-react": "^5.1.0",
+		"daisyui": "^5.4.2",
+		"globals": "^16.5.0",
 		"typescript": "catalog:base",
-		"vite": "^7.1.7"
+		"vite": "^7.1.12"
 	}
 }
