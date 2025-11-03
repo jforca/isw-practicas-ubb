@@ -21,6 +21,9 @@
 		"node": ">=24",
 		"pnpm": ">=10"
 	},
+	"repository": {
+		"url": "https://github.com/jforca/isw-practicas-ubb"
+	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
