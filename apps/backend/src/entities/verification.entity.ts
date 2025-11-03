@@ -9,20 +9,20 @@ import {
 @Entity()
 export class Verification {
 	@PrimaryColumn({ type: 'text' })
-	id: string;
+	id: string; // Better Auth
 
 	@Column({ type: 'text' })
-	identifier: string;
+	identifier: string; // Better Auth
 
 	@Column({ type: 'text' })
-	value: string;
+	value: string; // Better Auth
 
 	@Column({ type: 'timestamp' })
-	expiresAt: Date;
+	expiresAt: Date; // Better Auth
 
 	@CreateDateColumn()
-	createdAt: Date;
+	createdAt: Date; // Better Auth
 
 	@UpdateDateColumn()
-	updatedAt: Date;
+	updatedAt: Date; // Better Auth
 }

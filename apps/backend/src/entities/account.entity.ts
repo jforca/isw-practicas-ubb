@@ -11,42 +11,42 @@ import { User } from './user.entity';
 @Entity()
 export class Account {
 	@PrimaryColumn({ type: 'text' })
-	id: string;
+	id: string; // Better Auth
 
 	@Column({ type: 'text' })
-	accountId: string;
+	accountId: string; // Better Auth
 
 	@Column({ type: 'text' })
-	providerId: string;
+	providerId: string; // Better Auth
 
 	@Column({ type: 'text' })
 	@ForeignKey(() => User)
-	userId: string;
+	userId: string; // Better Auth
 
 	@Column({ type: 'text', nullable: true })
-	accessToken: string;
+	accessToken: string; // Better Auth
 
 	@Column({ type: 'text', nullable: true })
-	refreshToken: string;
+	refreshToken: string; // Better Auth
 
 	@Column({ type: 'text', nullable: true })
-	idToken: string;
+	idToken: string; // Better Auth
 
 	@Column({ type: 'timestamp', nullable: true })
-	accessTokenExpiresAt: Date;
+	accessTokenExpiresAt: Date; // Better Auth
 
 	@Column({ type: 'timestamp', nullable: true })
-	refreshTokenExpiresAt: Date;
+	refreshTokenExpiresAt: Date; // Better Auth
 
 	@Column({ type: 'text', nullable: true })
-	scope: string;
+	scope: string; // Better Auth
 
 	@Column({ type: 'text', nullable: true })
-	password: string;
+	password: string; // Better Auth
 
 	@CreateDateColumn()
-	createdAt: Date;
+	createdAt: Date; // Better Auth
 
 	@UpdateDateColumn()
-	updatedAt: Date;
+	updatedAt: Date; // Better Auth
 }

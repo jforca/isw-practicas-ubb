@@ -15,6 +15,7 @@
 		"users": "admin",
 		"user": "admin",
 		"reference": "docs",
+		"login": "secure"
 	},
 	"material-icon-theme.opacity": 1,
 	"material-icon-theme.folders.customClones": [

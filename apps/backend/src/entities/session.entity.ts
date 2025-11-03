@@ -11,27 +11,27 @@ import { User } from './user.entity';
 @Entity()
 export class Session {
 	@PrimaryColumn({ type: 'text' })
-	id: string;
+	id: string; // Better Auth
 
 	@Column({ type: 'timestamp' })
-	expiresAt: Date;
+	expiresAt: Date; // Better Auth
 
 	@Column({ type: 'text', unique: true })
-	token: string;
+	token: string; // Better Auth
 
 	@Column({ type: 'text', nullable: true })
-	ipAddress: string;
+	ipAddress: string; // Better Auth
 
 	@Column({ type: 'text', nullable: true })
-	userAgent: string;
+	userAgent: string; // Better Auth
 
 	@Column({ type: 'text' })
 	@ForeignKey(() => User)
-	userId: string;
+	userId: string; // Better Auth
 
 	@CreateDateColumn()
-	createdAt: Date;
+	createdAt: Date; // Better Auth
 
 	@UpdateDateColumn()
-	updatedAt: Date;
+	updatedAt: Date; // Better Auth
 }

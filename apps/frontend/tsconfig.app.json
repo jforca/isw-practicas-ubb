@@ -5,7 +5,7 @@
 		"useDefineForClassFields": true,
 		"lib": ["ES2022", "DOM", "DOM.Iterable"],
 		"module": "ESNext",
-		"types": ["vite/client"],
+		"types": ["vite/client", "vite-plugin-svgr/client"],
 		"skipLibCheck": true,
 
 		/* Bundler mode */
@@ -26,11 +26,10 @@
 
 		/* Path Mapping */
 		"paths": {
-			"@assets/*": ["./src/assets/*"],
-			"@components/*": ["./src/components/*"],
-			"@hooks/*": ["./src/hooks/*"],
 			"@lib/*": ["./src/lib/*"],
-			"@styles/*": ["./src/styles/*"]
+			"@styles/*": ["./src/styles/*"],
+			"@common/*": ["./src/common/*"],
+			"@modules/*": ["./src/modules/*"]
 		}
 	},
 	"include": ["src"]
