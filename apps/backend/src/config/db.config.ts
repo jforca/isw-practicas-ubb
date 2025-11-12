@@ -11,6 +11,7 @@ import {
 	InternshipEvaluation,
 	Application,
 	ApplicationDocuments,
+	LogbookEntries,
 } from '@entities';
 
 export const AppDataSource = new DataSource({
@@ -27,6 +28,7 @@ export const AppDataSource = new DataSource({
 		Document,
 		Application,
 		ApplicationDocuments,
+		LogbookEntries,
 	],
 	synchronize: true,
 	logging: false,
