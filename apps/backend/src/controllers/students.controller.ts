@@ -3,7 +3,7 @@ import { findMany } from '@services/students.service';
 import {
 	handleSuccess,
 	handleErrorServer,
-} from '@handlers/response.handlers';
+} from '@handlers/response.handler';
 import type { TStudentUser } from '@services/students.service';
 
 export async function listStudents(
