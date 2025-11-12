@@ -15,3 +15,5 @@ export const AccountSchema = z.object({
 	createdAt: z.coerce.date(),
 	updatedAt: z.coerce.date(),
 });
+
+export type TAccount = z.infer<typeof AccountSchema>;

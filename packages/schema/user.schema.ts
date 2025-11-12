@@ -20,3 +20,5 @@ export const UserSchema = z.object({
 	createdAt: z.coerce.date(),
 	updatedAt: z.coerce.date(),
 });
+
+export type TUser = z.infer<typeof UserSchema>;
