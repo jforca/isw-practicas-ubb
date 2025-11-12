@@ -1,6 +1,6 @@
 import { Express, Router } from 'express';
 import InternshipCentersRouter from '@routes/internship-centers.route';
-import { studentsRouter } from './students.routes';
+import { studentsRouter } from './students.route';
 import LogbookRouter from '@routes/logbook-entries.route';
 
 export function routerApi(app: Express) {

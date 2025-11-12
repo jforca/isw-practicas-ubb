@@ -28,6 +28,7 @@ export default defineConfig({
             '@middleware': path.resolve(__dirname, 'src/middleware'),
             '@routes': path.resolve(__dirname, 'src/routes'),
             '@services': path.resolve(__dirname, 'src/services'),
+            '@packages': path.resolve(__dirname, '../../packages'),
         },
     },
     module: {
