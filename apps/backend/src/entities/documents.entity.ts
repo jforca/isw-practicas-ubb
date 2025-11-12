@@ -1,7 +1,8 @@
 import {
 	Entity,
 	Column,
-	ForeignKey,
+	ManyToOne,
+	JoinColumn,
 	PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from './user.entity';
@@ -23,6 +24,9 @@ export class Document {
 	uploaded_at: Date;
 
 	@Column({ type: 'text' })
-	@ForeignKey(() => User)
 	uploaded_by: string;
+
+	@ManyToOne(() => User)
+	@JoinColumn({ name: 'uploaded_by' })
+	uploader: User;
 }
