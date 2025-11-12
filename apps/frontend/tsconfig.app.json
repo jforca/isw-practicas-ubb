@@ -27,9 +27,13 @@
 		/* Path Mapping */
 		"paths": {
 			"@lib/*": ["./src/lib/*"],
+			"@lib": ["./src/lib"],
 			"@styles/*": ["./src/styles/*"],
+			"@styles": ["./src/styles"],
 			"@common/*": ["./src/common/*"],
-			"@modules/*": ["./src/modules/*"]
+			"@common": ["./src/common"],
+			"@modules/*": ["./src/modules/*"],
+			"@modules": ["./src/modules"]
 		}
 	},
 	"include": ["src"]

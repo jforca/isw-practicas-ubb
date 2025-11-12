@@ -2,8 +2,11 @@ import {
 	Entity,
 	Column,
 	PrimaryGeneratedColumn,
+	JoinColumn,
+	OneToOne,
 	//	ForeignKey,
 } from 'typeorm';
+import { Internship } from './internship.entity';
 
 @Entity()
 export class InternshipEvaluation {
@@ -28,9 +31,7 @@ export class InternshipEvaluation {
 	@Column({ type: 'timestamp' })
 	completedAt: Date;
 
-	/*
-@Column()
-  @ForeignKey(() => Internship)
-  InternshipId: number; 
-*/
+	@OneToOne(() => Internship)
+	@JoinColumn({ name: 'internship_id' })
+	internship: Internship;
 }

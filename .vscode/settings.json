@@ -15,7 +15,9 @@
 		"users": "admin",
 		"user": "admin",
 		"reference": "docs",
-		"login": "secure"
+		"login": "secure",
+		"not-found": "error",
+		"internship-centers": "context",
 	},
 	"material-icon-theme.opacity": 1,
 	"material-icon-theme.folders.customClones": [
