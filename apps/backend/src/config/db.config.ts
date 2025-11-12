@@ -7,6 +7,7 @@ import {
 	Session,
 	Verification,
 	Application,
+	ApplicationDocuments,
 } from '@entities';
 
 export const AppDataSource = new DataSource({
@@ -19,6 +20,7 @@ export const AppDataSource = new DataSource({
 		Verification,
 		Document,
 		Application,
+		ApplicationDocuments,
 	],
 	synchronize: true,
 	logging: false,
