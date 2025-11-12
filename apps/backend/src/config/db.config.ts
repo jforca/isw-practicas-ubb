@@ -1,6 +1,7 @@
 import { DataSource } from 'typeorm';
 import { env } from '@lib/env';
 import {
+	Document,
 	User,
 	Account,
 	Session,
@@ -8,6 +9,8 @@ import {
 	Student,
 	Coordinator,
 	InternshipEvaluation,
+	Application,
+	ApplicationDocuments,
 } from '@entities';
 
 export const AppDataSource = new DataSource({
@@ -21,6 +24,9 @@ export const AppDataSource = new DataSource({
 		InternshipEvaluation,
 		Student,
 		Coordinator,
+		Document,
+		Application,
+		ApplicationDocuments,
 	],
 	synchronize: true,
 	logging: false,
