@@ -3,6 +3,7 @@ import {
 	LoginPage,
 	InternshipCentersPage,
 	NotFoundPage,
+	EncargadoDashboardPage,
 } from '@modules';
 import { LogbookPage } from '@modules/Logbook/components/pages/logbook-page';
 // import { Auth } from '@common/components/auth';
@@ -22,6 +23,10 @@ function App() {
 					<Route
 						path="internship-centers"
 						element={<InternshipCentersPage />}
+					/>
+					<Route
+						path="students"
+						element={<EncargadoDashboardPage />}
 					/>
 				</Route>
 
