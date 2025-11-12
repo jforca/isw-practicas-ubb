@@ -1,6 +1,7 @@
 import { DataSource } from 'typeorm';
 import { env } from '@lib/env';
 import {
+	Document,
 	User,
 	Account,
 	Session,
@@ -10,7 +11,13 @@ import {
 export const AppDataSource = new DataSource({
 	type: 'postgres',
 	url: env.DATABASE_URL,
-	entities: [User, Account, Session, Verification],
+	entities: [
+		User,
+		Account,
+		Session,
+		Verification,
+		Document,
+	],
 	synchronize: true,
 	logging: false,
 });
