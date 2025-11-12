@@ -1,9 +1,16 @@
-import { Entity, Column, PrimaryColumn } from 'typeorm';
+import {
+	Entity,
+	Column,
+	PrimaryGeneratedColumn,
+	ManyToOne,
+	JoinColumn,
+} from 'typeorm';
+import { Internship } from './internship.entity';
 
 @Entity()
 export class LogbookEntries {
-	@PrimaryColumn({ type: 'int' })
-	id: number; //better auth
+	@PrimaryGeneratedColumn()
+	id: number;
 
 	@Column({ type: 'varchar', length: 155 })
 	title: string;
@@ -21,13 +28,7 @@ export class LogbookEntries {
 	})
 	updated_at: Date;
 
-	/*
-    @ManyToOne(() => Interships, intership => intership.reports)
-    @JoinColumn({ name: 'internship_id' })
-    internship: Interships;
-    */
-	/*
-    @Column({ type: 'int' })
-    internship_id: number; 
-    */
+	@ManyToOne(() => Internship)
+	@JoinColumn({ name: 'internship_id' })
+	internship: Internship;
 }
