@@ -32,8 +32,8 @@ export class AcademicRequirement {
 	@Column({ name: 'student_id' })
 	student_id: number;
 
-	@Column({ name: 'practice_type_id' })
-	practice_type_id: number;
+	@Column({ name: 'internship_type_id' })
+	internship_type_id: number;
 
 	@Column({ name: 'updated_by', nullable: true })
 	updated_by: number;
@@ -43,7 +43,7 @@ export class AcademicRequirement {
 	student: Student;
 
 	@ManyToOne(() => InternshipType)
-	@JoinColumn({ name: 'practice_type_id' })
+	@JoinColumn({ name: 'internship_type_id' })
 	internshipType: InternshipType;
 
 	@ManyToOne(() => Coordinator)
