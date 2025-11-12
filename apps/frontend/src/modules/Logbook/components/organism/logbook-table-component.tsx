@@ -23,14 +23,14 @@ export const LogbookTable: React.FC<ILogbookTableProps> = ({
 	}
 
 	return (
-		// Agregamos el contenedor de desbordamiento y la clase 'table' de DaisyUI
+		// Se agrega el contenedor de desbordamiento y la clase 'table' de DaisyUI
 		<div className="overflow-x-auto">
 			<table className="table w-full shadow-lg bg-base-100 rounded-box">
 				<thead>
 					<TableHeaderRow />
 				</thead>
 				<tbody>
-					{/* DaisyUI maneja las rayas y estilos de hover automáticamente */}
+					{/* DaisyUI se encarga de las rayas y estilos de hover automáticamente */}
 					{entries.map((entry) => (
 						<LogbookEntryRow
 							key={entry.id}
@@ -40,7 +40,7 @@ export const LogbookTable: React.FC<ILogbookTableProps> = ({
 						/>
 					))}
 				</tbody>
-				{/* Opcional: Footer de la tabla con paginación */}
+				{/* Se deja footer*/}
 				<tfoot>
 					<TableHeaderRow />
 				</tfoot>

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router';
 import { LoginPage } from '@modules/login/components/pages/login-page';
+import { LogbookPage } from '@modules/Logbook/components/pages/logbook-page';
 import { Auth } from '@common/components/auth';
 
 function App() {
@@ -8,6 +9,7 @@ function App() {
 			<Routes>
 				{/*Public Routes */}
 				<Route index element={<LoginPage />} />
+				<Route path="/logbook" element={<LogbookPage />} />
 
 				{/*Private Routes - Protegidas por autenticación */}
 				<Route path="/app" element={<Auth />}>
