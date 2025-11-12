@@ -2,24 +2,17 @@ import { Router } from 'express';
 import {
 	findOneController,
 	findManyController,
-	updateSupervisorController,
-	updateReportController,
-	clearSupervisorController,
-	clearReportController,
+	createController,
+	updateController,
 	deleteController,
 } from '@controllers/internship-evaluation.controller';
 
 const router = Router();
 
-router.get('/', findManyController);
-router.get('/:id', findOneController);
-router.patch('/:id/supervisor', updateSupervisorController);
-router.patch('/:id/report', updateReportController);
-router.post(
-	'/:id/clear-supervisor',
-	clearSupervisorController,
-);
-router.post('/:id/clear-report', clearReportController);
-router.delete('/:id', deleteController);
+router.post('/', createController);
+router.get('/find-many', findManyController);
+router.get('/find-one/:id', findOneController);
+router.patch('/update/:id', updateController);
+router.delete('/delete/:id', deleteController);
 
 export default router;

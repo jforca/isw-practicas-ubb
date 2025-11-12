@@ -1,12 +1,10 @@
 import { Request, Response } from 'express';
 import {
-	findOneService,
-	findManyService,
-	deleteService,
-	updateSupervisorService,
-	updateReportService,
-	clearSupervisorFields,
-	clearReportFields,
+	getEvaluation,
+	listEvaluations,
+	deleteEvaluation,
+	createEvaluation,
+	updateEvaluation,
 } from '@services/internship-evaluation.service';
 
 export async function findOneController(
@@ -15,7 +13,7 @@ export async function findOneController(
 ) {
 	const { id } = req.params;
 
-	const ev = await findOneService(Number(id));
+	const ev = await getEvaluation(Number(id));
 
 	if (!ev) {
 		res.status(404).json({
@@ -35,56 +33,8 @@ export async function findManyController(
 	_req: Request,
 	res: Response,
 ) {
-	const list = await findManyService();
+	const list = await listEvaluations();
 	res.status(200).json({ data: list || [], error: null });
-}
-
-export async function updateSupervisorController(
-	req: Request,
-	res: Response,
-) {
-	const { id } = req.params;
-	const { supervisorGrade, supervisorComments } = req.body;
-
-	const updated = await updateSupervisorService(
-		Number(id),
-		Number(supervisorGrade),
-		String(supervisorComments || ''),
-	);
-
-	if (!updated) {
-		res.status(404).json({
-			data: null,
-			error: 'Evaluación no encontrada',
-		});
-		return;
-	}
-
-	res.status(200).json({ data: updated, error: null });
-}
-
-export async function updateReportController(
-	req: Request,
-	res: Response,
-) {
-	const { id } = req.params;
-	const { reportGrade, reportComments } = req.body;
-
-	const updated = await updateReportService(
-		Number(id),
-		Number(reportGrade),
-		String(reportComments || ''),
-	);
-
-	if (!updated) {
-		res.status(404).json({
-			data: null,
-			error: 'Evaluación no encontrada',
-		});
-		return;
-	}
-
-	res.status(200).json({ data: updated, error: null });
 }
 
 export async function deleteController(
@@ -93,7 +43,7 @@ export async function deleteController(
 ) {
 	const { id } = req.params;
 
-	const ok = await deleteService(Number(id));
+	const ok = await deleteEvaluation(Number(id));
 
 	if (!ok) {
 		res.status(404).json({
@@ -108,40 +58,55 @@ export async function deleteController(
 		.json({ data: { id: Number(id) }, error: null });
 }
 
-export async function clearSupervisorController(
+export async function createController(
 	req: Request,
 	res: Response,
 ) {
-	const { id } = req.params;
-
-	const updated = await clearSupervisorFields(Number(id));
-
-	if (!updated) {
-		res.status(404).json({
+	try {
+		const body = req.body || {};
+		const created = await createEvaluation(body);
+		if (!created) {
+			res.status(400).json({
+				data: null,
+				error:
+					'Internship asociada no encontrada o internshipId faltante',
+			});
+			return;
+		}
+		res.status(201).json({ data: created, error: null });
+	} catch (error) {
+		console.error('Error al crear evaluación:', error);
+		res.status(500).json({
 			data: null,
-			error: 'Evaluación no encontrada',
+			error: 'Error al crear evaluación',
 		});
-		return;
 	}
-
-	res.status(200).json({ data: updated, error: null });
 }
 
-export async function clearReportController(
+export async function updateController(
 	req: Request,
 	res: Response,
 ) {
 	const { id } = req.params;
+	const body = req.body || {};
 
-	const updated = await clearReportFields(Number(id));
-
-	if (!updated) {
-		res.status(404).json({
-			data: null,
-			error: 'Evaluación no encontrada',
-		});
-		return;
+	try {
+		const updated = await updateEvaluation(
+			Number(id),
+			body,
+		);
+		if (!updated) {
+			res.status(404).json({
+				data: null,
+				error: 'Evaluación no encontrada',
+			});
+			return;
+		}
+		res.status(200).json({ data: updated, error: null });
+	} catch (error) {
+		console.error('Error updating evaluation:', error);
+		res
+			.status(500)
+			.json({ data: null, error: 'Error interno' });
 	}
-
-	res.status(200).json({ data: updated, error: null });
 }

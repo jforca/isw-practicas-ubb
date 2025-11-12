@@ -1,11 +1,13 @@
 import { AppDataSource } from '@config/db.config';
 import { InternshipEvaluation } from '@entities/internship-evaluation.entity';
-import type { DeepPartial } from 'typeorm';
+import { Internship } from '@entities/internship.entity';
 
 const internshipEvaluationRepo =
 	AppDataSource.getRepository(InternshipEvaluation);
+const internshipRepo =
+	AppDataSource.getRepository(Internship);
 
-export async function getEvaluationById(id: number) {
+export async function getEvaluation(id: number) {
 	try {
 		const evalEntity =
 			await internshipEvaluationRepo.findOne({
@@ -14,21 +16,25 @@ export async function getEvaluationById(id: number) {
 			});
 		return evalEntity;
 	} catch (error) {
-		console.error('Error getting evaluation by id:', error);
+		console.error(
+			'Error al obtener evaluación por id:',
+			error,
+		);
 		throw error;
 	}
 }
 
-export async function assignOrUpdateSupervisorNote(
+async function applySupervisorNote(
 	evaluationId: number,
 	supervisorGrade: number,
 	supervisorComments: string,
 ) {
 	try {
-		const ev = await internshipEvaluationRepo.findOneBy({
-			id: evaluationId,
+		const ev = await internshipEvaluationRepo.findOne({
+			where: { id: evaluationId },
+			relations: ['internship'],
 		});
-		if (!ev) return null;
+		if (!ev || !ev.internship) return null;
 		ev.supervisorGrade = supervisorGrade;
 		ev.supervisorComments = supervisorComments;
 		ev.completedAt = ev.completedAt || new Date();
@@ -36,23 +42,24 @@ export async function assignOrUpdateSupervisorNote(
 		return saved;
 	} catch (error) {
 		console.error(
-			'Error assigning supervisor note:',
+			'Error al asignar nota del supervisor:',
 			error,
 		);
 		throw error;
 	}
 }
 
-export async function assignOrUpdateReportNote(
+async function applyReportNote(
 	evaluationId: number,
 	reportGrade: number,
 	reportComments: string,
 ) {
 	try {
-		const ev = await internshipEvaluationRepo.findOneBy({
-			id: evaluationId,
+		const ev = await internshipEvaluationRepo.findOne({
+			where: { id: evaluationId },
+			relations: ['internship'],
 		});
-		if (!ev) return null;
+		if (!ev || !ev.internship) return null;
 		ev.reportGrade = reportGrade;
 		ev.reportComments = reportComments;
 		if (
@@ -71,64 +78,10 @@ export async function assignOrUpdateReportNote(
 		const saved = await internshipEvaluationRepo.save(ev);
 		return saved;
 	} catch (error) {
-		console.error('Error assigning report note:', error);
-		throw error;
-	}
-}
-
-export async function clearSupervisorFields(
-	evaluationId: number,
-) {
-	try {
-		const ev = await internshipEvaluationRepo.findOneBy({
-			id: evaluationId,
-		});
-		if (!ev) return null;
-		ev.supervisorGrade = 0;
-		ev.supervisorComments = '';
-		if (
-			typeof ev.reportGrade === 'number' &&
-			!Number.isNaN(ev.reportGrade)
-		) {
-			ev.finalGrade =
-				Math.round(Number(ev.reportGrade) * 100) / 100;
-		} else {
-			ev.finalGrade = 0;
-		}
-		const saved = await internshipEvaluationRepo.save(ev);
-		return saved;
-	} catch (error) {
 		console.error(
-			'Error clearing supervisor fields:',
+			'Error al asignar nota del informe:',
 			error,
 		);
-		throw error;
-	}
-}
-
-export async function clearReportFields(
-	evaluationId: number,
-) {
-	try {
-		const ev = await internshipEvaluationRepo.findOneBy({
-			id: evaluationId,
-		});
-		if (!ev) return null;
-		ev.reportGrade = 0;
-		ev.reportComments = '';
-		if (
-			typeof ev.supervisorGrade === 'number' &&
-			!Number.isNaN(ev.supervisorGrade)
-		) {
-			ev.finalGrade =
-				Math.round(Number(ev.supervisorGrade) * 100) / 100;
-		} else {
-			ev.finalGrade = 0;
-		}
-		const saved = await internshipEvaluationRepo.save(ev);
-		return saved;
-	} catch (error) {
-		console.error('Error clearing report fields:', error);
 		throw error;
 	}
 }
@@ -144,117 +97,92 @@ export async function deleteEvaluation(
 		await internshipEvaluationRepo.remove(ev);
 		return true;
 	} catch (error) {
-		console.error('Error deleting evaluation:', error);
+		console.error('Error al eliminar evaluación:', error);
 		throw error;
 	}
 }
 
-// Compatibility wrappers using the "findOneService" / "findManyService" style
-export async function findOneService(id: number) {
-	try {
-		const ev = await internshipEvaluationRepo.findOne({
-			where: { id },
-			relations: ['internship', 'internship.supervisor'],
-		});
-		return ev;
-	} catch (error) {
-		console.error('Error in findOneService:', error);
-	}
-}
-
-export async function findManyService() {
+export async function listEvaluations() {
 	try {
 		return await internshipEvaluationRepo.find({
 			relations: ['internship'],
 		});
 	} catch (error) {
-		console.error('Error in findManyService:', error);
+		console.error('Error al listar evaluaciones:', error);
 	}
 }
 
-export async function deleteService(id: number) {
+export async function createEvaluation(data: {
+	internshipId?: number;
+	supervisorGrade?: number;
+	supervisorComments?: string;
+	reportGrade?: number;
+	reportComments?: string;
+	finalGrade?: number;
+	completedAt?: Date;
+}) {
 	try {
-		const ok = await deleteEvaluation(id);
-		return ok;
+		const ev = new InternshipEvaluation();
+		ev.supervisorGrade = Number(data.supervisorGrade ?? 0);
+		ev.supervisorComments = data.supervisorComments ?? '';
+		ev.reportGrade = Number(data.reportGrade ?? 0);
+		ev.reportComments = data.reportComments ?? '';
+		ev.finalGrade = Number(data.finalGrade ?? 0);
+		ev.completedAt = data.completedAt ?? new Date();
+
+		if (typeof data.internshipId !== 'number') {
+			return null;
+		}
+
+		const internship = await internshipRepo.findOneBy({
+			id: data.internshipId,
+		});
+		if (!internship) {
+			return null;
+		}
+
+		ev.internship = internship;
+
+		const saved = await internshipEvaluationRepo.save(ev);
+		return saved;
 	} catch (error) {
-		console.error('Error in deleteService:', error);
-	}
-}
-
-export async function updateSupervisorService(
-	id: number,
-	supervisorGrade: number,
-	supervisorComments: string,
-) {
-	try {
-		const updated = await assignOrUpdateSupervisorNote(
-			id,
-			supervisorGrade,
-			supervisorComments,
-		);
-		return updated;
-	} catch (error) {
-		console.error(
-			'Error in updateSupervisorService:',
-			error,
-		);
-	}
-}
-
-export async function updateReportService(
-	id: number,
-	reportGrade: number,
-	reportComments: string,
-) {
-	try {
-		const updated = await assignOrUpdateReportNote(
-			id,
-			reportGrade,
-			reportComments,
-		);
-		return updated;
-	} catch (error) {
-		console.error('Error in updateReportService:', error);
-	}
-}
-
-/**
- * Create a few sample InternshipEvaluation rows for local testing.
- * Note: This creates evaluations without linking to an `Internship`.
- */
-export async function createSampleEvaluations() {
-	try {
-		const samples = [
-			{
-				supervisorGrade: 5.0,
-				supervisorComments:
-					'Buen rendimiento técnico y buenas prácticas.',
-				reportGrade: 6.0,
-				reportComments: 'Informe claro y completo.',
-				finalGrade: 5.5,
-				completedAt: new Date(),
-			},
-			{
-				supervisorGrade: 4.0,
-				supervisorComments:
-					'Necesita mejorar documentación.',
-				reportGrade: 4.5,
-				reportComments: 'Faltaron algunos anexos.',
-				finalGrade: 4.25,
-				completedAt: new Date(),
-			},
-		];
-
-		const created = await internshipEvaluationRepo.save(
-			samples as DeepPartial<InternshipEvaluation>[],
-		);
-
-		return created;
-	} catch (error) {
-		console.error(
-			'Error creating sample evaluations:',
-			error,
-		);
+		console.error('Error al crear evaluación:', error);
 		throw error;
 	}
+}
+
+export async function updateEvaluation(
+	id: number,
+	changes: Partial<{
+		supervisorGrade: number;
+		supervisorComments: string;
+		reportGrade: number;
+		reportComments: string;
+	}>,
+) {
+	if (
+		typeof changes.supervisorGrade !== 'undefined' ||
+		typeof changes.supervisorComments !== 'undefined'
+	) {
+		const updated = await applySupervisorNote(
+			id,
+			Number(changes.supervisorGrade ?? 0),
+			String(changes.supervisorComments ?? ''),
+		);
+		if (!updated) return null;
+	}
+
+	if (
+		typeof changes.reportGrade !== 'undefined' ||
+		typeof changes.reportComments !== 'undefined'
+	) {
+		const updated = await applyReportNote(
+			id,
+			Number(changes.reportGrade ?? 0),
+			String(changes.reportComments ?? ''),
+		);
+		return updated;
+	}
+
+	return await getEvaluation(id);
 }
