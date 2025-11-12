@@ -10,6 +10,7 @@ import {
 import { Document } from './documents.entity';
 import { Coordinator } from './coordinators.entity';
 import { Supervisor } from './supervisor.entity';
+import { Application } from './application.entity';
 
 export enum InternshipStatus {
 	InProgress = 'in_progress',
@@ -39,6 +40,10 @@ export class Internship {
 	@ManyToOne(() => Supervisor)
 	@JoinColumn({ name: 'supervisor_id' })
 	supervisor: Supervisor;
+
+	@OneToOne(() => Application)
+	@JoinColumn({ name: 'application_id' })
+	application: Application;
 
 	@Column({
 		type: 'enum',
