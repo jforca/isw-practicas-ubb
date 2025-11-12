@@ -6,10 +6,6 @@ import {
 } from '@handlers/response.handler';
 import type { TLogbookEntry } from '@services/logbook-entries.service';
 
-/**
- * Obtiene todos los registros del libro de bitácora.
- * Se renombra a 'findAll' para seguir el patrón 'findMany' de tu ejemplo.
- */
 async function findAll(_req: Request, res: Response) {
 	try {
 		// Llama al servicio para obtener los datos
@@ -34,13 +30,6 @@ async function findAll(_req: Request, res: Response) {
 	}
 }
 
-// Opcional: Función findOne (dejada como placeholder si la necesitas)
-// async function findOne(req: Request, res: Response) {
-//     // ... lógica de findOne aquí
-// }
-
-// Se exporta el objeto constante que agrupa todas las funciones del controlador.
 export const LogbookEntriesControllers = {
-	findAll, // Renombrado de listLogbookEntries a findAll para este formato
-	// findOne, // Si se implementa, se añadiría aquí
+	findAll,
 };
