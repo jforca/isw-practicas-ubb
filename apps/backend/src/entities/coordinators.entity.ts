@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { User } from './user.entity';
 import { Internship } from './internship.entity';
+import { Offer } from './offers.entity';
 
 @Entity()
 export class Coordinator {
@@ -22,4 +23,10 @@ export class Coordinator {
 		(internship) => internship.coordinator,
 	)
 	internships: Internship[];
+
+	@OneToMany(
+		() => Offer,
+		(offer) => offer.coordinator,
+	)
+	offers: Offer[];
 }
