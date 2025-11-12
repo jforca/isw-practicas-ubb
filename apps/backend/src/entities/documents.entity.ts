@@ -24,9 +24,6 @@ export class Document {
 	@Column({ type: 'timestamp' })
 	uploaded_at: Date;
 
-	@Column({ type: 'text' })
-	uploaded_by: string;
-
 	@ManyToOne(() => User)
 	@JoinColumn({ name: 'uploaded_by' })
 	uploader: User;
