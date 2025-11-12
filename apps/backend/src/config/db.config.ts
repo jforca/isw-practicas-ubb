@@ -5,12 +5,21 @@ import {
 	Account,
 	Session,
 	Verification,
+	Student,
+	Coordinator,
 } from '@entities';
 
 export const AppDataSource = new DataSource({
 	type: 'postgres',
 	url: env.DATABASE_URL,
-	entities: [User, Account, Session, Verification],
+	entities: [
+		User,
+		Account,
+		Session,
+		Verification,
+		Student,
+		Coordinator,
+	],
 	synchronize: true,
 	logging: false,
 });
