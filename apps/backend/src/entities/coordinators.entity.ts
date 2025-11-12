@@ -1,9 +1,17 @@
-import { Entity, ForeignKey, PrimaryColumn } from 'typeorm';
+import {
+	Entity,
+	JoinColumn,
+	OneToOne,
+	PrimaryColumn,
+} from 'typeorm';
 import { User } from './user.entity';
 
 @Entity()
 export class Coordinator {
 	@PrimaryColumn({ type: 'text' })
-	@ForeignKey(() => User)
 	id: string;
+
+	@OneToOne(() => User, { onDelete: 'CASCADE' })
+	@JoinColumn({ name: 'id' })
+	user: User;
 }
