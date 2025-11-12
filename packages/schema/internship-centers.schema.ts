@@ -2,7 +2,7 @@ import { ChileanNumberRegex } from '../utils/regex.utils';
 import { z } from 'zod/v4';
 
 export const InternshipCentersSchema = z.object({
-	id: z.coerce.number(),
+	id: z.coerce.number().int().positive(),
 	legal_name: z.string().max(255),
 	company_rut: z.string().max(20),
 	email: z.email(),

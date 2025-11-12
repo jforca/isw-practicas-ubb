@@ -10,7 +10,7 @@ import { InternshipCentersSchema } from '@packages/schema/internship-centers.sch
 async function findOne(req: Request, res: Response) {
 	const { data, error } = InternshipCentersSchema.pick({
 		id: true,
-	}).safeParse(req.params.id);
+	}).safeParse({ id: req.params.id });
 
 	if (error) {
 		handleErrorServer(
@@ -46,12 +46,30 @@ async function findOne(req: Request, res: Response) {
 }
 
 async function findMany(_req: Request, res: Response) {
-	res.status(200).json({
-		msg: 'Lista de centros de práctica',
-	});
+	const response =
+		await InternshipCenterServices.findMany();
+
+	handleSuccess(
+		res,
+		200,
+		'Lista de centros de práctica',
+		response,
+	);
 }
+
+async function updateOne(_req: Request, _res: Response) {}
+
+async function deleteOne(_req: Request, _res: Response) {}
+
+async function deleteMany(_req: Request, _res: Response) {}
+
+async function createOne(_req: Request, _res: Response) {}
 
 export const InternshipCenterControllers = {
 	findOne,
 	findMany,
+	updateOne,
+	deleteOne,
+	createOne,
+	deleteMany,
 };

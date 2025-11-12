@@ -20,9 +20,32 @@ async function findOne(id: number) {
 	}
 }
 
-async function findMany() {}
+async function findMany() {
+	try {
+		const interships = await internshipsCenter.find();
+
+		return interships;
+	} catch (error) {
+		console.error(
+			'Error finding internship centers:',
+			error,
+		);
+	}
+}
+
+async function updateOne() {}
+
+async function deleteOne() {}
+
+async function deleteMany() {}
+
+async function createOne() {}
 
 export const InternshipCenterServices = {
 	findOne,
 	findMany,
+	updateOne,
+	deleteOne,
+	deleteMany,
+	createOne,
 };
