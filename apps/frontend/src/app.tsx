@@ -4,6 +4,7 @@ import {
 	InternshipCentersPage,
 	NotFoundPage,
 	EncargadoDashboardPage,
+	OffersPage,
 } from '@modules';
 // import { Auth } from '@common/components/auth';
 
@@ -26,6 +27,7 @@ function App() {
 						path="students"
 						element={<EncargadoDashboardPage />}
 					/>
+					<Route path="offers" element={<OffersPage />} />
 				</Route>
 
 				{/* <Route element={<AuthLayout />}>
