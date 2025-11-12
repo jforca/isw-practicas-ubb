@@ -4,7 +4,7 @@ import { LogbookTable } from '../organism/logbook-table-component';
 import { LogbookManagementTemplate } from '../templates/logbook-template';
 import { Button } from '../atoms/button';
 
-// Datos Mock para la previsualización
+// Datos para probar la visualización de la tabla
 const mockData: ILogbookEntry[] = [
 	{
 		id: 1,
@@ -56,14 +56,14 @@ const mockData: ILogbookEntry[] = [
 ];
 
 export const LogbookPage: React.FC = () => {
-	// Inicializa el estado con los datos mock
+	// Cargar los datos
 	const [entries, setEntries] =
 		useState<ILogbookEntry[]>(mockData);
 
-	// --- Lógica de Manejo (solo simulación) ---
+	// Lógica de Manejo (solo con fines evaluativos)
 	const handleEdit = useCallback((id: number) => {
 		alert(
-			`[PREVISUALIZACIÓN] Intentando editar registro con ID: ${id}`,
+			`Solo para simular conexion con backend. Intentando editar registro con ID: ${id}`,
 		);
 		console.log(`Simulando edición de ${id}`);
 	}, []);
@@ -71,7 +71,7 @@ export const LogbookPage: React.FC = () => {
 	const handleDelete = useCallback((id: number) => {
 		if (
 			window.confirm(
-				`[PREVISUALIZACIÓN] ¿Simular eliminación del registro con ID ${id}?`,
+				`Solo para simular conexion con backend. ¿Simular eliminación del registro con ID ${id}?`,
 			)
 		) {
 			setEntries((prev) =>
@@ -83,12 +83,10 @@ export const LogbookPage: React.FC = () => {
 
 	const handleNewEntry = () => {
 		alert(
-			'[PREVISUALIZACIÓN] Intentando crear nuevo registro',
+			'Solo para simular conexion con backend. Intentando crear nuevo registro',
 		);
 		console.log('Simulando creación de nuevo registro');
 	};
-
-	// --- Renderizado ---
 
 	const pageHeader = (
 		<div className="flex justify-between items-center">
