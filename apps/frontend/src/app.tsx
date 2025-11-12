@@ -3,6 +3,7 @@ import {
 	LoginPage,
 	InternshipCentersPage,
 	NotFoundPage,
+	EncargadoDashboardPage,
 } from '@modules';
 // import { Auth } from '@common/components/auth';
 
@@ -20,6 +21,10 @@ function App() {
 					<Route
 						path="internship-centers"
 						element={<InternshipCentersPage />}
+					/>
+					<Route
+						path="students"
+						element={<EncargadoDashboardPage />}
 					/>
 				</Route>
 
