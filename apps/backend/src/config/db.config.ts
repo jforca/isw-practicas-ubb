@@ -7,6 +7,7 @@ import {
 	Verification,
 	Student,
 	Coordinator,
+	InternshipEvaluation,
 } from '@entities';
 
 export const AppDataSource = new DataSource({
@@ -17,6 +18,7 @@ export const AppDataSource = new DataSource({
 		Account,
 		Session,
 		Verification,
+		InternshipEvaluation,
 		Student,
 		Coordinator,
 	],

@@ -5,3 +5,4 @@ export { Verification } from './verification.entity';
 export { Student } from './students.entity';
 export { Coordinator } from './coordinators.entity';
 export { LogbookEntries } from './logbook-entries.entity';
+export { InternshipEvaluation } from './internship-evaluation.entity';
