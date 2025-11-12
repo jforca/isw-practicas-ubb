@@ -4,8 +4,8 @@ import {
 	Column,
 } from 'typeorm';
 
-@Entity('practice_types')
-export class PracticeType {
+@Entity()
+export class InternshipType {
 	@PrimaryGeneratedColumn()
 	id: number;
 

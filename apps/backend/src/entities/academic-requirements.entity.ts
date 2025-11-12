@@ -8,7 +8,7 @@ import {
 	JoinColumn,
 } from 'typeorm';
 import { Student } from './students.entity';
-import { PracticeType } from './practice-types.entity';
+import { InternshipType } from './internship-types.entity';
 import { Coordinator } from './coordinators.entity';
 
 export enum AcademicRequirementStatus {
@@ -42,9 +42,9 @@ export class AcademicRequirement {
 	@JoinColumn({ name: 'student_id' })
 	student: Student;
 
-	@ManyToOne(() => PracticeType)
+	@ManyToOne(() => InternshipType)
 	@JoinColumn({ name: 'practice_type_id' })
-	practiceType: PracticeType;
+	internshipType: InternshipType;
 
 	@ManyToOne(() => Coordinator)
 	@JoinColumn({ name: 'updated_by' })

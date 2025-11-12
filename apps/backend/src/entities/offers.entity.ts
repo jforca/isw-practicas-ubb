@@ -4,7 +4,10 @@ import {
 	CreateDateColumn,
 	UpdateDateColumn,
 	PrimaryGeneratedColumn,
+	ManyToOne,
+	JoinColumn,
 } from 'typeorm';
+import { InternshipType } from './internship-types.entity';
 
 export enum OfferStatus {
 	Published = 'published',
@@ -33,6 +36,13 @@ export class Offer {
 		default: OfferStatus.Published,
 	})
 	status: OfferStatus;
+
+	@Column({ name: 'practice_type_id' })
+	internship_type_id: number;
+
+	@ManyToOne(() => InternshipType)
+	@JoinColumn({ name: 'practice_type_id' })
+	internshipType: InternshipType;
 
 	@CreateDateColumn()
 	createdAt: Date;
