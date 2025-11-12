@@ -10,8 +10,8 @@ import { InternshipCenter } from './internship-centers.entity';
 
 @Entity()
 export class Supervisor {
-	@PrimaryColumn()
-	userId: number;
+	@PrimaryColumn({ type: 'text' })
+	userId: string;
 
 	@ManyToOne(() => User)
 	@JoinColumn({ name: 'userId' })
@@ -23,7 +23,4 @@ export class Supervisor {
 	@ManyToOne(() => InternshipCenter)
 	@JoinColumn({ name: 'internshipCenterId' })
 	internshipCenter: InternshipCenter;
-
-	@Column()
-	internshipCenterId: number;
 }
