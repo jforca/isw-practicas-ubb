@@ -4,7 +4,7 @@ export const handleSuccess = (
 	res: Response,
 	statusCode: number,
 	message: string,
-	data = null,
+	data: unknown,
 ) => {
 	res.status(statusCode).json({
 		message,
@@ -17,7 +17,7 @@ export const handleErrorClient = (
 	res: Response,
 	statusCode: number,
 	message: string,
-	errorDetails = null,
+	errorDetails: unknown,
 ) => {
 	res.status(statusCode).json({
 		message,
@@ -30,7 +30,7 @@ export const handleErrorServer = (
 	res: Response,
 	statusCode: number,
 	message: string,
-	errorDetails = null,
+	errorDetails: unknown,
 ) => {
 	console.error('Server Error:', message, errorDetails);
 	res.status(statusCode).json({

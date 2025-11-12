@@ -1,4 +1,5 @@
 import { Router, Express } from 'express';
+import { studentsRouter } from './students.routes';
 
 export function routerApi(app: Express) {
 	const router = Router();
@@ -10,6 +11,8 @@ export function routerApi(app: Express) {
 			timestamp: new Date().toISOString(),
 		});
 	});
+
+	router.use('/students', studentsRouter);
 
 	app.use('/api', router);
 }
