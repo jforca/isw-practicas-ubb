@@ -5,14 +5,27 @@ import {
 	handleErrorServer,
 } from '@handlers/response.handler';
 
+import { InternshipCentersSchema } from '@packages/schema/internship-centers.schema';
+
 async function findOne(req: Request, res: Response) {
-	const { id } = req.params;
+	const { data, error } = InternshipCentersSchema.pick({
+		id: true,
+	}).safeParse(req.params.id);
 
-	//filtrar informacion
+	if (error) {
+		handleErrorServer(
+			res,
+			404,
+			'Id no valido',
+			'Id debe ser un número entero positivo',
+		);
+		return;
+	}
 
-	const response = await InternshipCenterServices.findOne(
-		Number(id),
-	);
+	const { id } = data;
+
+	const response =
+		await InternshipCenterServices.findOne(id);
 
 	if (!response) {
 		handleErrorServer(
