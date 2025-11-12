@@ -6,6 +6,11 @@ import {
 	PrimaryColumn,
 } from 'typeorm';
 
+export type TUserRole =
+	| 'student'
+	| 'supervisor'
+	| 'coordinator';
+
 @Entity()
 export class User {
 	@PrimaryColumn({ type: 'text' })
@@ -28,6 +33,15 @@ export class User {
 
 	@Column({ type: 'text', nullable: true })
 	image: string; // Better Auth
+
+	@Column({
+		type: 'enum',
+		enum: ['student', 'supervisor', 'coordinator'],
+	})
+	user_role: TUserRole;
+
+	@Column({ type: 'varchar', length: 15 })
+	rut: string;
 
 	@CreateDateColumn()
 	createdAt: Date; // Better Auth
