@@ -9,3 +9,5 @@ export { InternshipEvaluation } from './internship-evaluation.entity';
 export { Document } from './documents.entity';
 export { Application } from './application.entity';
 export { ApplicationDocuments } from './application-documents.entity';
+export { Offer } from './offers.entity';
+export { InternshipCenter } from './internship-centers.entity';

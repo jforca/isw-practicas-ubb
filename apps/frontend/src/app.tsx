@@ -1,6 +1,10 @@
 import { BrowserRouter, Routes, Route } from 'react-router';
-import { LoginPage } from '@modules/login/components/pages/login-page';
-import { Auth } from '@common/components/auth';
+import {
+	LoginPage,
+	InternshipCentersPage,
+	NotFoundPage,
+} from '@modules';
+// import { Auth } from '@common/components/auth';
 
 function App() {
 	return (
@@ -10,25 +14,21 @@ function App() {
 				<Route index element={<LoginPage />} />
 
 				{/*Private Routes - Protegidas por autenticación */}
-				<Route path="/app" element={<Auth />}>
-					{/* Aquí van todas las rutas que requieren autenticación */}
-					{/* Ejemplo: */}
-					{/* <Route path="/app" element={<Dashboard />} /> */}
-					{/* <Route path="/profile" element={<Profile />} /> */}
+				{/* /app/nombre-ruta */}
+				{/* <Route element={<Auth />}></Route> */}
+				<Route path="app">
+					<Route
+						path="internship-centers"
+						element={<InternshipCentersPage />}
+					/>
 				</Route>
-
-				{/* <Route path="about" element={<About />} /> */}
 
 				{/* <Route element={<AuthLayout />}>
 					<Route path="login" element={<Login />} />
 					<Route path="register" element={<Register />} />
 				</Route> */}
 
-				{/* <Route path="concerts">
-					<Route index element={<ConcertsHome />} />
-					<Route path=":city" element={<City />} />
-					<Route path="trending" element={<Trending />} />
-				</Route> */}
+				<Route path="*" element={<NotFoundPage />} />
 			</Routes>
 		</BrowserRouter>
 	);
