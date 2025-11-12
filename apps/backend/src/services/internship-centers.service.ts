@@ -5,7 +5,7 @@ const internshipsCenter = AppDataSource.getRepository(
 	InternshipCenter,
 );
 
-export async function findOneService(id: number) {
+async function findOne(id: number) {
 	try {
 		const interships = await internshipsCenter.findOneBy({
 			id,
@@ -20,4 +20,9 @@ export async function findOneService(id: number) {
 	}
 }
 
-export async function findManyService() {}
+async function findMany() {}
+
+export const InternshipCenterServices = {
+	findOne,
+	findMany,
+};

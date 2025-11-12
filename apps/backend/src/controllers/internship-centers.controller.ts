@@ -1,35 +1,44 @@
 import { Request, Response } from 'express';
-import { findOneService } from '@services/internship-centers.service';
+import { InternshipCenterServices } from '@services/internship-centers.service';
+import {
+	handleSuccess,
+	handleErrorServer,
+} from '@handlers/response.handler';
 
-export async function findOneController(
-	req: Request,
-	res: Response,
-) {
+async function findOne(req: Request, res: Response) {
 	const { id } = req.params;
 
 	//filtrar informacion
 
-	const a = await findOneService(Number(id));
+	const response = await InternshipCenterServices.findOne(
+		Number(id),
+	);
 
-	if (!a) {
-		res.status(404).json({
-			data: null,
-			error: 'Centro de prácticas no encontrado',
-		});
+	if (!response) {
+		handleErrorServer(
+			res,
+			404,
+			'Centro de prácticas no encontrado',
+			'No encontrado',
+		);
 		return;
 	}
 
-	res.status(200).json({
-		data: a,
-		error: null,
-	});
+	handleSuccess(
+		res,
+		200,
+		'Centro de prácticas encontrado',
+		response,
+	);
 }
 
-export async function findManyController(
-	_req: Request,
-	res: Response,
-) {
+async function findMany(_req: Request, res: Response) {
 	res.status(200).json({
 		msg: 'Lista de centros de práctica',
 	});
 }
+
+export const InternshipCenterControllers = {
+	findOne,
+	findMany,
+};

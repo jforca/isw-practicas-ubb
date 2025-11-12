@@ -1,12 +1,15 @@
 import { Router } from 'express';
-import {
-	findOneController,
-	findManyController,
-} from '@controllers/internship-centers.controller';
+import { InternshipCenterControllers } from '@controllers/internship-centers.controller';
 
 const router = Router();
 
-router.get('/find-one/:id', findOneController);
-router.get('/find-many', findManyController);
+router.get(
+	'/find-one/:id',
+	InternshipCenterControllers.findOne,
+);
+router.get(
+	'/find-many',
+	InternshipCenterControllers.findMany,
+);
 
 export default router;
