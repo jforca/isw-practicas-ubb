@@ -3,7 +3,7 @@ import { Entity, Column, PrimaryColumn } from 'typeorm';
 @Entity()
 export class LogbookEntries {
 	@PrimaryColumn({ type: 'int' })
-	id: number; //better auth
+	id: number;
 
 	@Column({ type: 'varchar', length: 155 })
 	title: string;
