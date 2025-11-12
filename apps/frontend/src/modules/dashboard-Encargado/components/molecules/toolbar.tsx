@@ -11,13 +11,19 @@ export function Toolbar() {
 				</span>
 			</div>
 
-			<div className="flex items-center gap-3 self-end lg:self-auto text-sm">
-				<span className="link link-hover">
+			<div className="flex items-center gap-3 self-end lg:self-auto text-sm pr-2 lg:pr-20">
+				<button
+					type="button"
+					className="btn btn-sm bg-blue-400"
+				>
 					Nuevo alumno
-				</span>
-				<span className="link link-hover">
+				</button>
+				<button
+					type="button"
+					className="btn btn-sm bg-blue-300"
+				>
 					Exportar CSV
-				</span>
+				</button>
 			</div>
 		</div>
 	);
