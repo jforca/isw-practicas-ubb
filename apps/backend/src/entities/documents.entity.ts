@@ -11,6 +11,7 @@ import { User } from './user.entity';
 export class Document {
 	@PrimaryGeneratedColumn()
 	id: number;
+
 	@Column({ type: 'varchar', length: 255 })
 	file_name: string;
 

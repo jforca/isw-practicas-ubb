@@ -7,6 +7,7 @@ import {
 	JoinColumn,
 } from 'typeorm';
 import { User } from './user.entity';
+import { Offer } from './offers.entity';
 
 export enum ApplicationStatus {
 	Pending = 'pending',
@@ -39,7 +40,7 @@ export class Application {
 	@Column({ type: 'integer' })
 	offer_id: number;
 
-	// @ManyToOne(() => Offer)
-	// @JoinColumn({ name: 'offer_id' })
-	// offer: Offer;
+	@ManyToOne(() => Offer)
+	@JoinColumn({ name: 'offer_id' })
+	offer: Offer;
 }
