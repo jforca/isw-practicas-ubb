@@ -1,6 +1,10 @@
 import { BrowserRouter, Routes, Route } from 'react-router';
 import { LoginPage } from '@modules/login/components/pages/login-page';
 import { Auth } from '@common/components/auth';
+import {
+	ReportPage,
+	SupervisorPage,
+} from '@modules/internship-evaluation/components/pages';
 
 function App() {
 	return (
@@ -8,6 +12,15 @@ function App() {
 			<Routes>
 				{/*Public Routes */}
 				<Route index element={<LoginPage />} />
+				{/* Internship evaluation public routes */}
+				<Route
+					path="internship/report"
+					element={<ReportPage />}
+				/>
+				<Route
+					path="internship/supervisor"
+					element={<SupervisorPage />}
+				/>
 
 				{/*Private Routes - Protegidas por autenticación */}
 				<Route path="/app" element={<Auth />}>
