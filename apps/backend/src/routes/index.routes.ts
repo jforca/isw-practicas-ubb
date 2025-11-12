@@ -1,15 +1,10 @@
-import { Router, Express } from 'express';
+import { Express, Router } from 'express';
+import InternshipCentersRouter from '@routes/internship-centers.route';
 
 export function routerApi(app: Express) {
-	const router = Router();
+	const api = Router();
+	api.use('/internship-centers', InternshipCentersRouter);
 
-	// Ruta de prueba para /api
-	router.get('/', (_req, res) => {
-		res.json({
-			message: 'API funcionando correctamente',
-			timestamp: new Date().toISOString(),
-		});
-	});
-
-	app.use('/api', router);
+	// Empezar a usar las rutas bajo /api
+	app.use('/api', api);
 }
