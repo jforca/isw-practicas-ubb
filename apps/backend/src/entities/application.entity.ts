@@ -30,15 +30,9 @@ export class Application {
 	})
 	status: ApplicationStatus;
 
-	@Column({ type: 'text' })
-	student_id: string;
-
 	@ManyToOne(() => User)
 	@JoinColumn({ name: 'student_id' })
 	student: User;
-
-	@Column({ type: 'integer' })
-	offer_id: number;
 
 	@ManyToOne(() => Offer)
 	@JoinColumn({ name: 'offer_id' })
