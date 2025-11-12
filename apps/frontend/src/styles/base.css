@@ -9,6 +9,7 @@ html, body {
 body {
     font-family: 'Poppins', sans-serif;
     scroll-behavior: smooth;
+    background-color: var(--color-base-200);
 }
 
 #root {
