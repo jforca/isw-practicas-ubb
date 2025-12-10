@@ -5,6 +5,7 @@ import {
 	NotFoundPage,
 	EncargadoDashboardPage,
 } from '@modules';
+import { LogbookPage } from '@modules/Logbook/components/pages/logbook-page';
 // import { Auth } from '@common/components/auth';
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
 			<Routes>
 				{/*Public Routes */}
 				<Route index element={<LoginPage />} />
+				<Route path="/logbook" element={<LogbookPage />} />
 
 				{/*Private Routes - Protegidas por autenticación */}
 				{/* /app/nombre-ruta */}
