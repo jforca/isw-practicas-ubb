@@ -8,6 +8,10 @@ import {
 } from '@modules';
 import { LogbookPage } from '@modules/Logbook/components/pages/logbook-page';
 // import { Auth } from '@common/components/auth';
+import {
+	ReportPage,
+	SupervisorPage,
+} from '@modules/internship-evaluation/components/pages';
 
 function App() {
 	return (
@@ -15,6 +19,15 @@ function App() {
 			<Routes>
 				{/*Public Routes */}
 				<Route index element={<LoginPage />} />
+				{/* Internship evaluation public routes */}
+				<Route
+					path="internship/report"
+					element={<ReportPage />}
+				/>
+				<Route
+					path="internship/supervisor"
+					element={<SupervisorPage />}
+				/>
 				<Route path="/logbook" element={<LogbookPage />} />
 
 				{/*Private Routes - Protegidas por autenticación */}
