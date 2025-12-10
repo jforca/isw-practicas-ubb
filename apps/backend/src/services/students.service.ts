@@ -1,17 +1,14 @@
 import { AppDataSource } from '@config/db.config';
 import { User } from '@entities';
 
-export type TStudentUser = Omit<User, 'image'>;
+export type TStudentUser = User;
 
 const userRepo = AppDataSource.getRepository(User);
 
-// Lista simple: solo usuarios con rol 'student' que existen en la tabla students
-export async function findAll(): Promise<TStudentUser[]> {
+export async function findMany(): Promise<TStudentUser[]> {
 	const rows = await userRepo.find({
 		where: { user_role: 'student' },
 	});
 
-	return rows as TStudentUser[];
+	return rows;
 }
-
-export const studentsService = { findAll };

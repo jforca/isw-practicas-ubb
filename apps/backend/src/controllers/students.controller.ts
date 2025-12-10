@@ -1,19 +1,17 @@
 import { Request, Response } from 'express';
-import { studentsService } from '@services/students.service';
+import { findMany } from '@services/students.service';
 import {
 	handleSuccess,
 	handleErrorServer,
 } from '@handlers/response.handler';
 import type { TStudentUser } from '@services/students.service';
 
-// GET /api/students
 export async function listStudents(
 	_req: Request,
 	res: Response,
 ) {
 	try {
-		const data: TStudentUser[] =
-			await studentsService.findAll();
+		const data: TStudentUser[] = await findMany();
 		return handleSuccess(
 			res,
 			200,
