@@ -5,39 +5,35 @@ import {
 	NotFoundPage,
 	EncargadoDashboardPage,
 	OffersPage,
-} from '@modules';
-import { LogbookPage } from '@modules/Logbook/components/pages/logbook-page';
-// import { Auth } from '@common/components/auth';
-import {
+	LogbookPage,
 	ReportPage,
 	SupervisorPage,
-} from '@modules/internship-evaluation/components/pages';
+} from '@modules';
+// import { Auth } from '@common/components/auth';
 
 function App() {
 	return (
 		<BrowserRouter>
 			<Routes>
-				{/*Public Routes */}
+				{/*Public Routes - Rutas publicas */}
 				<Route index element={<LoginPage />} />
-				{/* Internship evaluation public routes */}
-				<Route
-					path="internship/report"
-					element={<ReportPage />}
-				/>
-				<Route
-					path="internship/supervisor"
-					element={<SupervisorPage />}
-				/>
-				<Route path="/logbook" element={<LogbookPage />} />
 
 				{/*Private Routes - Protegidas por autenticación */}
 				{/* /app/nombre-ruta */}
-				{/* <Route element={<Auth />}></Route> */}
 				<Route path="app">
+					<Route
+						path="internship/report"
+						element={<ReportPage />}
+					/>
+					<Route
+						path="internship/supervisor"
+						element={<SupervisorPage />}
+					/>
 					<Route
 						path="internship-centers"
 						element={<InternshipCentersPage />}
 					/>
+					<Route path="logbook" element={<LogbookPage />} />
 					<Route
 						path="students"
 						element={<EncargadoDashboardPage />}

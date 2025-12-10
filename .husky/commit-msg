@@ -14,17 +14,18 @@ if [ "$msg_length" -lt "$MIN_LENGTH" ]; then
   exit 1
 fi
 
-ALLOWED_TYPES='feat|fix|chore|style|docs'
+ALLOWED_TYPES='feat|fix|chore|style|docs|refactor'
 
 pattern="^(${ALLOWED_TYPES})(\\([a-z0-9._-]+\\))?(!)?: .+"
 
 if ! echo "$header" | grep -Eq "$pattern"; then
-  echo "Error: El encabezado del commit debe comenzar con: feat, fix, chore, style, docs." >&2
+  echo "Error: El encabezado del commit debe comenzar con: feat, fix, chore, style, refactor, docs." >&2
   echo "Ejemplos válidos:" >&2
   echo "  feat: añadir formulario de registro" >&2
   echo "  fix(login): arreglar token en el login" >&2
   echo "  chore: actualizar dependencias" >&2
   echo "  style(ui): ajustar padding" >&2
+  echo "  refactor: ajustar estructura" >&2
   echo "  docs: actualizar README" >&2
   exit 1
 fi
