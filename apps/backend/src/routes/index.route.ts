@@ -1,9 +1,11 @@
 import { Express, Router } from 'express';
-import InternshipCentersRouter from '@routes/internship-centers.route';
-import InternshipEvaluationRouter from '@routes/internship-evaluation.route';
-import { studentsRouter } from './students.route';
-import LogbookRouter from '@routes/logbook-entries.route';
-import OffersRouter from '@routes/offers.route';
+import {
+	InternshipCentersRouter,
+	InternshipEvaluationRouter,
+	StudentsRouter,
+	LogbookRouter,
+	OffersRouter,
+} from '@routes';
 
 export function routerApi(app: Express) {
 	const api = Router();
@@ -12,7 +14,7 @@ export function routerApi(app: Express) {
 		'/internship-evaluations',
 		InternshipEvaluationRouter,
 	);
-	api.use('/students', studentsRouter);
+	api.use('/students', StudentsRouter);
 	api.use('/offers', OffersRouter);
 	api.use('/logbook-entries', LogbookRouter);
 

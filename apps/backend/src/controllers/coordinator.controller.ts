@@ -3,7 +3,7 @@ import { findMany } from '@services/coordinator.service';
 import {
 	handleSuccess,
 	handleErrorServer,
-} from '@handlers/response.handlers';
+} from '@handlers/response.handler';
 import type { TCoordinator } from '@services/coordinator.service';
 
 export async function listCoordinators(
