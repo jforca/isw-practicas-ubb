@@ -16,7 +16,7 @@ import {
 	InternshipCenter,
 	Supervisor,
 	Internship,
-	InternshipType,
+	OffersType,
 } from '@entities';
 
 export const AppDataSource = new DataSource({
@@ -38,7 +38,7 @@ export const AppDataSource = new DataSource({
 		InternshipCenter,
 		Supervisor,
 		Internship,
-		InternshipType,
+		OffersType,
 	],
 	synchronize: true,
 	logging: false,

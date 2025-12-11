@@ -5,7 +5,7 @@ import {
 } from 'typeorm';
 
 @Entity()
-export class InternshipType {
+export class OffersType {
 	@PrimaryGeneratedColumn()
 	id: number;
 

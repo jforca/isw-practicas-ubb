@@ -21,19 +21,21 @@ function App() {
 				{/*Private Routes - Protegidas por autenticación */}
 				{/* /app/nombre-ruta */}
 				<Route path="app">
-					<Route
-						path="internship/report"
-						element={<ReportPage />}
-					/>
-					<Route
-						path="internship/supervisor"
-						element={<SupervisorPage />}
-					/>
+					<Route path="internship">
+						<Route path="report" element={<ReportPage />} />
+						<Route
+							path="supervisor"
+							element={<SupervisorPage />}
+						/>
+					</Route>
+
 					<Route
 						path="internship-centers"
 						element={<InternshipCentersPage />}
 					/>
+
 					<Route path="logbook" element={<LogbookPage />} />
+
 					<Route
 						path="students"
 						element={<EncargadoDashboardPage />}

@@ -4,7 +4,10 @@ import {
 	CreateDateColumn,
 	UpdateDateColumn,
 	PrimaryGeneratedColumn,
+	OneToOne,
 } from 'typeorm';
+
+import { Document } from './documents.entity';
 
 @Entity()
 export class InternshipCenter {
@@ -22,6 +25,13 @@ export class InternshipCenter {
 
 	@Column({ type: 'varchar', length: 20 })
 	phone: string;
+
+	@OneToOne(
+		() => Document,
+		(document) => document.id,
+	)
+	@Column({ type: 'varchar', length: 255 })
+	convention_document_id: number;
 
 	@CreateDateColumn()
 	createdAt: Date;
