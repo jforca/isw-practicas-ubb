@@ -7,15 +7,8 @@
 		"start": "node --env-file=.env.production dist/main.js",
 		"dev": "tsx watch --tsconfig tsconfig.json --env-file=.env.development src/index.ts"
 	},
-	"authors": [
-		"Cesar Salazar"
-	],
 	"license": "ACADEMIC-USE-ONLY",
 	"private": true,
-	"repository": {
-		"type": "git",
-		"url": ""
-	},
 	"keywords": [
 		"ingenieria-software",
 		"api-rest",

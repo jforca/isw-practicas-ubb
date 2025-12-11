@@ -7,7 +7,7 @@ import {
 	ManyToOne,
 	JoinColumn,
 } from 'typeorm';
-import { InternshipType } from './internship-types.entity';
+import { OffersType } from './offers-types.entity';
 import { Coordinator } from './coordinators.entity';
 import { InternshipCenter } from './internship-centers.entity';
 
@@ -39,9 +39,9 @@ export class Offer {
 	})
 	status: OfferStatus;
 
-	@ManyToOne(() => InternshipType)
-	@JoinColumn({ name: 'internship_type_id' })
-	internshipType: InternshipType;
+	@ManyToOne(() => OffersType)
+	@JoinColumn({ name: 'offer_type_id' })
+	offerType: OffersType;
 
 	@ManyToOne(() => Coordinator)
 	@JoinColumn({ name: 'created_by' })

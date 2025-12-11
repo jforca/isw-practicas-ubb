@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { listStudents } from '@controllers/students.controller';
 
-export const studentsRouter = Router();
+const router = Router();
 
 // Lista todos los estudiantes (usuarios con rol student que están en students)
-studentsRouter.get('/', listStudents);
+router.get('/', listStudents);
+
+export default router;
