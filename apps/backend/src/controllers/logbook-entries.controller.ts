@@ -1,18 +1,24 @@
 import { Request, Response } from 'express';
-import { logbookEntriesService } from '@services/logbook-entries.service';
+import { LogbookEntriesServices } from '@services/logbook-entries.service';
 import {
 	handleSuccess,
 	handleErrorServer,
+	handleErrorClient,
 } from '@handlers/response.handler';
-import type { TLogbookEntry } from '@services/logbook-entries.service';
 
-async function findAll(_req: Request, res: Response) {
+async function findMany(_req: Request, res: Response) {
 	try {
-		// Llama al servicio para obtener los datos
-		const data: TLogbookEntry[] =
-			await logbookEntriesService.findAll();
+		const data = await LogbookEntriesServices.findMany();
 
-		// Maneja la respuesta exitosa
+		if (!data) {
+			return handleErrorServer(
+				res,
+				500,
+				'No se pudieron recuperar los registros',
+				null,
+			);
+		}
+
 		return handleSuccess(
 			res,
 			200,
@@ -20,16 +26,60 @@ async function findAll(_req: Request, res: Response) {
 			data,
 		);
 	} catch (err) {
-		// En caso de error
 		return handleErrorServer(
 			res,
 			500,
-			'Error al obtener los registros del libro de bitácora',
+			'Error interno al obtener los registros',
+			err,
+		);
+	}
+}
+
+async function createOne(req: Request, res: Response) {
+	try {
+		const { title, body, internshipId } = req.body;
+
+		if (!title || !body || !internshipId) {
+			return handleErrorClient(
+				res,
+				400,
+				'Faltan datos requeridos: title, body o internshipId',
+				null,
+			);
+		}
+
+		const data = await LogbookEntriesServices.createOne({
+			title,
+			body,
+			internshipId,
+		});
+
+		if (!data) {
+			return handleErrorServer(
+				res,
+				500,
+				'No se pudo crear el registro de bitácora',
+				null,
+			);
+		}
+
+		return handleSuccess(
+			res,
+			201,
+			'Bitácora creada con éxito',
+			data,
+		);
+	} catch (err) {
+		return handleErrorServer(
+			res,
+			500,
+			'Error interno al crear la bitácora',
 			err,
 		);
 	}
 }
 
 export const LogbookEntriesControllers = {
-	findAll,
+	findMany,
+	createOne,
 };

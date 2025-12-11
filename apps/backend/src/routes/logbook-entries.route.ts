@@ -3,6 +3,13 @@ import { LogbookEntriesControllers } from '@controllers/logbook-entries.controll
 
 const router = Router();
 
-router.get('/find-many', LogbookEntriesControllers.findAll);
+router.get(
+	'/find-many',
+	LogbookEntriesControllers.findMany,
+);
+router.post(
+	'/create-one',
+	LogbookEntriesControllers.createOne,
+);
 
 export default router;
