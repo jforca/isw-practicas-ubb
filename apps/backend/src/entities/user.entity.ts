@@ -16,8 +16,8 @@ export class User {
 	@PrimaryColumn({ type: 'text' })
 	id: string; // Better Auth
 
-	// @Column({ type: 'varchar', length: 13, unique: true })
-	// rut: string;
+	@Column({ type: 'varchar', length: 13, unique: true })
+	rut: string;
 
 	@Column({ type: 'varchar', length: 12, nullable: true })
 	phone: string;
@@ -39,9 +39,6 @@ export class User {
 		enum: ['student', 'supervisor', 'coordinator'],
 	})
 	user_role: TUserRole;
-
-	@Column({ type: 'varchar', length: 15 })
-	rut: string;
 
 	@CreateDateColumn()
 	createdAt: Date; // Better Auth
