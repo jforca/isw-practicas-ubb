@@ -36,7 +36,7 @@ export function InternshipCentersTemplate() {
 	];
 
 	return (
-		<section className="p-4">
+		<section>
 			<header className="mb-4">
 				<h2 className="text-2xl font-semibold">
 					Centros de práctica

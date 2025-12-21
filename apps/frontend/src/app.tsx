@@ -10,6 +10,7 @@ import {
 	SupervisorPage,
 } from '@modules';
 // import { Auth } from '@common/components/auth';
+import { Layout } from '@common/components/layout';
 
 function App() {
 	return (
@@ -20,33 +21,36 @@ function App() {
 
 				{/*Private Routes - Protegidas por autenticación */}
 				{/* /app/nombre-ruta */}
-				<Route path="app">
-					<Route path="internship">
-						<Route path="report" element={<ReportPage />} />
+				<Route>
+					<Route path="app" element={<Layout />}>
+						<Route path="internship">
+							<Route
+								path="report"
+								element={<ReportPage />}
+							/>
+							<Route
+								path="supervisor"
+								element={<SupervisorPage />}
+							/>
+						</Route>
+
 						<Route
-							path="supervisor"
-							element={<SupervisorPage />}
+							path="internship-centers"
+							element={<InternshipCentersPage />}
 						/>
+
+						<Route
+							path="logbook"
+							element={<LogbookPage />}
+						/>
+
+						<Route
+							path="students"
+							element={<EncargadoDashboardPage />}
+						/>
+						<Route path="offers" element={<OffersPage />} />
 					</Route>
-
-					<Route
-						path="internship-centers"
-						element={<InternshipCentersPage />}
-					/>
-
-					<Route path="logbook" element={<LogbookPage />} />
-
-					<Route
-						path="students"
-						element={<EncargadoDashboardPage />}
-					/>
-					<Route path="offers" element={<OffersPage />} />
 				</Route>
-
-				{/* <Route element={<AuthLayout />}>
-					<Route path="login" element={<Login />} />
-					<Route path="register" element={<Register />} />
-				</Route> */}
 
 				<Route path="*" element={<NotFoundPage />} />
 			</Routes>
