@@ -38,10 +38,10 @@ export function InternshipCentersTemplate() {
 	return (
 		<section>
 			<header className="mb-4">
-				<h2 className="text-2xl font-semibold">
+				<h2 className="title-2 font-bold">
 					Centros de práctica
 				</h2>
-				<p className="text-sm text-muted">
+				<p className="subtitle-2 text-muted text-base-content/60">
 					Listado simple de centros con contacto
 				</p>
 			</header>

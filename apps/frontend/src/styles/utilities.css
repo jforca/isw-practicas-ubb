@@ -13,7 +13,7 @@
     @apply text-7xl leading-21;
 }
 @utility title-2 {
-    @apply text-4xl;
+    @apply text-3xl;
 }
 @utility subtitle-1 {
     @apply text-xl;
