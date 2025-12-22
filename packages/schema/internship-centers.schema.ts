@@ -7,6 +7,12 @@ export const InternshipCentersSchema = z.object({
 	company_rut: z.string().max(20),
 	email: z.email(),
 	phone: z.string().regex(ChileanNumberRegex),
+	address: z.string().max(50),
+	description: z.string().max(70),
+	convention_document_id: z.coerce
+		.number()
+		.int()
+		.positive(),
 	createdAt: z.coerce.date(),
 	updatedAt: z.coerce.date(),
 });

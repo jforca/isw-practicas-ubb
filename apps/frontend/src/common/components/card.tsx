@@ -80,6 +80,33 @@ const Badge = ({ children, className }: ICardProps) => {
 	);
 };
 
+const Divider = ({ className }: { className?: string }) => {
+	return (
+		<div
+			className={`h-px border-solid bg-black/10 my-2 ${className || ''}`}
+		/>
+	);
+};
+
+const ToolTip = ({
+	children,
+	className,
+	dataTip,
+}: {
+	children?: React.ReactNode;
+	className?: string;
+	dataTip?: string;
+}) => {
+	return (
+		<div
+			className={`tooltip ${className || ''}`}
+			data-tip={dataTip}
+		>
+			{children}
+		</div>
+	);
+};
+
 Card.Container = Container;
 Card.Figure = Figure;
 Card.Body = Body;
@@ -88,3 +115,5 @@ Card.P = P;
 Card.Actions = Actions;
 Card.Button = Button;
 Card.Badge = Badge;
+Card.Divider = Divider;
+Card.ToolTip = ToolTip;

@@ -1,6 +1,9 @@
 import type { TInternshipCenter } from '@packages/schema/internship-centers.schema';
-import { InternshipCenterCards } from '../organisms/internship-center-cards';
-import { InternshipCenterHeader } from '../organisms/internship-center-header';
+import {
+	InternshipCenterCards,
+	InternshipCenterHeader,
+} from '@modules/internship-centers/components/organisms';
+import { SearchBar } from '@common/components/search-bar';
 
 export function InternshipCentersTemplate({
 	centers,
@@ -8,8 +11,9 @@ export function InternshipCentersTemplate({
 	centers: TInternshipCenter[];
 }) {
 	return (
-		<section>
+		<section className="section-base">
 			<InternshipCenterHeader />
+			<SearchBar placeholder="Buscar centros de práctica" />
 			<InternshipCenterCards centers={centers} />
 		</section>
 	);

@@ -1,10 +1,11 @@
-import { Outlet, Link, NavLink } from 'react-router';
+import { Outlet, NavLink } from 'react-router';
 import {
 	Menu,
-	Settings,
-	Pen,
+	UserCircle2,
 	Building,
-	Book,
+	Briefcase,
+	LogOut,
+	BookCheck,
 } from 'lucide-react';
 
 export function Layout() {
@@ -28,12 +29,9 @@ export function Layout() {
 								<Menu />
 							</label>
 						</div>
-						<Link
-							to="/app"
-							className="font-bold subtitle-1"
-						>
+						<h2 className="font-bold subtitle-1 hidden lg:flex">
 							Ubb practicas
-						</Link>
+						</h2>
 						<div className="flex-1 hidden lg:flex justify-center">
 							<ul className="menu menu-horizontal">
 								<li>
@@ -56,9 +54,22 @@ export function Layout() {
 											`flex flex-col items-center gap-1${isActive ? ' text-primary' : ''}`
 										}
 									>
-										<Book size={28} />
+										<Briefcase size={28} />
 										<span className="paragraph-1">
 											Ofertas
+										</span>
+									</NavLink>
+								</li>
+								<li>
+									<NavLink
+										to="/app/internship/report"
+										className={({ isActive }) =>
+											`flex flex-col items-center gap-1${isActive ? ' text-primary' : ''}`
+										}
+									>
+										<BookCheck size={28} />
+										<span className="paragraph-1">
+											Evaluaciones
 										</span>
 									</NavLink>
 								</li>
@@ -82,9 +93,11 @@ export function Layout() {
 									</div>
 								</div>
 								<div className="text-left ml-2">
-									<div className="text-sm">Nombre</div>
+									<div className="text-sm">
+										Nombre Apellido
+									</div>
 									<div className="text-xs text-base-content/60">
-										Cargo
+										Rol usuario
 									</div>
 								</div>
 							</button>
@@ -93,15 +106,22 @@ export function Layout() {
 								className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm mt-4"
 							>
 								<li>
-									<a href="/#">
-										<Pen /> Perfil
-									</a>
+									<NavLink
+										to="/app/user-profile"
+										className="text-base-content/80"
+									>
+										<UserCircle2 size={18} /> Perfil
+									</NavLink>
 								</li>
+
 								<li>
-									<a href="/#">
-										<Settings />
-										Configuración
-									</a>
+									<NavLink
+										to="/#"
+										className="text-base-content/80"
+									>
+										<LogOut size={18} />
+										Salir
+									</NavLink>
 								</li>
 							</ul>
 						</div>
@@ -115,11 +135,45 @@ export function Layout() {
 					></label>
 					<ul className="menu bg-base-200 min-h-full w-80 p-4">
 						{/* Sidebar content here */}
+						<h2 className="text-center font-bold subtitle-1 mb-4">
+							Ubb practicas
+						</h2>
 						<li>
-							<a href="/#">Sidebaa Item 1</a>
+							<NavLink
+								to="/app/internship-centers"
+								className={({ isActive }) =>
+									`flex items-center gap-1${isActive ? ' text-primary' : ''}`
+								}
+							>
+								<Building size={28} />
+								<span className="paragraph-1">
+									Centro de practica
+								</span>
+							</NavLink>
 						</li>
 						<li>
-							<a href="/#">Sidebaa Item 2</a>
+							<NavLink
+								to="/app/offers"
+								className={({ isActive }) =>
+									`flex items-center gap-1${isActive ? ' text-primary' : ''}`
+								}
+							>
+								<Briefcase size={28} />
+								<span className="paragraph-1">Ofertas</span>
+							</NavLink>
+						</li>
+						<li>
+							<NavLink
+								to="/app/internship/report"
+								className={({ isActive }) =>
+									`flex gap-1${isActive ? ' text-primary' : ''}`
+								}
+							>
+								<BookCheck size={28} />
+								<span className="paragraph-1">
+									Evaluaciones
+								</span>
+							</NavLink>
 						</li>
 					</ul>
 				</div>

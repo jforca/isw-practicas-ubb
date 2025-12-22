@@ -26,6 +26,12 @@ export class InternshipCenter {
 	@Column({ type: 'varchar', length: 20 })
 	phone: string;
 
+	@Column({ type: 'varchar', length: 50 })
+	address: string;
+
+	@Column({ type: 'varchar', length: 70 })
+	description: string;
+
 	@OneToOne(
 		() => Document,
 		(document) => document.id,
