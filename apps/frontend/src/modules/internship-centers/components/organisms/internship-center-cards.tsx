@@ -1,17 +1,18 @@
 import { useId } from 'react';
 import type { TInternshipCenter } from '@packages/schema/internship-centers.schema';
-import { Card } from '@common/components/card';
+import { Card, Modal } from '@common/components';
 import {
 	Eye,
 	PenLine,
 	Trash,
 	FileText,
+	IdCard,
 } from 'lucide-react';
 
 export function InternshipCenterCards({
-	centers,
+	data,
 }: {
-	centers: TInternshipCenter[];
+	data: TInternshipCenter[];
 }) {
 	const id = useId();
 
@@ -20,12 +21,12 @@ export function InternshipCenterCards({
 			<p className="paragraph-1 text-base-content/60">
 				Mostrando{' '}
 				<span className="text-primary font-bold">
-					{centers.length}
+					{data.length}
 				</span>{' '}
 				centros de prácticas
 			</p>
 			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-				{centers.map((c) => (
+				{data.map((c) => (
 					<Card
 						key={`${id}-${c.id}`}
 						className="hover:scale-102 transition-transform"
@@ -53,9 +54,7 @@ export function InternshipCenterCards({
 							</Card.Container>
 
 							<Card.P className="text-base-content/80">
-								Descripción breve o información adicional
-								sobre el centro. Aquí Se muestran los datos
-								de el centro de practicas
+								{c.description}
 							</Card.P>
 
 							<Card.Divider />
@@ -66,30 +65,100 @@ export function InternshipCenterCards({
 								</Card.Badge>
 
 								<Card.Actions className="justify-end">
-									<Card.ToolTip
-										dataTip="Ver"
-										className="tooltip-primary"
-									>
-										<Card.Button className="btn-primary btn-soft rounded-full size-10">
-											<Eye className="scale-300" />
-										</Card.Button>
-									</Card.ToolTip>
-									<Card.ToolTip
-										dataTip="Editar"
-										className="tooltip-success"
-									>
-										<Card.Button className="btn-success btn-soft rounded-full size-10">
-											<PenLine className="scale-300" />
-										</Card.Button>
-									</Card.ToolTip>
-									<Card.ToolTip
-										dataTip="Eliminar"
-										className="tooltip-error"
-									>
-										<Card.Button className="btn-error btn-soft rounded-full size-10">
-											<Trash className="scale-300" />
-										</Card.Button>
-									</Card.ToolTip>
+									<Modal>
+										<Card.ToolTip
+											dataTip="Ver"
+											className="tooltip-primary"
+										>
+											<Modal.Trigger className="btn btn-primary btn-soft rounded-full size-10">
+												<Eye className="scale-300" />
+											</Modal.Trigger>
+										</Card.ToolTip>
+
+										<Modal.Content className="container">
+											<Modal.Header className="text-primary">
+												{c.legal_name}
+											</Modal.Header>
+
+											<Modal.Body>
+												<h3 className="text-base-content/80">
+													<IdCard
+														size={18}
+														className="inline mr-2"
+													/>
+													Rut: {c.company_rut}
+												</h3>
+												<h3>Dirección: {c.address}</h3>
+												<h3>
+													Descripción: {c.description}
+												</h3>
+												<h3>
+													Convenio:{' '}
+													{c.convention_document_id}
+												</h3>
+												<h3>Email: {c.email}</h3>
+												<h3>Teléfono: {c.phone}</h3>
+											</Modal.Body>
+											<Modal.Actions>
+												<button
+													type="button"
+													className="btn btn-success"
+												>
+													<PenLine size={18} />
+													Editar
+												</button>
+												<button
+													type="button"
+													className="btn btn-error"
+												>
+													<Trash size={18} />
+													Eliminar
+												</button>
+											</Modal.Actions>
+										</Modal.Content>
+									</Modal>
+
+									<Modal>
+										<Card.ToolTip
+											dataTip="Editar"
+											className="tooltip-success"
+										>
+											<Modal.Trigger className="btn btn-success btn-soft rounded-full size-10">
+												<PenLine className="scale-300" />
+											</Modal.Trigger>
+										</Card.ToolTip>
+
+										<Modal.Content>
+											<Modal.Header>
+												Título del Modal
+											</Modal.Header>
+
+											<Modal.Body>
+												<p>Contenido del modal aquí...</p>
+											</Modal.Body>
+										</Modal.Content>
+									</Modal>
+
+									<Modal>
+										<Card.ToolTip
+											dataTip="Eliminar"
+											className="tooltip-error"
+										>
+											<Modal.Trigger className="btn btn-error btn-soft rounded-full size-10">
+												<Trash className="scale-300" />
+											</Modal.Trigger>
+										</Card.ToolTip>
+
+										<Modal.Content>
+											<Modal.Header>
+												Título del Modal
+											</Modal.Header>
+
+											<Modal.Body>
+												<p>Contenido del modal aquí...</p>
+											</Modal.Body>
+										</Modal.Content>
+									</Modal>
 								</Card.Actions>
 							</Card.Container>
 						</Card.Body>

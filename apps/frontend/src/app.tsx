@@ -9,8 +9,8 @@ import {
 	ReportPage,
 	SupervisorPage,
 } from '@modules';
-// import { Auth } from '@common/components/auth';
-import { Layout } from '@common/components/layout';
+// import { Auth } from '@common/components';
+import { Layout } from '@common/components';
 
 function App() {
 	return (

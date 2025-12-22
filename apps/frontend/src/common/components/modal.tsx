@@ -4,6 +4,7 @@ import {
 	useId,
 	type ReactNode,
 } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 // Context para compartir el ID del modal entre componentes
@@ -47,7 +48,7 @@ interface IModalTriggerProps {
 
 function ModalTrigger({
 	children,
-	className = 'btn',
+	className,
 }: IModalTriggerProps) {
 	const { modalId } = useModalContext();
 
@@ -83,7 +84,7 @@ function ModalContent({
 }: IModalContentProps) {
 	const { modalId } = useModalContext();
 
-	return (
+	const modalElement = (
 		<dialog id={modalId} className="modal">
 			<div className={`modal-box ${className}`}>
 				{showCloseButton && (
@@ -93,7 +94,7 @@ function ModalContent({
 							className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
 							aria-label="Cerrar modal"
 						>
-							<X size={20} />
+							<X size={20} className="stroke-error" />
 						</button>
 					</form>
 				)}
@@ -106,6 +107,8 @@ function ModalContent({
 			</form>
 		</dialog>
 	);
+
+	return createPortal(modalElement, document.body);
 }
 
 // Subcomponente: Header del modal
