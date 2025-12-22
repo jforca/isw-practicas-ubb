@@ -1,7 +1,12 @@
 import { useId } from 'react';
 import type { TInternshipCenter } from '@packages/schema/internship-centers.schema';
 import { Card } from '@common/components/card';
-import { Eye, PenLine, Trash } from 'lucide-react';
+import {
+	Eye,
+	PenLine,
+	Trash,
+	FileText,
+} from 'lucide-react';
 
 export function InternshipCenterCards({
 	centers,
@@ -26,13 +31,26 @@ export function InternshipCenterCards({
 						className="hover:scale-102 transition-transform"
 					>
 						<Card.Body>
-							<Card.Title className="text-primary font-bold">
-								{c.legal_name}
-							</Card.Title>
+							<Card.Container className="flex justify-between">
+								<Card.Container>
+									<Card.Title className="text-primary font-bold">
+										{c.legal_name}
+									</Card.Title>
 
-							<Card.P className="paragraph-2 text-base-content/60">
-								{c.address}
-							</Card.P>
+									<Card.P className="paragraph-2 text-base-content/60">
+										{c.address}
+									</Card.P>
+								</Card.Container>
+
+								<Card.ToolTip
+									dataTip="Convenio"
+									className="tooltip-info"
+								>
+									<Card.Button className="btn-info btn-soft rounded-full size-10">
+										<FileText className="scale-300" />
+									</Card.Button>
+								</Card.ToolTip>
+							</Card.Container>
 
 							<Card.P className="text-base-content/80">
 								Descripción breve o información adicional
@@ -50,7 +68,7 @@ export function InternshipCenterCards({
 								<Card.Actions className="justify-end">
 									<Card.ToolTip
 										dataTip="Ver"
-										className="tooltip-primary text-xs"
+										className="tooltip-primary"
 									>
 										<Card.Button className="btn-primary btn-soft rounded-full size-10">
 											<Eye className="scale-300" />
@@ -58,7 +76,7 @@ export function InternshipCenterCards({
 									</Card.ToolTip>
 									<Card.ToolTip
 										dataTip="Editar"
-										className="tooltip-success text-xs"
+										className="tooltip-success"
 									>
 										<Card.Button className="btn-success btn-soft rounded-full size-10">
 											<PenLine className="scale-300" />
@@ -66,7 +84,7 @@ export function InternshipCenterCards({
 									</Card.ToolTip>
 									<Card.ToolTip
 										dataTip="Eliminar"
-										className="tooltip-error text-xs"
+										className="tooltip-error"
 									>
 										<Card.Button className="btn-error btn-soft rounded-full size-10">
 											<Trash className="scale-300" />
