@@ -6,7 +6,7 @@ interface ICardProps {
 export function Card({ children, className }: ICardProps) {
 	return (
 		<div
-			className={`card bg-base-100 shadow-sm ${className}`}
+			className={`card bg-base-100 shadow-sm${className ? ` ${className}` : ''}`}
 		>
 			{children}
 		</div>
@@ -15,19 +15,23 @@ export function Card({ children, className }: ICardProps) {
 
 const Body = ({ children, className }: ICardProps) => {
 	return (
-		<div className={`card-body ${className}`}>
+		<div
+			className={`card-body${className ? ` ${className}` : ''}`}
+		>
 			{children}
 		</div>
 	);
 };
 
 const P = ({ children, className }: ICardProps) => {
-	return <p className={`${className}`}>{children}</p>;
+	return <p className={className}>{children}</p>;
 };
 
 const Title = ({ children, className }: ICardProps) => {
 	return (
-		<h2 className={`card-title ${className}`}>
+		<h2
+			className={`card-title${className ? ` ${className}` : ''}`}
+		>
 			{children}
 		</h2>
 	);
@@ -35,7 +39,9 @@ const Title = ({ children, className }: ICardProps) => {
 
 const Actions = ({ children, className }: ICardProps) => {
 	return (
-		<div className={`card-actions ${className}`}>
+		<div
+			className={`card-actions${className ? ` ${className}` : ''}`}
+		>
 			{children}
 		</div>
 	);
@@ -43,7 +49,10 @@ const Actions = ({ children, className }: ICardProps) => {
 
 const Button = ({ children, className }: ICardProps) => {
 	return (
-		<button type="button" className={`btn ${className}`}>
+		<button
+			type="button"
+			className={`btn${className ? ` ${className}` : ''}`}
+		>
 			{children}
 		</button>
 	);
@@ -51,17 +60,23 @@ const Button = ({ children, className }: ICardProps) => {
 
 const Figure = ({ children, className }: ICardProps) => {
 	return (
-		<figure className={`${className}`}>{children}</figure>
+		<figure className={`${className || ''}`}>
+			{children}
+		</figure>
 	);
 };
 
 const Container = ({ children, className }: ICardProps) => {
-	return <div className={`${className}`}>{children}</div>;
+	return (
+		<div className={`${className || ''}`}>{children}</div>
+	);
 };
 
 const Badge = ({ children, className }: ICardProps) => {
 	return (
-		<div className={`badge ${className}`}>{children}</div>
+		<div className={`badge ${className || ''}`}>
+			{children}
+		</div>
 	);
 };
 

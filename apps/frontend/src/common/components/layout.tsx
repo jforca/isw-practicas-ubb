@@ -1,4 +1,4 @@
-import { Outlet, Link } from 'react-router';
+import { Outlet, Link, NavLink } from 'react-router';
 import {
 	Menu,
 	Settings,
@@ -37,26 +37,30 @@ export function Layout() {
 						<div className="flex-1 hidden lg:flex justify-center">
 							<ul className="menu menu-horizontal">
 								<li>
-									<Link
+									<NavLink
 										to="/app/internship-centers"
-										className="flex flex-col items-center gap-1"
+										className={({ isActive }) =>
+											`flex flex-col items-center gap-1${isActive ? ' text-primary' : ''}`
+										}
 									>
 										<Building size={28} />
 										<span className="paragraph-1">
 											Centro de practica
 										</span>
-									</Link>
+									</NavLink>
 								</li>
 								<li>
-									<Link
+									<NavLink
 										to="/app/offers"
-										className="flex flex-col items-center gap-1"
+										className={({ isActive }) =>
+											`flex flex-col items-center gap-1${isActive ? ' text-primary' : ''}`
+										}
 									>
 										<Book size={28} />
 										<span className="paragraph-1">
 											Ofertas
 										</span>
-									</Link>
+									</NavLink>
 								</li>
 							</ul>
 						</div>
