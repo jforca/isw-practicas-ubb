@@ -7,6 +7,9 @@ import {
 	Trash,
 	FileText,
 	IdCard,
+	MapPin,
+	Phone,
+	Mail,
 } from 'lucide-react';
 
 export function InternshipCenterCards({
@@ -76,30 +79,93 @@ export function InternshipCenterCards({
 										</Card.ToolTip>
 
 										<Modal.Content className="container">
-											<Modal.Header className="text-primary">
+											<Modal.Header className="text-primary title-2">
 												{c.legal_name}
 											</Modal.Header>
 
-											<Modal.Body>
-												<h3 className="text-base-content/80">
-													<IdCard
-														size={18}
-														className="inline mr-2"
-													/>
-													Rut: {c.company_rut}
-												</h3>
-												<h3>Dirección: {c.address}</h3>
-												<h3>
-													Descripción: {c.description}
-												</h3>
-												<h3>
-													Convenio:{' '}
-													{c.convention_document_id}
-												</h3>
-												<h3>Email: {c.email}</h3>
-												<h3>Teléfono: {c.phone}</h3>
+											<Modal.Body className="flex flex-col gap-4">
+												<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+													<div className="flex flex-col gap-2 text-base-content/80">
+														<h3>
+															<IdCard
+																size={18}
+																className="inline mr-2"
+															/>
+															Rut Empresa
+														</h3>
+														<p className="bg-gray-200 rounded-lg p-2">
+															{c.company_rut}
+														</p>
+													</div>
+
+													<div className="flex flex-col gap-2 text-base-content/80">
+														<h3>
+															<FileText
+																size={18}
+																className="inline mr-2"
+															/>
+															Numero Convenio
+														</h3>
+														<p className="bg-gray-200 rounded-lg p-2">
+															{c.convention_document_id}
+														</p>
+													</div>
+
+													<div className="flex flex-col gap-2 text-base-content/80">
+														<h3>
+															<Phone
+																size={18}
+																className="inline mr-2"
+															/>
+															Telefono
+														</h3>
+														<p className="bg-gray-200 rounded-lg p-2">
+															{c.phone}
+														</p>
+													</div>
+
+													<div className="flex flex-col gap-2 text-base-content/80">
+														<h3>
+															<Mail
+																size={18}
+																className="inline mr-2"
+															/>
+															Correo Electrónico
+														</h3>
+														<p className="bg-gray-200 rounded-lg p-2">
+															{c.email}
+														</p>
+													</div>
+												</div>
+
+												<div className="flex flex-col gap-2 text-base-content/80">
+													<h3>
+														<MapPin
+															size={18}
+															className="inline mr-2"
+														/>
+														Dirección
+													</h3>
+													<p className="bg-gray-200 rounded-lg p-2">
+														{c.address}
+													</p>
+												</div>
+
+												<div className="flex flex-col gap-2 text-base-content/80 basis-1/2">
+													<h3>Descripción</h3>
+													<p className="bg-gray-200 rounded-lg p-2">
+														{c.description}
+													</p>
+												</div>
 											</Modal.Body>
 											<Modal.Actions>
+												<button
+													type="button"
+													className="btn btn-info"
+												>
+													<FileText size={18} />
+													Ver Convenio
+												</button>
 												<button
 													type="button"
 													className="btn btn-success"
