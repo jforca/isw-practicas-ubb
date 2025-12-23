@@ -194,14 +194,130 @@ export function InternshipCenterCards({
 											</Modal.Trigger>
 										</Card.ToolTip>
 
-										<Modal.Content>
-											<Modal.Header>
-												Título del Modal
+										<Modal.Content className="container">
+											<Modal.Header className="text-primary title-2">
+												{c.legal_name}
 											</Modal.Header>
 
-											<Modal.Body>
-												<p>Contenido del modal aquí...</p>
+											<Modal.Body className="flex flex-col gap-4">
+												<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+													<div className="flex flex-col gap-2 text-base-content/80">
+														<h3>
+															<IdCard
+																size={18}
+																className="inline mr-2"
+															/>
+															Rut Empresa
+														</h3>
+
+														<input
+															type="text"
+															defaultValue={c.company_rut}
+															className="input w-full rounded-lg"
+														/>
+													</div>
+
+													<div className="flex flex-col gap-2 text-base-content/80">
+														<h3>
+															<FileText
+																size={18}
+																className="inline mr-2"
+															/>
+															Numero Convenio
+														</h3>
+
+														<input
+															type="number"
+															className="input w-full rounded-lg"
+															disabled
+															defaultValue={
+																c.convention_document_id
+															}
+														/>
+													</div>
+
+													<div className="flex flex-col gap-2 text-base-content/80">
+														<h3>
+															<Phone
+																size={18}
+																className="inline mr-2"
+															/>
+															Telefono
+														</h3>
+
+														<input
+															type="tel"
+															defaultValue={c.phone}
+															className="input w-full rounded-lg"
+														/>
+													</div>
+
+													<div className="flex flex-col gap-2 text-base-content/80">
+														<h3>
+															<Mail
+																size={18}
+																className="inline mr-2"
+															/>
+															Correo Electrónico
+														</h3>
+
+														<input
+															type="email"
+															defaultValue={c.email}
+															className="input w-full rounded-lg"
+														/>
+													</div>
+												</div>
+
+												<div className="flex flex-col gap-2 text-base-content/80">
+													<h3>
+														<MapPin
+															size={18}
+															className="inline mr-2"
+														/>
+														Dirección
+													</h3>
+
+													<input
+														type="text"
+														defaultValue={c.address}
+														className="input w-full rounded-lg"
+													/>
+												</div>
+
+												<div className="flex flex-col gap-2 text-base-content/80 basis-1/2">
+													<h3>Descripción</h3>
+
+													<input
+														type="text"
+														defaultValue={c.description}
+														className="input w-full rounded-lg"
+													/>
+												</div>
 											</Modal.Body>
+											<Modal.Actions>
+												<button
+													type="button"
+													className="btn btn-info btn-soft"
+												>
+													<FileText size={18} />
+													Subir Convenio
+												</button>
+												<button
+													type="button"
+													className="btn btn-error btn-soft"
+												>
+													<Trash size={18} />
+													Cancelar
+												</button>
+												<button
+													type="button"
+													className="btn btn-success btn-soft"
+												>
+													<PenLine size={18} />
+													Guardar Edición
+												</button>
+											</Modal.Actions>
 										</Modal.Content>
 									</Modal>
 
@@ -215,14 +331,43 @@ export function InternshipCenterCards({
 											</Modal.Trigger>
 										</Card.ToolTip>
 
-										<Modal.Content>
-											<Modal.Header>
-												Título del Modal
+										<Modal.Content className="container">
+											<Modal.Header className="text-error title-2">
+												¿Estás seguro que deseas eliminar
+												este centro de prácticas?
 											</Modal.Header>
 
-											<Modal.Body>
-												<p>Contenido del modal aquí...</p>
+											<Modal.Body className="flex flex-col gap-4">
+												<div className="bg-neutral/10 border-l-4 border-neutral rounded-lg p-4">
+													<p className="font-bold text-neutral mb-2">
+														Advertencia: Esta acción no se
+														puede deshacer
+													</p>
+													<p className="text-base-content/80 text-sm">
+														Se eliminará permanentemente:
+													</p>
+													<div className="mt-3 p-3 bg-base-100 rounded-lg">
+														<p className="font-semibold text-primary">
+															{c.legal_name}
+														</p>
+													</div>
+												</div>
 											</Modal.Body>
+											<Modal.Actions>
+												<button
+													type="button"
+													className="btn btn-neutral btn-soft"
+												>
+													Cancelar
+												</button>
+												<button
+													type="button"
+													className="btn btn-error btn-soft"
+												>
+													<Trash size={18} />
+													Eliminar
+												</button>
+											</Modal.Actions>
 										</Modal.Content>
 									</Modal>
 								</Card.Actions>
