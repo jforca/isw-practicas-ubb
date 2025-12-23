@@ -91,5 +91,6 @@ export async function deleteStudent(id: string) {
 			'Error al eliminar el estudiante:',
 			error,
 		);
+		return false;
 	}
 }
