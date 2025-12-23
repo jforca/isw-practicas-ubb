@@ -77,3 +77,19 @@ export async function updateStudent(
 		return null;
 	}
 }
+
+export async function deleteStudent(id: string) {
+	try {
+		const deleteStudent = await userRepo.delete({
+			id,
+			user_role: 'student',
+		});
+
+		return (deleteStudent.affected ?? 0) > 0;
+	} catch (error) {
+		console.error(
+			'Error al eliminar el estudiante:',
+			error,
+		);
+	}
+}
