@@ -1,51 +1,97 @@
 import { AppDataSource } from '@config/db.config';
 import { InternshipCenter } from '@entities/internship-centers.entity';
 
-const internshipsCenter = AppDataSource.getRepository(
+const internshipCenterRepository =
+	AppDataSource.getRepository(InternshipCenter);
+
+type TCreateInternshipCenterData = Omit<
 	InternshipCenter,
-);
+	'id' | 'createdAt' | 'updatedAt'
+>;
+
+type TUpdateInternshipCenterData =
+	Partial<TCreateInternshipCenterData>;
 
 async function findOne(id: number) {
-	try {
-		const interships = await internshipsCenter.findOneBy({
+	const internshipCenter =
+		await internshipCenterRepository.findOneBy({
 			id,
 		});
 
-		return interships;
-	} catch (error) {
-		console.error(
-			'Error finding internship center:',
-			error,
-		);
-	}
+	return internshipCenter;
 }
 
-async function findMany() {
-	try {
-		const interships = await internshipsCenter.find();
+async function findMany(offset: number, limit: number) {
+	const [data, total] =
+		await internshipCenterRepository.findAndCount({
+			skip: offset,
+			take: limit,
+			order: { createdAt: 'DESC' },
+		});
 
-		return interships;
-	} catch (error) {
-		console.error(
-			'Error finding internship centers:',
-			error,
-		);
-	}
+	return {
+		data,
+		pagination: {
+			total,
+			offset,
+			limit,
+			hasMore: offset + limit < total,
+		},
+	};
 }
 
-async function updateOne() {}
+async function createOne(
+	data: TCreateInternshipCenterData,
+) {
+	const newInternshipCenter =
+		internshipCenterRepository.create(data);
+	const savedInternshipCenter =
+		await internshipCenterRepository.save(
+			newInternshipCenter,
+		);
 
-async function deleteOne() {}
+	return savedInternshipCenter;
+}
 
-async function deleteMany() {}
+async function updateOne(
+	id: number,
+	data: TUpdateInternshipCenterData,
+) {
+	const internshipCenter =
+		await internshipCenterRepository.findOneBy({
+			id,
+		});
 
-async function createOne() {}
+	if (!internshipCenter) {
+		return null;
+	}
+
+	Object.assign(internshipCenter, data);
+	const updatedInternshipCenter =
+		await internshipCenterRepository.save(internshipCenter);
+
+	return updatedInternshipCenter;
+}
+
+async function deleteOne(id: number) {
+	const internshipCenter =
+		await internshipCenterRepository.findOneBy({
+			id,
+		});
+
+	if (!internshipCenter) {
+		return null;
+	}
+
+	await internshipCenterRepository.remove(internshipCenter);
+
+	return true;
+}
 
 export const InternshipCenterServices = {
 	findOne,
 	findMany,
 	updateOne,
 	deleteOne,
-	deleteMany,
 	createOne,
 };

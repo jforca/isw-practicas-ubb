@@ -11,5 +11,17 @@ router.get(
 	'/find-many',
 	InternshipCenterControllers.findMany,
 );
+router.post(
+	'/create-one',
+	InternshipCenterControllers.createOne,
+);
+router.put(
+	'/update-one/:id',
+	InternshipCenterControllers.updateOne,
+);
+router.delete(
+	'/delete-one/:id',
+	InternshipCenterControllers.deleteOne,
+);
 
 export default router;

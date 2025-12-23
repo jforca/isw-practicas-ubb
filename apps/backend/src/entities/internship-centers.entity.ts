@@ -36,7 +36,7 @@ export class InternshipCenter {
 		() => Document,
 		(document) => document.id,
 	)
-	@Column({ type: 'varchar', length: 255 })
+	@Column({ type: 'varchar', length: 255, nullable: true })
 	convention_document_id: number;
 
 	@CreateDateColumn()

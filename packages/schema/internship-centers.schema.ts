@@ -12,7 +12,8 @@ export const InternshipCentersSchema = z.object({
 	convention_document_id: z.coerce
 		.number()
 		.int()
-		.positive(),
+		.positive()
+		.nullable(),
 	createdAt: z.coerce.date(),
 	updatedAt: z.coerce.date(),
 });
