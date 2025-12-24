@@ -11,11 +11,11 @@ export type TPagination = {
 const initialPagination: TPagination = {
 	total: 0,
 	offset: 0,
-	limit: 10,
+	limit: 5,
 	hasMore: false,
 };
 
-export function UseInternshipCenter() {
+export function UseFindManyInternshipCenter() {
 	const [data, setData] = useState<TInternshipCenter[]>([]);
 	const [pagination, setPagination] = useState<TPagination>(
 		initialPagination,
@@ -23,7 +23,7 @@ export function UseInternshipCenter() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	const findMany = useCallback(
+	const handleFindMany = useCallback(
 		async (offset: number, limit: number) => {
 			setIsLoading(true);
 			setError(null);
@@ -55,37 +55,37 @@ export function UseInternshipCenter() {
 
 	const goToPage = useCallback(
 		(page: number) => {
-			findMany(
+			handleFindMany(
 				(page - 1) * pagination.limit,
 				pagination.limit,
 			);
 		},
-		[pagination.limit, findMany],
+		[pagination.limit, handleFindMany],
 	);
 
 	const nextPage = useCallback(() => {
 		if (pagination.hasMore) {
-			findMany(
+			handleFindMany(
 				pagination.offset + pagination.limit,
 				pagination.limit,
 			);
 		}
-	}, [pagination, findMany]);
+	}, [pagination, handleFindMany]);
 
 	const prevPage = useCallback(() => {
 		if (pagination.offset > 0) {
-			findMany(
+			handleFindMany(
 				Math.max(0, pagination.offset - pagination.limit),
 				pagination.limit,
 			);
 		}
-	}, [pagination, findMany]);
+	}, [pagination, handleFindMany]);
 
 	const changeLimit = useCallback(
 		(newLimit: number) => {
-			findMany(0, newLimit);
+			handleFindMany(0, newLimit);
 		},
-		[findMany],
+		[handleFindMany],
 	);
 
 	const currentPage =
@@ -101,7 +101,7 @@ export function UseInternshipCenter() {
 		error,
 		currentPage,
 		totalPages,
-		findMany,
+		handleFindMany,
 		goToPage,
 		nextPage,
 		prevPage,

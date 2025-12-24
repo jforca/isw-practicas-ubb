@@ -1,5 +1,5 @@
 import type { TInternshipCenter } from '@packages/schema/internship-centers.schema';
-import type { TPagination } from '@modules/internship-centers/hooks/internship-center-hook';
+import type { TPagination } from '@modules/internship-centers/hooks/find-many-internship-center.hook';
 import {
 	InternshipCenterCards,
 	InternshipCenterHeader,

@@ -20,7 +20,7 @@ import {
 	Pagination,
 	PaginationInfo,
 } from '@modules/internship-centers/components/molecules';
-import type { TPagination } from '@modules/internship-centers/hooks/internship-center-hook';
+import type { TPagination } from '@modules/internship-centers/hooks/find-many-internship-center.hook';
 
 type TInternshipCenterCardsProps = {
 	data: TInternshipCenter[];

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { InternshipCentersTemplate } from '@modules/internship-centers/components/templates/internship-centers-template';
-import { UseInternshipCenter } from '@modules/internship-centers/hooks/internship-center-hook';
+import { UseFindManyInternshipCenter } from '@modules/internship-centers/hooks/find-many-internship-center.hook';
 
 export function InternshipCentersPage() {
 	const {
@@ -10,16 +10,16 @@ export function InternshipCentersPage() {
 		error,
 		currentPage,
 		totalPages,
-		findMany,
+		handleFindMany,
 		goToPage,
 		nextPage,
 		prevPage,
 		changeLimit,
-	} = UseInternshipCenter();
+	} = UseFindManyInternshipCenter();
 
 	useEffect(() => {
-		findMany(0, 5);
-	}, [findMany]);
+		handleFindMany(0, 5);
+	}, [handleFindMany]);
 
 	return (
 		<InternshipCentersTemplate
