@@ -124,6 +124,11 @@ function InternshipCenterCard({
 		description: c.description,
 	});
 
+	// Estado para el archivo de convenio
+	const [conventionFile, setConventionFile] =
+		useState<File | null>(null);
+	const hasConvention = c.convention_document_id !== null;
+
 	// Referencias a los modales para cerrarlos programáticamente
 	const editModalRef = useRef<HTMLDialogElement>(null);
 	const deleteModalRef = useRef<HTMLDialogElement>(null);
@@ -177,6 +182,20 @@ function InternshipCenterCard({
 			address: c.address,
 			description: c.description,
 		});
+		setConventionFile(null);
+	};
+
+	// Handler para el archivo de convenio
+	const handleFileChange = (
+		e: React.ChangeEvent<HTMLInputElement>,
+	) => {
+		const file = e.target.files?.[0];
+		if (file && file.type === 'application/pdf') {
+			setConventionFile(file);
+		} else if (file) {
+			alert('Solo se permiten archivos PDF');
+			e.target.value = '';
+		}
 	};
 
 	return (
@@ -192,12 +211,24 @@ function InternshipCenterCard({
 						</Card.P>
 					</Card.Container>
 					<Card.ToolTip
-						dataTip="Convenio"
-						className="tooltip-info"
+						dataTip={
+							hasConvention
+								? 'Ver Convenio'
+								: 'Sin Convenio'
+						}
+						className={
+							hasConvention
+								? 'tooltip-info'
+								: 'tooltip-warning'
+						}
 					>
-						<Card.Button className="btn-info btn-soft rounded-full size-10">
+						<button
+							type="button"
+							className={`btn btn-info btn-soft rounded-full size-10 ${!hasConvention ? 'btn-disabled opacity-50 cursor-not-allowed' : ''}`}
+							disabled={!hasConvention}
+						>
 							<FileText className="scale-300" />
-						</Card.Button>
+						</button>
 					</Card.ToolTip>
 				</Card.Container>
 
@@ -468,8 +499,72 @@ function InternshipCenterCard({
 												disabled={isUpdating}
 											/>
 										</div>
+										{/* Sección de Convenio */}
+										<div className="flex flex-col gap-2 text-base-content/80">
+											<h3>
+												<FileText
+													size={18}
+													className="inline mr-2"
+												/>
+												Convenio (PDF)
+											</h3>
+											<div className="flex flex-col gap-2">
+												{hasConvention && (
+													<div className="flex items-center gap-2 p-2 bg-success/10 rounded-lg">
+														<FileText
+															size={16}
+															className="text-success"
+														/>
+														<span className="text-sm text-success">
+															Convenio actual: ID #
+															{c.convention_document_id}
+														</span>
+													</div>
+												)}
+												{!hasConvention && (
+													<div className="flex items-center gap-2 p-2 bg-warning/10 rounded-lg">
+														<FileText
+															size={16}
+															className="text-warning"
+														/>
+														<span className="text-sm text-warning">
+															No hay convenio cargado
+														</span>
+													</div>
+												)}
+												<input
+													type="file"
+													accept="application/pdf"
+													onChange={handleFileChange}
+													className="file-input file-input-bordered w-full"
+													disabled={isUpdating}
+												/>
+												{conventionFile && (
+													<div className="flex items-center gap-2 p-2 bg-info/10 rounded-lg">
+														<FileText
+															size={16}
+															className="text-info"
+														/>
+														<span className="text-sm text-info">
+															Nuevo archivo:{' '}
+															{conventionFile.name}
+														</span>
+													</div>
+												)}
+											</div>
+										</div>
 									</div>
 									<div className="modal-action">
+										<button
+											type="button"
+											className={`btn btn-info btn-soft ${!hasConvention ? 'btn-disabled' : ''}`}
+											disabled={
+												!hasConvention || isUpdating
+											}
+										>
+											<FileText size={18} />
+											Ver Convenio
+										</button>
 										<button
 											type="button"
 											className="btn btn-error btn-soft"
