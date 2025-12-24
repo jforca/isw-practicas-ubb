@@ -8,103 +8,6 @@ import {
 import { z } from 'zod/v4';
 import { InternshipCentersSchema } from '@packages/schema/internship-centers.schema';
 
-const PaginationSchema = z.object({
-	offset: z.coerce.number().int().nonnegative().default(0),
-	limit: z.coerce
-		.number()
-		.int()
-		.positive()
-		.max(100)
-		.default(10),
-});
-
-async function findOne(req: Request, res: Response) {
-	const { data, error } = InternshipCentersSchema.pick({
-		id: true,
-	}).safeParse({ id: req.params.id });
-
-	if (error) {
-		handleErrorClient(
-			res,
-			400,
-			'Id no válido',
-			'Id debe ser un número entero positivo',
-		);
-		return;
-	}
-
-	const { id } = data;
-
-	try {
-		const response =
-			await InternshipCenterServices.findOne(id);
-
-		if (!response) {
-			handleErrorClient(
-				res,
-				404,
-				'Centro de prácticas no encontrado',
-				'No encontrado',
-			);
-			return;
-		}
-
-		handleSuccess(
-			res,
-			200,
-			'Centro de prácticas encontrado',
-			response,
-		);
-	} catch (error) {
-		handleErrorServer(
-			res,
-			500,
-			'Error al buscar centro de prácticas',
-			error,
-		);
-	}
-}
-
-async function findMany(req: Request, res: Response) {
-	const { data, error } = PaginationSchema.safeParse(
-		req.query,
-	);
-
-	if (error) {
-		handleErrorClient(
-			res,
-			400,
-			'Parámetros de paginación inválidos',
-			error.issues,
-		);
-		return;
-	}
-
-	const { offset, limit } = data;
-
-	try {
-		const response =
-			await InternshipCenterServices.findMany(
-				offset,
-				limit,
-			);
-
-		handleSuccess(
-			res,
-			200,
-			'Lista de centros de práctica',
-			response,
-		);
-	} catch (error) {
-		handleErrorServer(
-			res,
-			500,
-			'Error al obtener centros de práctica',
-			error,
-		);
-	}
-}
-
 async function createOne(req: Request, res: Response) {
 	const { data, error } = InternshipCentersSchema.omit({
 		id: true,
@@ -156,12 +59,110 @@ async function createOne(req: Request, res: Response) {
 	}
 }
 
-async function updateOne(req: Request, res: Response) {
-	const idValidation = InternshipCentersSchema.pick({
+async function findOne(req: Request, res: Response) {
+	const { data, error } = InternshipCentersSchema.pick({
 		id: true,
 	}).safeParse({ id: req.params.id });
 
-	if (idValidation.error) {
+	if (error) {
+		handleErrorClient(
+			res,
+			400,
+			'Id no válido',
+			'Id debe ser un número entero positivo',
+		);
+		return;
+	}
+
+	const { id } = data;
+
+	try {
+		const response =
+			await InternshipCenterServices.findOne(id);
+
+		if (!response) {
+			handleErrorClient(
+				res,
+				404,
+				'Centro de prácticas no encontrado',
+				'No encontrado',
+			);
+			return;
+		}
+
+		handleSuccess(
+			res,
+			200,
+			'Centro de prácticas encontrado',
+			response,
+		);
+	} catch (error) {
+		handleErrorServer(
+			res,
+			500,
+			'Error al buscar centro de prácticas',
+			error,
+		);
+	}
+}
+
+const PaginationSchema = z.object({
+	offset: z.coerce.number().int().nonnegative().default(0),
+	limit: z.coerce
+		.number()
+		.int()
+		.positive()
+		.max(100)
+		.default(10),
+});
+
+async function findMany(req: Request, res: Response) {
+	const { data, error } = PaginationSchema.safeParse(
+		req.query,
+	);
+
+	if (error) {
+		handleErrorClient(
+			res,
+			400,
+			'Parámetros de paginación inválidos',
+			error.issues,
+		);
+		return;
+	}
+
+	const { offset, limit } = data;
+
+	try {
+		const response =
+			await InternshipCenterServices.findMany(
+				offset,
+				limit,
+			);
+
+		handleSuccess(
+			res,
+			200,
+			'Lista de centros de práctica',
+			response,
+		);
+	} catch (error) {
+		handleErrorServer(
+			res,
+			500,
+			'Error al obtener centros de práctica',
+			error,
+		);
+	}
+}
+
+async function updateOne(req: Request, res: Response) {
+	const { data: idData, error: idError } =
+		InternshipCentersSchema.pick({
+			id: true,
+		}).safeParse({ id: req.params.id });
+
+	if (idError) {
 		handleErrorClient(
 			res,
 			400,
@@ -202,7 +203,7 @@ async function updateOne(req: Request, res: Response) {
 	try {
 		const response =
 			await InternshipCenterServices.updateOne(
-				idValidation.data.id,
+				idData.id,
 				data as Parameters<
 					typeof InternshipCenterServices.updateOne
 				>[1],

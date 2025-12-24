@@ -13,7 +13,8 @@ export const InternshipCentersSchema = z.object({
 		.number()
 		.int()
 		.positive()
-		.nullable(),
+		.nullable()
+		.default(null),
 	createdAt: z.coerce.date(),
 	updatedAt: z.coerce.date(),
 });
