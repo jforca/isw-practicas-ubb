@@ -17,6 +17,7 @@ type TInternshipCentersTemplateProps = {
 	onNextPage: () => void;
 	onPrevPage: () => void;
 	onLimitChange: (limit: number) => void;
+	onRefresh: () => void;
 };
 
 export function InternshipCentersTemplate({
@@ -30,6 +31,7 @@ export function InternshipCentersTemplate({
 	onNextPage,
 	onPrevPage,
 	onLimitChange,
+	onRefresh,
 }: TInternshipCentersTemplateProps) {
 	return (
 		<section className="section-base">
@@ -46,6 +48,7 @@ export function InternshipCentersTemplate({
 				onNextPage={onNextPage}
 				onPrevPage={onPrevPage}
 				onLimitChange={onLimitChange}
+				onRefresh={onRefresh}
 			/>
 		</section>
 	);

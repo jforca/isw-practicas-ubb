@@ -1,4 +1,5 @@
-import { useId } from 'react';
+import { useId, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import type { TInternshipCenter } from '@packages/schema/internship-centers.schema';
 import { Card, Modal } from '@common/components';
 import {
@@ -10,6 +11,7 @@ import {
 	MapPin,
 	Phone,
 	Mail,
+	Loader2,
 } from 'lucide-react';
 import {
 	Loader,
@@ -21,6 +23,8 @@ import {
 	PaginationInfo,
 } from '@modules/internship-centers/components/molecules';
 import type { TPagination } from '@modules/internship-centers/hooks/find-many-internship-center.hook';
+import { UseUpdateOneInternshipCenter } from '@modules/internship-centers/hooks/update-one-internship-center.hook';
+import { UseDeleteInternshipCenter } from '@modules/internship-centers/hooks/delete-internship-center.hook';
 
 type TInternshipCenterCardsProps = {
 	data: TInternshipCenter[];
@@ -33,6 +37,7 @@ type TInternshipCenterCardsProps = {
 	onNextPage: () => void;
 	onPrevPage: () => void;
 	onLimitChange: (limit: number) => void;
+	onRefresh: () => void;
 };
 
 export function InternshipCenterCards({
@@ -46,6 +51,7 @@ export function InternshipCenterCards({
 	onNextPage,
 	onPrevPage,
 	onLimitChange,
+	onRefresh,
 }: TInternshipCenterCardsProps) {
 	const id = useId();
 
@@ -77,330 +83,11 @@ export function InternshipCenterCards({
 			) : (
 				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 					{data.map((c) => (
-						<Card
+						<InternshipCenterCard
 							key={`${id}-${c.id}`}
-							className="hover:scale-102 transition-transform"
-						>
-							<Card.Body>
-								<Card.Container className="flex justify-between">
-									<Card.Container>
-										<Card.Title className="text-primary font-bold">
-											{c.legal_name}
-										</Card.Title>
-										<Card.P className="paragraph-2 text-base-content/60">
-											{c.address}
-										</Card.P>
-									</Card.Container>
-									<Card.ToolTip
-										dataTip="Convenio"
-										className="tooltip-info"
-									>
-										<Card.Button className="btn-info btn-soft rounded-full size-10">
-											<FileText className="scale-300" />
-										</Card.Button>
-									</Card.ToolTip>
-								</Card.Container>
-
-								<Card.P className="text-base-content/80">
-									{c.description}
-								</Card.P>
-
-								<Card.Divider />
-
-								<Card.Container className="flex justify-between items-center">
-									<Card.Badge className="badge-soft badge-accent paragraph-2 font-medium">
-										{c.email}
-									</Card.Badge>
-
-									<Card.Actions className="justify-end">
-										{/* Modal Ver */}
-										<Modal>
-											<Card.ToolTip
-												dataTip="Ver"
-												className="tooltip-primary"
-											>
-												<Modal.Trigger className="btn btn-primary btn-soft rounded-full size-10">
-													<Eye className="scale-300" />
-												</Modal.Trigger>
-											</Card.ToolTip>
-											<Modal.Content className="container">
-												<Modal.Header className="text-primary title-2">
-													{c.legal_name}
-												</Modal.Header>
-												<Modal.Body className="flex flex-col gap-4">
-													<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-														<div className="flex flex-col gap-2 text-base-content/80">
-															<h3>
-																<IdCard
-																	size={18}
-																	className="inline mr-2"
-																/>
-																Rut Empresa
-															</h3>
-															<p className="bg-gray-200 rounded-lg p-2">
-																{c.company_rut}
-															</p>
-														</div>
-														<div className="flex flex-col gap-2 text-base-content/80">
-															<h3>
-																<FileText
-																	size={18}
-																	className="inline mr-2"
-																/>
-																Numero Convenio
-															</h3>
-															<p className="bg-gray-200 rounded-lg p-2">
-																{c.convention_document_id}
-															</p>
-														</div>
-														<div className="flex flex-col gap-2 text-base-content/80">
-															<h3>
-																<Phone
-																	size={18}
-																	className="inline mr-2"
-																/>
-																Telefono
-															</h3>
-															<p className="bg-gray-200 rounded-lg p-2">
-																{c.phone}
-															</p>
-														</div>
-														<div className="flex flex-col gap-2 text-base-content/80">
-															<h3>
-																<Mail
-																	size={18}
-																	className="inline mr-2"
-																/>
-																Correo Electrónico
-															</h3>
-															<p className="bg-gray-200 rounded-lg p-2">
-																{c.email}
-															</p>
-														</div>
-													</div>
-													<div className="flex flex-col gap-2 text-base-content/80">
-														<h3>
-															<MapPin
-																size={18}
-																className="inline mr-2"
-															/>
-															Dirección
-														</h3>
-														<p className="bg-gray-200 rounded-lg p-2">
-															{c.address}
-														</p>
-													</div>
-													<div className="flex flex-col gap-2 text-base-content/80">
-														<h3>Descripción</h3>
-														<p className="bg-gray-200 rounded-lg p-2">
-															{c.description}
-														</p>
-													</div>
-												</Modal.Body>
-												<Modal.Actions>
-													<button
-														type="button"
-														className="btn btn-info"
-													>
-														<FileText size={18} />
-														Ver Convenio
-													</button>
-													<button
-														type="button"
-														className="btn btn-success"
-													>
-														<PenLine size={18} />
-														Editar
-													</button>
-													<button
-														type="button"
-														className="btn btn-error"
-													>
-														<Trash size={18} />
-														Eliminar
-													</button>
-												</Modal.Actions>
-											</Modal.Content>
-										</Modal>
-
-										{/* Modal Editar */}
-										<Modal>
-											<Card.ToolTip
-												dataTip="Editar"
-												className="tooltip-success"
-											>
-												<Modal.Trigger className="btn btn-success btn-soft rounded-full size-10">
-													<PenLine className="scale-300" />
-												</Modal.Trigger>
-											</Card.ToolTip>
-											<Modal.Content className="container">
-												<Modal.Header className="text-primary title-2">
-													{c.legal_name}
-												</Modal.Header>
-												<Modal.Body className="flex flex-col gap-4">
-													<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-														<div className="flex flex-col gap-2 text-base-content/80">
-															<h3>
-																<IdCard
-																	size={18}
-																	className="inline mr-2"
-																/>
-																Rut Empresa
-															</h3>
-															<input
-																type="text"
-																defaultValue={c.company_rut}
-																className="input w-full rounded-lg"
-															/>
-														</div>
-														<div className="flex flex-col gap-2 text-base-content/80">
-															<h3>
-																<FileText
-																	size={18}
-																	className="inline mr-2"
-																/>
-																Numero Convenio
-															</h3>
-															<input
-																type="number"
-																className="input w-full rounded-lg"
-																disabled
-																defaultValue={
-																	c.convention_document_id ||
-																	'N/A'
-																}
-															/>
-														</div>
-														<div className="flex flex-col gap-2 text-base-content/80">
-															<h3>
-																<Phone
-																	size={18}
-																	className="inline mr-2"
-																/>
-																Telefono
-															</h3>
-															<input
-																type="tel"
-																defaultValue={c.phone}
-																className="input w-full rounded-lg"
-															/>
-														</div>
-														<div className="flex flex-col gap-2 text-base-content/80">
-															<h3>
-																<Mail
-																	size={18}
-																	className="inline mr-2"
-																/>
-																Correo Electrónico
-															</h3>
-															<input
-																type="email"
-																defaultValue={c.email}
-																className="input w-full rounded-lg"
-															/>
-														</div>
-													</div>
-													<div className="flex flex-col gap-2 text-base-content/80">
-														<h3>
-															<MapPin
-																size={18}
-																className="inline mr-2"
-															/>
-															Dirección
-														</h3>
-														<input
-															type="text"
-															defaultValue={c.address}
-															className="input w-full rounded-lg"
-														/>
-													</div>
-													<div className="flex flex-col gap-2 text-base-content/80">
-														<h3>Descripción</h3>
-														<input
-															type="text"
-															defaultValue={c.description}
-															className="input w-full rounded-lg"
-														/>
-													</div>
-												</Modal.Body>
-												<Modal.Actions>
-													<button
-														type="button"
-														className="btn btn-info btn-soft"
-													>
-														<FileText size={18} />
-														Subir Convenio
-													</button>
-													<button
-														type="button"
-														className="btn btn-error btn-soft"
-													>
-														<Trash size={18} />
-														Cancelar
-													</button>
-													<button
-														type="button"
-														className="btn btn-success btn-soft"
-													>
-														<PenLine size={18} />
-														Guardar Edición
-													</button>
-												</Modal.Actions>
-											</Modal.Content>
-										</Modal>
-
-										{/* Modal Eliminar */}
-										<Modal>
-											<Card.ToolTip
-												dataTip="Eliminar"
-												className="tooltip-error"
-											>
-												<Modal.Trigger className="btn btn-error btn-soft rounded-full size-10">
-													<Trash className="scale-300" />
-												</Modal.Trigger>
-											</Card.ToolTip>
-											<Modal.Content className="container">
-												<Modal.Header className="text-error title-2">
-													¿Estás seguro que deseas eliminar
-													este centro de prácticas?
-												</Modal.Header>
-												<Modal.Body className="flex flex-col gap-4">
-													<div className="bg-neutral/10 border-l-4 border-neutral rounded-lg p-4">
-														<p className="font-bold text-neutral mb-2">
-															Advertencia: Esta acción no se
-															puede deshacer
-														</p>
-														<p className="text-base-content/80 text-sm">
-															Se eliminará permanentemente:
-														</p>
-														<div className="mt-3 p-3 bg-base-100 rounded-lg">
-															<p className="font-semibold text-primary">
-																{c.legal_name}
-															</p>
-														</div>
-													</div>
-												</Modal.Body>
-												<Modal.Actions>
-													<button
-														type="button"
-														className="btn btn-neutral btn-soft"
-													>
-														Cancelar
-													</button>
-													<button
-														type="button"
-														className="btn btn-error btn-soft"
-													>
-														<Trash size={18} />
-														Eliminar
-													</button>
-												</Modal.Actions>
-											</Modal.Content>
-										</Modal>
-									</Card.Actions>
-								</Card.Container>
-							</Card.Body>
-						</Card>
+							center={c}
+							onRefresh={onRefresh}
+						/>
 					))}
 				</div>
 			)}
@@ -414,5 +101,519 @@ export function InternshipCenterCards({
 				onPrevPage={onPrevPage}
 			/>
 		</article>
+	);
+}
+
+// Componente interno para manejar el estado de cada card
+type TInternshipCenterCardProps = {
+	center: TInternshipCenter;
+	onRefresh: () => void;
+};
+
+function InternshipCenterCard({
+	center: c,
+	onRefresh,
+}: TInternshipCenterCardProps) {
+	// Estado del formulario de edición
+	const [editForm, setEditForm] = useState({
+		legal_name: c.legal_name,
+		company_rut: c.company_rut,
+		email: c.email,
+		phone: c.phone,
+		address: c.address,
+		description: c.description,
+	});
+
+	// Referencias a los modales para cerrarlos programáticamente
+	const editModalRef = useRef<HTMLDialogElement>(null);
+	const deleteModalRef = useRef<HTMLDialogElement>(null);
+
+	// Hooks para operaciones
+	const {
+		handleUpdateOne,
+		isLoading: isUpdating,
+		error: updateError,
+	} = UseUpdateOneInternshipCenter();
+
+	const {
+		handleDelete,
+		isLoading: isDeleting,
+		error: deleteError,
+	} = UseDeleteInternshipCenter();
+
+	// Handler para actualizar el formulario
+	const handleInputChange = (
+		field: keyof typeof editForm,
+		value: string,
+	) => {
+		setEditForm((prev) => ({ ...prev, [field]: value }));
+	};
+
+	// Handler para guardar edición
+	const handleSaveEdit = async () => {
+		const result = await handleUpdateOne(c.id, editForm);
+		if (result) {
+			editModalRef.current?.close();
+			onRefresh();
+		}
+	};
+
+	// Handler para eliminar
+	const handleConfirmDelete = async () => {
+		const success = await handleDelete(c.id);
+		if (success) {
+			deleteModalRef.current?.close();
+			onRefresh();
+		}
+	};
+
+	// Resetear formulario al abrir modal de edición
+	const handleOpenEditModal = () => {
+		setEditForm({
+			legal_name: c.legal_name,
+			company_rut: c.company_rut,
+			email: c.email,
+			phone: c.phone,
+			address: c.address,
+			description: c.description,
+		});
+	};
+
+	return (
+		<Card className="hover:scale-102 transition-transform">
+			<Card.Body>
+				<Card.Container className="flex justify-between">
+					<Card.Container>
+						<Card.Title className="text-primary font-bold">
+							{c.legal_name}
+						</Card.Title>
+						<Card.P className="paragraph-2 text-base-content/60">
+							{c.address}
+						</Card.P>
+					</Card.Container>
+					<Card.ToolTip
+						dataTip="Convenio"
+						className="tooltip-info"
+					>
+						<Card.Button className="btn-info btn-soft rounded-full size-10">
+							<FileText className="scale-300" />
+						</Card.Button>
+					</Card.ToolTip>
+				</Card.Container>
+
+				<Card.P className="text-base-content/80">
+					{c.description}
+				</Card.P>
+
+				<Card.Divider />
+
+				<Card.Container className="flex justify-between items-center">
+					<Card.Badge className="badge-soft badge-accent paragraph-2 font-medium">
+						{c.email}
+					</Card.Badge>
+
+					<Card.Actions className="justify-end">
+						{/* Modal Ver */}
+						<Modal>
+							<Card.ToolTip
+								dataTip="Ver"
+								className="tooltip-primary"
+							>
+								<Modal.Trigger className="btn btn-primary btn-soft rounded-full size-10">
+									<Eye className="scale-300" />
+								</Modal.Trigger>
+							</Card.ToolTip>
+							<Modal.Content className="container">
+								<Modal.Header className="text-primary title-2">
+									{c.legal_name}
+								</Modal.Header>
+								<Modal.Body className="flex flex-col gap-4">
+									<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+										<div className="flex flex-col gap-2 text-base-content/80">
+											<h3>
+												<IdCard
+													size={18}
+													className="inline mr-2"
+												/>
+												Rut Empresa
+											</h3>
+											<p className="bg-gray-200 rounded-lg p-2">
+												{c.company_rut}
+											</p>
+										</div>
+										<div className="flex flex-col gap-2 text-base-content/80">
+											<h3>
+												<FileText
+													size={18}
+													className="inline mr-2"
+												/>
+												Numero Convenio
+											</h3>
+											<p className="bg-gray-200 rounded-lg p-2">
+												{c.convention_document_id}
+											</p>
+										</div>
+										<div className="flex flex-col gap-2 text-base-content/80">
+											<h3>
+												<Phone
+													size={18}
+													className="inline mr-2"
+												/>
+												Telefono
+											</h3>
+											<p className="bg-gray-200 rounded-lg p-2">
+												{c.phone}
+											</p>
+										</div>
+										<div className="flex flex-col gap-2 text-base-content/80">
+											<h3>
+												<Mail
+													size={18}
+													className="inline mr-2"
+												/>
+												Correo Electrónico
+											</h3>
+											<p className="bg-gray-200 rounded-lg p-2">
+												{c.email}
+											</p>
+										</div>
+									</div>
+									<div className="flex flex-col gap-2 text-base-content/80">
+										<h3>
+											<MapPin
+												size={18}
+												className="inline mr-2"
+											/>
+											Dirección
+										</h3>
+										<p className="bg-gray-200 rounded-lg p-2">
+											{c.address}
+										</p>
+									</div>
+									<div className="flex flex-col gap-2 text-base-content/80">
+										<h3>Descripción</h3>
+										<p className="bg-gray-200 rounded-lg p-2">
+											{c.description}
+										</p>
+									</div>
+								</Modal.Body>
+								<Modal.Actions>
+									<button
+										type="button"
+										className="btn btn-info"
+									>
+										<FileText size={18} />
+										Ver Convenio
+									</button>
+								</Modal.Actions>
+							</Modal.Content>
+						</Modal>
+
+						{/* Modal Editar */}
+						<Card.ToolTip
+							dataTip="Editar"
+							className="tooltip-success"
+						>
+							<button
+								type="button"
+								className="btn btn-success btn-soft rounded-full size-10"
+								onClick={() => {
+									handleOpenEditModal();
+									editModalRef.current?.showModal();
+								}}
+							>
+								<PenLine className="scale-300" />
+							</button>
+						</Card.ToolTip>
+						{createPortal(
+							<dialog ref={editModalRef} className="modal">
+								<div className="modal-box container">
+									<button
+										type="button"
+										className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+										onClick={() =>
+											editModalRef.current?.close()
+										}
+									>
+										✕
+									</button>
+									<h3 className="text-primary title-2 font-bold mb-4">
+										Editar: {c.legal_name}
+									</h3>
+									<div className="flex flex-col gap-4">
+										{updateError && (
+											<div className="alert alert-error">
+												<span>{updateError}</span>
+											</div>
+										)}
+										<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+											<div className="flex flex-col gap-2 text-base-content/80">
+												<h3>
+													<IdCard
+														size={18}
+														className="inline mr-2"
+													/>
+													Nombre Legal
+												</h3>
+												<input
+													type="text"
+													value={editForm.legal_name}
+													onChange={(e) =>
+														handleInputChange(
+															'legal_name',
+															e.target.value,
+														)
+													}
+													className="input w-full rounded-lg"
+													disabled={isUpdating}
+												/>
+											</div>
+											<div className="flex flex-col gap-2 text-base-content/80">
+												<h3>
+													<IdCard
+														size={18}
+														className="inline mr-2"
+													/>
+													Rut Empresa
+												</h3>
+												<input
+													type="text"
+													value={editForm.company_rut}
+													onChange={(e) =>
+														handleInputChange(
+															'company_rut',
+															e.target.value,
+														)
+													}
+													className="input w-full rounded-lg"
+													disabled={isUpdating}
+												/>
+											</div>
+											<div className="flex flex-col gap-2 text-base-content/80">
+												<h3>
+													<Phone
+														size={18}
+														className="inline mr-2"
+													/>
+													Telefono
+												</h3>
+												<input
+													type="tel"
+													value={editForm.phone}
+													onChange={(e) =>
+														handleInputChange(
+															'phone',
+															e.target.value,
+														)
+													}
+													className="input w-full rounded-lg"
+													disabled={isUpdating}
+												/>
+											</div>
+											<div className="flex flex-col gap-2 text-base-content/80">
+												<h3>
+													<Mail
+														size={18}
+														className="inline mr-2"
+													/>
+													Correo Electrónico
+												</h3>
+												<input
+													type="email"
+													value={editForm.email}
+													onChange={(e) =>
+														handleInputChange(
+															'email',
+															e.target.value,
+														)
+													}
+													className="input w-full rounded-lg"
+													disabled={isUpdating}
+												/>
+											</div>
+										</div>
+										<div className="flex flex-col gap-2 text-base-content/80">
+											<h3>
+												<MapPin
+													size={18}
+													className="inline mr-2"
+												/>
+												Dirección
+											</h3>
+											<input
+												type="text"
+												value={editForm.address}
+												onChange={(e) =>
+													handleInputChange(
+														'address',
+														e.target.value,
+													)
+												}
+												className="input w-full rounded-lg"
+												disabled={isUpdating}
+											/>
+										</div>
+										<div className="flex flex-col gap-2 text-base-content/80">
+											<h3>Descripción</h3>
+											<input
+												type="text"
+												value={editForm.description}
+												onChange={(e) =>
+													handleInputChange(
+														'description',
+														e.target.value,
+													)
+												}
+												className="input w-full rounded-lg"
+												disabled={isUpdating}
+											/>
+										</div>
+									</div>
+									<div className="modal-action">
+										<button
+											type="button"
+											className="btn btn-error btn-soft"
+											onClick={() =>
+												editModalRef.current?.close()
+											}
+											disabled={isUpdating}
+										>
+											Cancelar
+										</button>
+										<button
+											type="button"
+											className="btn btn-success btn-soft"
+											onClick={handleSaveEdit}
+											disabled={isUpdating}
+										>
+											{isUpdating ? (
+												<>
+													<Loader2
+														size={18}
+														className="animate-spin"
+													/>
+													Guardando...
+												</>
+											) : (
+												<>
+													<PenLine size={18} />
+													Guardar Edición
+												</>
+											)}
+										</button>
+									</div>
+								</div>
+								<form
+									method="dialog"
+									className="modal-backdrop"
+								>
+									<button type="submit">close</button>
+								</form>
+							</dialog>,
+							document.body,
+						)}
+
+						{/* Modal Eliminar */}
+						<Card.ToolTip
+							dataTip="Eliminar"
+							className="tooltip-error"
+						>
+							<button
+								type="button"
+								className="btn btn-error btn-soft rounded-full size-10"
+								onClick={() =>
+									deleteModalRef.current?.showModal()
+								}
+							>
+								<Trash className="scale-300" />
+							</button>
+						</Card.ToolTip>
+						{createPortal(
+							<dialog
+								ref={deleteModalRef}
+								className="modal"
+							>
+								<div className="modal-box container">
+									<button
+										type="button"
+										className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+										onClick={() =>
+											deleteModalRef.current?.close()
+										}
+									>
+										✕
+									</button>
+									<h3 className="text-error title-2 font-bold mb-4">
+										¿Estás seguro que deseas eliminar este
+										centro de prácticas?
+									</h3>
+									<div className="flex flex-col gap-4">
+										{deleteError && (
+											<div className="alert alert-error">
+												<span>{deleteError}</span>
+											</div>
+										)}
+										<div className="bg-neutral/10 border-l-4 border-neutral rounded-lg p-4">
+											<p className="font-bold text-neutral mb-2">
+												Advertencia: Esta acción no se puede
+												deshacer
+											</p>
+											<p className="text-base-content/80 text-sm">
+												Se eliminará permanentemente:
+											</p>
+											<div className="mt-3 p-3 bg-base-100 rounded-lg">
+												<p className="font-semibold text-primary">
+													{c.legal_name}
+												</p>
+											</div>
+										</div>
+									</div>
+									<div className="modal-action">
+										<button
+											type="button"
+											className="btn btn-neutral btn-soft"
+											onClick={() =>
+												deleteModalRef.current?.close()
+											}
+											disabled={isDeleting}
+										>
+											Cancelar
+										</button>
+										<button
+											type="button"
+											className="btn btn-error btn-soft"
+											onClick={handleConfirmDelete}
+											disabled={isDeleting}
+										>
+											{isDeleting ? (
+												<>
+													<Loader2
+														size={18}
+														className="animate-spin"
+													/>
+													Eliminando...
+												</>
+											) : (
+												<>
+													<Trash size={18} />
+													Eliminar
+												</>
+											)}
+										</button>
+									</div>
+								</div>
+								<form
+									method="dialog"
+									className="modal-backdrop"
+								>
+									<button type="submit">close</button>
+								</form>
+							</dialog>,
+							document.body,
+						)}
+					</Card.Actions>
+				</Card.Container>
+			</Card.Body>
+		</Card>
 	);
 }

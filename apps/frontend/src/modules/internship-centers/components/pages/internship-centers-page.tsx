@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { InternshipCentersTemplate } from '@modules/internship-centers/components/templates/internship-centers-template';
 import { UseFindManyInternshipCenter } from '@modules/internship-centers/hooks/find-many-internship-center.hook';
 
@@ -21,6 +21,10 @@ export function InternshipCentersPage() {
 		handleFindMany(0, 5);
 	}, [handleFindMany]);
 
+	const handleRefresh = useCallback(() => {
+		handleFindMany(pagination.offset, pagination.limit);
+	}, [handleFindMany, pagination.offset, pagination.limit]);
+
 	return (
 		<InternshipCentersTemplate
 			centers={data}
@@ -33,6 +37,7 @@ export function InternshipCentersPage() {
 			onNextPage={nextPage}
 			onPrevPage={prevPage}
 			onLimitChange={changeLimit}
+			onRefresh={handleRefresh}
 		/>
 	);
 }
