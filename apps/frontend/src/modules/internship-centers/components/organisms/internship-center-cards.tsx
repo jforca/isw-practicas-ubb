@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useEffect, useId } from 'react';
 import type { TInternshipCenter } from '@packages/schema/internship-centers.schema';
 import { Card, Modal } from '@common/components';
 import {
@@ -11,6 +11,7 @@ import {
 	Phone,
 	Mail,
 } from 'lucide-react';
+import { UseInternshipCenter } from '@modules/internship-centers/hooks/internship-center-hook';
 
 export function InternshipCenterCards({
 	data,
@@ -18,6 +19,16 @@ export function InternshipCenterCards({
 	data: TInternshipCenter[];
 }) {
 	const id = useId();
+
+	const { findMany } = UseInternshipCenter();
+
+	useEffect(() => {
+		const fetchData = async () => {
+			const result = await findMany(0, 10);
+			console.log(result);
+		};
+		fetchData();
+	}, [findMany]);
 
 	return (
 		<article className="section-sm">
@@ -231,7 +242,8 @@ export function InternshipCenterCards({
 															className="input w-full rounded-lg"
 															disabled
 															defaultValue={
-																c.convention_document_id
+																c.convention_document_id ||
+																'N/A'
 															}
 														/>
 													</div>
