@@ -13,5 +13,6 @@ router.post(
 );
 router.patch('/:id', LogbookEntriesControllers.updateOne);
 router.get('/:id', LogbookEntriesControllers.findOne);
+router.delete('/:id', LogbookEntriesControllers.deleteOne);
 
 export default router;

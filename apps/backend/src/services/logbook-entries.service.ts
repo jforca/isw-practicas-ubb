@@ -55,7 +55,6 @@ async function createOne(data: ICreateLogbookDto) {
 			internship: { id: data.internshipId },
 		});
 
-		// Al guardar, TypeORM devuelve el objeto con su ID y fechas automáticas
 		return await logbookEntriesRepo.save(newEntry);
 	} catch (error) {
 		console.error('Error creando la bitacora:', error);
@@ -97,9 +96,24 @@ async function updateOne(
 	}
 }
 
+async function deleteOne(id: number) {
+	try {
+		const logbookEntriesRepo =
+			AppDataSource.getRepository(LogbookEntries);
+
+		const result = await logbookEntriesRepo.delete(id);
+
+		return result.affected !== 0;
+	} catch (error) {
+		console.error('Error al eliminar la bitacora:', error);
+		return false;
+	}
+}
+
 export const LogbookEntriesServices = {
 	findOne,
 	findMany,
 	createOne,
 	updateOne,
+	deleteOne,
 };

@@ -148,9 +148,42 @@ async function updateOne(req: Request, res: Response) {
 	}
 }
 
+async function deleteOne(req: Request, res: Response) {
+	try {
+		const { id } = req.params;
+
+		const isDeleted =
+			await LogbookEntriesServices.deleteOne(Number(id));
+
+		if (!isDeleted) {
+			return handleErrorServer(
+				res,
+				404,
+				'No se encontró la bitacora a eliminar',
+				null,
+			);
+		}
+
+		return handleSuccess(
+			res,
+			200,
+			'Bitacora eliminada con exito',
+			{ id },
+		);
+	} catch (err) {
+		return handleErrorServer(
+			res,
+			500,
+			'Error al eliminar la bitacora',
+			err,
+		);
+	}
+}
+
 export const LogbookEntriesControllers = {
 	findOne,
 	findMany,
 	createOne,
 	updateOne,
+	deleteOne,
 };
