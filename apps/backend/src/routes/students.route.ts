@@ -15,4 +15,4 @@ router.get('/:id', getStudent);
 router.post('/', createNewStudent);
 router.put('/:id', updateStudentData);
 router.delete('/:id', deleteStudentData);
-export default router;
+export { router as StudentsRouter };
