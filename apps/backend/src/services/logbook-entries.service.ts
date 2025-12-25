@@ -7,6 +7,12 @@ export interface ICreateLogbookDto {
 	internshipId: number;
 }
 
+export interface IUpdateLogbookDto {
+	title?: string;
+	body?: string;
+	internshipId?: number;
+}
+
 async function findOne(id: number) {
 	try {
 		const logbookEntriesRepo =
@@ -19,7 +25,7 @@ async function findOne(id: number) {
 
 		return entry;
 	} catch (error) {
-		console.error('Error finding logbook entry:', error);
+		console.error('Error buscar bitacora:', error);
 	}
 }
 
@@ -34,7 +40,7 @@ async function findMany() {
 
 		return entries;
 	} catch (error) {
-		console.error('Error finding logbook entries:', error);
+		console.error('Error al buscar bitacoras:', error);
 	}
 }
 
@@ -54,7 +60,44 @@ async function createOne(data: ICreateLogbookDto) {
 
 		return savedEntry;
 	} catch (error) {
-		console.error('Error creating logbook entry:', error);
+		console.error(
+			'Error creando entrada de bitacora:',
+			error,
+		);
+		return null;
+	}
+}
+
+async function updateOne(
+	id: number,
+	data: IUpdateLogbookDto,
+) {
+	try {
+		const logbookEntriesRepo =
+			AppDataSource.getRepository(LogbookEntries);
+
+		const entry = await logbookEntriesRepo.findOneBy({
+			id,
+		});
+		if (!entry) return null;
+
+		const updateData = {
+			...data,
+			...(data.internshipId && {
+				internship: { id: data.internshipId },
+			}),
+		};
+
+		logbookEntriesRepo.merge(entry, updateData);
+
+		const updatedEntry =
+			await logbookEntriesRepo.save(entry);
+		return updatedEntry;
+	} catch (error) {
+		console.error(
+			'Error al actualizar la bitácora:',
+			error,
+		);
 		return null;
 	}
 }
@@ -63,4 +106,5 @@ export const LogbookEntriesServices = {
 	findOne,
 	findMany,
 	createOne,
+	updateOne,
 };

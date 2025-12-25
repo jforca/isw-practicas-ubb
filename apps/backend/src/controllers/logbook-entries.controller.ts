@@ -79,7 +79,44 @@ async function createOne(req: Request, res: Response) {
 	}
 }
 
+async function updateOne(req: Request, res: Response) {
+	try {
+		const { id } = req.params;
+
+		const updateData = req.body;
+
+		const data = await LogbookEntriesServices.updateOne(
+			Number(id),
+			updateData,
+		);
+
+		if (!data) {
+			return handleErrorServer(
+				res,
+				404,
+				'No se encontró el registro de bitácora para actualizar',
+				null,
+			);
+		}
+
+		return handleSuccess(
+			res,
+			200,
+			'Registro de bitácora actualizado con éxito',
+			data,
+		);
+	} catch (err) {
+		return handleErrorServer(
+			res,
+			500,
+			'Error al actualizar el registro del libro de bitácora',
+			err,
+		);
+	}
+}
+
 export const LogbookEntriesControllers = {
 	findMany,
 	createOne,
+	updateOne,
 };

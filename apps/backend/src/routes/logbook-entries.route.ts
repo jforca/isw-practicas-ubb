@@ -11,5 +11,6 @@ router.post(
 	'/create-one',
 	LogbookEntriesControllers.createOne,
 );
+router.patch('/:id', LogbookEntriesControllers.updateOne);
 
 export default router;
