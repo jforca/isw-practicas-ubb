@@ -64,10 +64,15 @@ async function uploadConvention(
 			);
 		}
 
-		// Crear el registro del documento
+		// Crear el registro del documento con ruta relativa
+		const relativePath = path.join(
+			'archives',
+			'convention',
+			path.basename(req.file.path),
+		);
 		const document = await DocumentServices.createOne({
 			fileName: req.file.originalname,
-			filePath: req.file.path,
+			filePath: relativePath,
 			mimeType: req.file.mimetype,
 		});
 
@@ -165,7 +170,12 @@ async function downloadConvention(
 			return;
 		}
 
-		const filePath = path.resolve(document.file_path);
+		// Construir ruta absoluta desde ruta relativa
+		const filePath = path.join(
+			__dirname,
+			'..',
+			document.file_path,
+		);
 
 		if (!fs.existsSync(filePath)) {
 			handleErrorClient(
@@ -251,7 +261,12 @@ async function viewConvention(req: Request, res: Response) {
 			return;
 		}
 
-		const filePath = path.resolve(document.file_path);
+		// Construir ruta absoluta desde ruta relativa
+		const filePath = path.join(
+			__dirname,
+			'..',
+			document.file_path,
+		);
 
 		if (!fs.existsSync(filePath)) {
 			handleErrorClient(

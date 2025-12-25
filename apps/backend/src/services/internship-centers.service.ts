@@ -1,5 +1,6 @@
 import { AppDataSource } from '@config/db.config';
 import { InternshipCenter } from '@entities/internship-centers.entity';
+import { Document } from '@entities/documents.entity';
 
 const internshipCenterRepository =
 	AppDataSource.getRepository(InternshipCenter);
@@ -101,7 +102,16 @@ async function updateConventionDocument(
 		return null;
 	}
 
-	internshipCenter.convention_document_id = documentId;
+	// Usar la relación directamente para que TypeORM actualice correctamente
+	if (documentId === null) {
+		internshipCenter.convention_document = null;
+	} else {
+		// Crear referencia al documento sin cargar toda la entidad
+		internshipCenter.convention_document = {
+			id: documentId,
+		} as Document;
+	}
+
 	const updatedInternshipCenter =
 		await internshipCenterRepository.save(internshipCenter);
 

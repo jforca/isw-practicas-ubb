@@ -43,7 +43,12 @@ async function deleteOne(id: number) {
 	}
 
 	// Eliminar el archivo físico si existe
-	const fullPath = path.resolve(document.file_path);
+	// Construir ruta absoluta desde la ruta relativa guardada
+	const fullPath = path.join(
+		__dirname,
+		'..',
+		document.file_path,
+	);
 	if (fs.existsSync(fullPath)) {
 		fs.unlinkSync(fullPath);
 	}
