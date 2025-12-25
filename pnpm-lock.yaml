@@ -130,6 +130,9 @@ importers:
       '@packages/schema':
         specifier: workspace:*
         version: link:../../packages/schema
+      '@packages/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@t3-oss/env-core':
         specifier: catalog:base
         version: 0.13.8(typescript@5.9.3)(zod@4.1.12)

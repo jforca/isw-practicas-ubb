@@ -15,6 +15,10 @@ import {
 	Loader2,
 } from 'lucide-react';
 import {
+	ChileanNumberRegex,
+	ChileanRUTRegex,
+} from '@packages/utils/regex.utils';
+import {
 	Loader,
 	EmptyState,
 	ErrorState,
@@ -117,7 +121,18 @@ function InternshipCenterCard({
 	onRefresh,
 }: TInternshipCenterCardProps) {
 	// Estado del formulario de edición
-	const [editForm, setEditForm] = useState({
+	type TEditForm = {
+		// biome-ignore lint/style/useNamingConvention: a
+		legal_name: string;
+		// biome-ignore lint/style/useNamingConvention: a
+		company_rut: string;
+		email: string;
+		phone: string;
+		address: string;
+		description: string;
+	};
+
+	const [editForm, setEditForm] = useState<TEditForm>({
 		legal_name: c.legal_name,
 		company_rut: c.company_rut,
 		email: c.email,
@@ -125,6 +140,9 @@ function InternshipCenterCard({
 		address: c.address,
 		description: c.description,
 	});
+	const [editErrors, setEditErrors] = useState<
+		Record<keyof TEditForm, string | null>
+	>({} as Record<keyof TEditForm, string | null>);
 
 	// Estado para el archivo de convenio
 	const [conventionFile, setConventionFile] =
@@ -168,14 +186,76 @@ function InternshipCenterCard({
 
 	// Handler para actualizar el formulario
 	const handleInputChange = (
-		field: keyof typeof editForm,
+		field: keyof TEditForm,
 		value: string,
 	) => {
 		setEditForm((prev) => ({ ...prev, [field]: value }));
+		setEditErrors((prev) => ({
+			...prev,
+			[field]: validateField(field, value),
+		}));
+	};
+
+	const validateField = (
+		field: keyof TEditForm,
+		value: string,
+	) => {
+		switch (field) {
+			case 'company_rut':
+				if (!value) return 'RUT es requerido';
+				if (!ChileanRUTRegex.test(value.replace(/\./g, '')))
+					return 'RUT inválido (ej: 12345678-9)';
+				return null;
+			case 'phone':
+				if (!value) return 'Teléfono es requerido';
+				if (
+					!ChileanNumberRegex.test(
+						value.replace(/\s+/g, ''),
+					)
+				)
+					return 'Teléfono inválido (ej: +56912345678)';
+				return null;
+			case 'email':
+				if (!value) return 'Correo es requerido';
+				if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+					return 'Correo inválido';
+				return null;
+			default:
+				if (!value) return 'Este campo es requerido';
+				return null;
+		}
+	};
+
+	const isEditFormValid = () => {
+		const fields = Object.keys(editForm) as Array<
+			keyof TEditForm
+		>;
+		let valid = true;
+		const nextErrors: Record<
+			keyof TEditForm,
+			string | null
+		> = {} as Record<keyof TEditForm, string | null>;
+		for (const f of fields) {
+			const err = validateField(f, editForm[f] ?? '');
+			nextErrors[f] = err;
+			if (err) valid = false;
+		}
+		setEditErrors(nextErrors);
+		return valid;
+	};
+
+	const getEditInputClass = (field: keyof TEditForm) => {
+		const base = 'input w-full rounded-lg';
+		const err = editErrors[field];
+		if (err) return `${base} input-error`;
+		if (editForm[field]) return `${base} input-success`;
+		return base;
 	};
 
 	// Handler para guardar edición
 	const handleSaveEdit = async () => {
+		if (!isEditFormValid()) return;
+
 		// Primero actualizar los datos del formulario
 		const result = await handleUpdateOne(c.id, editForm);
 		if (!result) return;
@@ -438,9 +518,18 @@ function InternshipCenterCard({
 															e.target.value,
 														)
 													}
-													className="input w-full rounded-lg"
+													className={getEditInputClass(
+														'legal_name',
+													)}
 													disabled={isUpdating}
 												/>
+												{editErrors.legal_name && (
+													<label className="label">
+														<span className="label-text-alt text-error">
+															{editErrors.legal_name}
+														</span>
+													</label>
+												)}
 											</div>
 											<div className="flex flex-col gap-2 text-base-content/80">
 												<h3>
@@ -459,9 +548,18 @@ function InternshipCenterCard({
 															e.target.value,
 														)
 													}
-													className="input w-full rounded-lg"
+													className={getEditInputClass(
+														'company_rut',
+													)}
 													disabled={isUpdating}
 												/>
+												{editErrors.company_rut && (
+													<label className="label">
+														<span className="label-text-alt text-error">
+															{editErrors.company_rut}
+														</span>
+													</label>
+												)}
 											</div>
 											<div className="flex flex-col gap-2 text-base-content/80">
 												<h3>
@@ -480,9 +578,18 @@ function InternshipCenterCard({
 															e.target.value,
 														)
 													}
-													className="input w-full rounded-lg"
+													className={getEditInputClass(
+														'phone',
+													)}
 													disabled={isUpdating}
 												/>
+												{editErrors.phone && (
+													<label className="label">
+														<span className="label-text-alt text-error">
+															{editErrors.phone}
+														</span>
+													</label>
+												)}
 											</div>
 											<div className="flex flex-col gap-2 text-base-content/80">
 												<h3>
@@ -501,9 +608,18 @@ function InternshipCenterCard({
 															e.target.value,
 														)
 													}
-													className="input w-full rounded-lg"
+													className={getEditInputClass(
+														'email',
+													)}
 													disabled={isUpdating}
 												/>
+												{editErrors.email && (
+													<label className="label">
+														<span className="label-text-alt text-error">
+															{editErrors.email}
+														</span>
+													</label>
+												)}
 											</div>
 										</div>
 										<div className="flex flex-col gap-2 text-base-content/80">
@@ -523,9 +639,18 @@ function InternshipCenterCard({
 														e.target.value,
 													)
 												}
-												className="input w-full rounded-lg"
+												className={getEditInputClass(
+													'address',
+												)}
 												disabled={isUpdating}
 											/>
+											{editErrors.address && (
+												<label className="label">
+													<span className="label-text-alt text-error">
+														{editErrors.address}
+													</span>
+												</label>
+											)}
 										</div>
 										<div className="flex flex-col gap-2 text-base-content/80">
 											<h3>Descripción</h3>
@@ -538,9 +663,18 @@ function InternshipCenterCard({
 														e.target.value,
 													)
 												}
-												className="input w-full rounded-lg"
+												className={getEditInputClass(
+													'description',
+												)}
 												disabled={isUpdating}
 											/>
+											{editErrors.description && (
+												<label className="label">
+													<span className="label-text-alt text-error">
+														{editErrors.description}
+													</span>
+												</label>
+											)}
 										</div>
 										{/* Sección de Convenio */}
 										<div className="flex flex-col gap-2 text-base-content/80">
