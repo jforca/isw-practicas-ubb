@@ -1,5 +1,6 @@
 import { AppDataSource } from '@config/db.config';
 import { User } from '@entities';
+import { randomUUID } from 'node:crypto';
 
 export type TStudentUser = User;
 
@@ -37,6 +38,7 @@ export async function createStudent(
 	try {
 		const newStudent = userRepo.create({
 			...studentData,
+			id: randomUUID(),
 			user_role: 'student',
 		});
 
