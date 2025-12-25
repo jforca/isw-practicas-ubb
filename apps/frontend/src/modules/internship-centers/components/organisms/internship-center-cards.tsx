@@ -25,6 +25,7 @@ import {
 import type { TPagination } from '@modules/internship-centers/hooks/find-many-internship-center.hook';
 import { UseUpdateOneInternshipCenter } from '@modules/internship-centers/hooks/update-one-internship-center.hook';
 import { UseDeleteInternshipCenter } from '@modules/internship-centers/hooks/delete-internship-center.hook';
+import { useUploadConvention } from '@modules/internship-centers/hooks/upload-convention.hook';
 
 type TInternshipCenterCardsProps = {
 	data: TInternshipCenter[];
@@ -146,6 +147,12 @@ function InternshipCenterCard({
 		error: deleteError,
 	} = UseDeleteInternshipCenter();
 
+	const {
+		handleUpload,
+		isLoading: isUploading,
+		error: uploadError,
+	} = useUploadConvention();
+
 	// Handler para actualizar el formulario
 	const handleInputChange = (
 		field: keyof typeof editForm,
@@ -156,11 +163,26 @@ function InternshipCenterCard({
 
 	// Handler para guardar edición
 	const handleSaveEdit = async () => {
+		// Primero actualizar los datos del formulario
 		const result = await handleUpdateOne(c.id, editForm);
-		if (result) {
-			editModalRef.current?.close();
-			onRefresh();
+		if (!result) return;
+
+		// Si hay un archivo de convenio, subirlo
+		if (conventionFile) {
+			const uploadResult = await handleUpload(
+				c.id,
+				conventionFile,
+			);
+			if (!uploadResult) {
+				// Aún así cerramos el modal ya que los datos se guardaron
+				editModalRef.current?.close();
+				onRefresh();
+				return;
+			}
 		}
+
+		editModalRef.current?.close();
+		onRefresh();
 	};
 
 	// Handler para eliminar
@@ -377,6 +399,11 @@ function InternshipCenterCard({
 												<span>{updateError}</span>
 											</div>
 										)}
+										{uploadError && (
+											<div className="alert alert-error">
+												<span>{uploadError}</span>
+											</div>
+										)}
 										<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 											<div className="flex flex-col gap-2 text-base-content/80">
 												<h3>
@@ -537,7 +564,9 @@ function InternshipCenterCard({
 													accept="application/pdf"
 													onChange={handleFileChange}
 													className="file-input file-input-bordered w-full"
-													disabled={isUpdating}
+													disabled={
+														isUpdating || isUploading
+													}
 												/>
 												{conventionFile && (
 													<div className="flex items-center gap-2 p-2 bg-info/10 rounded-lg">
@@ -559,7 +588,9 @@ function InternshipCenterCard({
 											type="button"
 											className={`btn btn-info btn-soft ${!hasConvention ? 'btn-disabled' : ''}`}
 											disabled={
-												!hasConvention || isUpdating
+												!hasConvention ||
+												isUpdating ||
+												isUploading
 											}
 										>
 											<FileText size={18} />
@@ -571,7 +602,7 @@ function InternshipCenterCard({
 											onClick={() =>
 												editModalRef.current?.close()
 											}
-											disabled={isUpdating}
+											disabled={isUpdating || isUploading}
 										>
 											Cancelar
 										</button>
@@ -579,15 +610,17 @@ function InternshipCenterCard({
 											type="button"
 											className="btn btn-success btn-soft"
 											onClick={handleSaveEdit}
-											disabled={isUpdating}
+											disabled={isUpdating || isUploading}
 										>
-											{isUpdating ? (
+											{isUpdating || isUploading ? (
 												<>
 													<Loader2
 														size={18}
 														className="animate-spin"
 													/>
-													Guardando...
+													{isUploading
+														? 'Subiendo convenio...'
+														: 'Guardando...'}
 												</>
 											) : (
 												<>

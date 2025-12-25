@@ -88,10 +88,31 @@ async function deleteOne(id: number) {
 	return true;
 }
 
+async function updateConventionDocument(
+	id: number,
+	documentId: number | null,
+) {
+	const internshipCenter =
+		await internshipCenterRepository.findOneBy({
+			id,
+		});
+
+	if (!internshipCenter) {
+		return null;
+	}
+
+	internshipCenter.convention_document_id = documentId;
+	const updatedInternshipCenter =
+		await internshipCenterRepository.save(internshipCenter);
+
+	return updatedInternshipCenter;
+}
+
 export const InternshipCenterServices = {
 	findOne,
 	findMany,
 	updateOne,
 	deleteOne,
 	createOne,
+	updateConventionDocument,
 };
