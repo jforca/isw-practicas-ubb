@@ -114,6 +114,15 @@ const PaginationSchema = z.object({
 		.positive()
 		.max(100)
 		.default(10),
+	search: z.string().optional(),
+	hasConvention: z
+		.enum(['true', 'false', 'all'])
+		.optional()
+		.transform((val) => {
+			if (val === 'true') return true;
+			if (val === 'false') return false;
+			return null;
+		}),
 });
 
 async function findMany(req: Request, res: Response) {
@@ -131,13 +140,14 @@ async function findMany(req: Request, res: Response) {
 		return;
 	}
 
-	const { offset, limit } = data;
+	const { offset, limit, search, hasConvention } = data;
 
 	try {
 		const response =
 			await InternshipCenterServices.findMany(
 				offset,
 				limit,
+				{ search, hasConvention },
 			);
 
 		handleSuccess(

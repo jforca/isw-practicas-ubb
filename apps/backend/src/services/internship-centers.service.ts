@@ -22,13 +22,39 @@ async function findOne(id: number) {
 	return internshipCenter;
 }
 
-async function findMany(offset: number, limit: number) {
+async function findMany(
+	offset: number,
+	limit: number,
+	filters?: {
+		search?: string;
+		hasConvention?: boolean | null;
+	},
+) {
+	const queryBuilder = internshipCenterRepository
+		.createQueryBuilder('ic')
+		.skip(offset)
+		.take(limit)
+		.orderBy('ic.createdAt', 'DESC');
+
+	// Filtro de búsqueda por nombre o RUT
+	if (filters?.search) {
+		queryBuilder.andWhere(
+			'(ic.legal_name ILIKE :search OR ic.company_rut ILIKE :search)',
+			{ search: `%${filters.search}%` },
+		);
+	}
+
+	// Filtro por convenio
+	if (filters?.hasConvention === true) {
+		queryBuilder.andWhere(
+			'ic.convention_document IS NOT NULL',
+		);
+	} else if (filters?.hasConvention === false) {
+		queryBuilder.andWhere('ic.convention_document IS NULL');
+	}
+
 	const [data, total] =
-		await internshipCenterRepository.findAndCount({
-			skip: offset,
-			take: limit,
-			order: { createdAt: 'DESC' },
-		});
+		await queryBuilder.getManyAndCount();
 
 	return {
 		data,

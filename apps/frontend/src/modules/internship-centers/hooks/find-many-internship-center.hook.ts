@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import type { TInternshipCenter } from '@packages/schema/internship-centers.schema';
 
 export type TPagination = {
@@ -8,6 +8,11 @@ export type TPagination = {
 	hasMore: boolean;
 };
 
+export type TFilters = {
+	search: string;
+	hasConvention: 'all' | 'true' | 'false';
+};
+
 const initialPagination: TPagination = {
 	total: 0,
 	offset: 0,
@@ -15,22 +20,56 @@ const initialPagination: TPagination = {
 	hasMore: false,
 };
 
+const initialFilters: TFilters = {
+	search: '',
+	hasConvention: 'all',
+};
+
 export function UseFindManyInternshipCenter() {
 	const [data, setData] = useState<TInternshipCenter[]>([]);
 	const [pagination, setPagination] = useState<TPagination>(
 		initialPagination,
 	);
+	const [filters, setFilters] =
+		useState<TFilters>(initialFilters);
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
+	// Ref para mantener los filtros actuales
+	const filtersRef = useRef<TFilters>(initialFilters);
+
 	const handleFindMany = useCallback(
-		async (offset: number, limit: number) => {
+		async (
+			offset: number,
+			limit: number,
+			currentFilters?: TFilters,
+		) => {
 			setIsLoading(true);
 			setError(null);
 
+			// Usar los filtros pasados o los del ref
+			const activeFilters =
+				currentFilters ?? filtersRef.current;
+
 			try {
+				const params = new URLSearchParams({
+					offset: offset.toString(),
+					limit: limit.toString(),
+				});
+
+				if (activeFilters.search) {
+					params.append('search', activeFilters.search);
+				}
+
+				if (activeFilters.hasConvention !== 'all') {
+					params.append(
+						'hasConvention',
+						activeFilters.hasConvention,
+					);
+				}
+
 				const response = await fetch(
-					`/api/internship-centers/find-many?offset=${offset}&limit=${limit}`,
+					`/api/internship-centers/find-many?${params.toString()}`,
 				);
 
 				if (!response.ok) {
@@ -53,11 +92,26 @@ export function UseFindManyInternshipCenter() {
 		[],
 	);
 
+	const updateFilters = useCallback(
+		(newFilters: Partial<TFilters>) => {
+			const updated = {
+				...filtersRef.current,
+				...newFilters,
+			};
+			filtersRef.current = updated;
+			setFilters(updated);
+			// Volver a la primera página con los nuevos filtros
+			handleFindMany(0, pagination.limit, updated);
+		},
+		[handleFindMany, pagination.limit],
+	);
+
 	const goToPage = useCallback(
 		(page: number) => {
 			handleFindMany(
 				(page - 1) * pagination.limit,
 				pagination.limit,
+				filtersRef.current,
 			);
 		},
 		[pagination.limit, handleFindMany],
@@ -68,6 +122,7 @@ export function UseFindManyInternshipCenter() {
 			handleFindMany(
 				pagination.offset + pagination.limit,
 				pagination.limit,
+				filtersRef.current,
 			);
 		}
 	}, [pagination, handleFindMany]);
@@ -77,13 +132,14 @@ export function UseFindManyInternshipCenter() {
 			handleFindMany(
 				Math.max(0, pagination.offset - pagination.limit),
 				pagination.limit,
+				filtersRef.current,
 			);
 		}
 	}, [pagination, handleFindMany]);
 
 	const changeLimit = useCallback(
 		(newLimit: number) => {
-			handleFindMany(0, newLimit);
+			handleFindMany(0, newLimit, filtersRef.current);
 		},
 		[handleFindMany],
 	);
@@ -97,11 +153,13 @@ export function UseFindManyInternshipCenter() {
 	return {
 		data,
 		pagination,
+		filters,
 		isLoading,
 		error,
 		currentPage,
 		totalPages,
 		handleFindMany,
+		updateFilters,
 		goToPage,
 		nextPage,
 		prevPage,
