@@ -25,7 +25,7 @@ async function findOne(id: number) {
 
 		return entry;
 	} catch (error) {
-		console.error('Error buscar bitacora:', error);
+		console.error('Error al buscar la bitacora:', error);
 	}
 }
 
@@ -40,7 +40,7 @@ async function findMany() {
 
 		return entries;
 	} catch (error) {
-		console.error('Error al buscar bitacoras:', error);
+		console.error('Error al buscar las bitacoras:', error);
 	}
 }
 
@@ -55,15 +55,10 @@ async function createOne(data: ICreateLogbookDto) {
 			internship: { id: data.internshipId },
 		});
 
-		const savedEntry =
-			await logbookEntriesRepo.save(newEntry);
-
-		return savedEntry;
+		// Al guardar, TypeORM devuelve el objeto con su ID y fechas automáticas
+		return await logbookEntriesRepo.save(newEntry);
 	} catch (error) {
-		console.error(
-			'Error creando entrada de bitacora:',
-			error,
-		);
+		console.error('Error creando la bitacora:', error);
 		return null;
 	}
 }
@@ -95,7 +90,7 @@ async function updateOne(
 		return updatedEntry;
 	} catch (error) {
 		console.error(
-			'Error al actualizar la bitácora:',
+			'Error al actualizar la bitacora:',
 			error,
 		);
 		return null;

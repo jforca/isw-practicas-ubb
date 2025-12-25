@@ -6,6 +6,39 @@ import {
 	handleErrorClient,
 } from '@handlers/response.handler';
 
+async function findOne(req: Request, res: Response) {
+	try {
+		const { id } = req.params;
+
+		const data = await LogbookEntriesServices.findOne(
+			Number(id),
+		);
+
+		if (!data) {
+			return handleErrorServer(
+				res,
+				404,
+				'No se encontro la bitacora solicitada',
+				null,
+			);
+		}
+
+		return handleSuccess(
+			res,
+			200,
+			'Bitacora obtenida con exito',
+			data,
+		);
+	} catch (err) {
+		return handleErrorServer(
+			res,
+			500,
+			'Error al buscar la bitacora',
+			err,
+		);
+	}
+}
+
 async function findMany(_req: Request, res: Response) {
 	try {
 		const data = await LogbookEntriesServices.findMany();
@@ -14,7 +47,7 @@ async function findMany(_req: Request, res: Response) {
 			return handleErrorServer(
 				res,
 				500,
-				'No se pudieron recuperar los registros',
+				'No se pudieron recuperar las bitacoras',
 				null,
 			);
 		}
@@ -22,14 +55,14 @@ async function findMany(_req: Request, res: Response) {
 		return handleSuccess(
 			res,
 			200,
-			'Registros del libro de bitácora obtenidos con éxito',
+			'bitacoras obtenidas con exito',
 			data,
 		);
 	} catch (err) {
 		return handleErrorServer(
 			res,
 			500,
-			'Error interno al obtener los registros',
+			'Error interno al obtener las bitacoras',
 			err,
 		);
 	}
@@ -58,7 +91,7 @@ async function createOne(req: Request, res: Response) {
 			return handleErrorServer(
 				res,
 				500,
-				'No se pudo crear el registro de bitácora',
+				'No se pudo crear la bitacora',
 				null,
 			);
 		}
@@ -66,14 +99,14 @@ async function createOne(req: Request, res: Response) {
 		return handleSuccess(
 			res,
 			201,
-			'Bitácora creada con éxito',
+			'Bitacora creada bien',
 			data,
 		);
 	} catch (err) {
 		return handleErrorServer(
 			res,
 			500,
-			'Error interno al crear la bitácora',
+			'Error interno al crear la bitacora',
 			err,
 		);
 	}
@@ -94,7 +127,7 @@ async function updateOne(req: Request, res: Response) {
 			return handleErrorServer(
 				res,
 				404,
-				'No se encontró el registro de bitácora para actualizar',
+				'No se encontró la bitacora',
 				null,
 			);
 		}
@@ -102,20 +135,21 @@ async function updateOne(req: Request, res: Response) {
 		return handleSuccess(
 			res,
 			200,
-			'Registro de bitácora actualizado con éxito',
+			'Bitacora actualizada bien',
 			data,
 		);
 	} catch (err) {
 		return handleErrorServer(
 			res,
 			500,
-			'Error al actualizar el registro del libro de bitácora',
+			'Error al actualizar la bitacora',
 			err,
 		);
 	}
 }
 
 export const LogbookEntriesControllers = {
+	findOne,
 	findMany,
 	createOne,
 	updateOne,
