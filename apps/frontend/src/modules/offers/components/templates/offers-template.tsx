@@ -132,59 +132,57 @@ export function OffersTemplate() {
 	};
 
 	return (
-		<section className="min-h-screen bg-base-200 p-6">
-			<div className="max-w-7xl mx-auto">
-				<header className="mb-6">
-					<div className="flex items-center gap-3 mb-2">
-						<div className="w-12 h-12 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center text-white shadow-md">
-							<Briefcase size={24} />
-						</div>
-						<div>
-							<h1 className="text-3xl font-bold text-base-content">
-								Ofertas de Práctica
-							</h1>
-							<p className="text-sm text-base-content/60">
-								Explora las oportunidades disponibles
-							</p>
-						</div>
+		<section>
+			<header className="mb-6">
+				<div className="flex items-center gap-3 mb-2">
+					<div className="w-12 h-12 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center text-white shadow-md">
+						<Briefcase size={24} />
 					</div>
-				</header>
-
-				<div className="mb-4">
-					<SearchBar
-						value={searchTerm}
-						onChange={setSearchTerm}
-						placeholder="Buscar por título de oferta..."
-					/>
+					<div>
+						<h1 className="text-3xl font-bold text-base-content">
+							Ofertas de Práctica
+						</h1>
+						<p className="text-sm text-base-content/60">
+							Explora las oportunidades disponibles
+						</p>
+					</div>
 				</div>
+			</header>
 
-				<div className="mb-6">
-					<FilterBar
-						selectedStatus={selectedStatus}
-						onStatusChange={setSelectedStatus}
-						selectedType={selectedType}
-						onTypeChange={setSelectedType}
-					/>
-				</div>
-
-				<div className="mb-4">
-					<p className="text-sm text-base-content/70">
-						Mostrando{' '}
-						<span className="font-semibold text-primary">
-							{filteredOffers.length}
-						</span>{' '}
-						{filteredOffers.length === 1
-							? 'oferta'
-							: 'ofertas'}
-					</p>
-				</div>
-
-				<OffersGrid
-					offers={filteredOffers}
-					onApply={handleApply}
-					isLoading={false}
+			<div className="mb-4">
+				<SearchBar
+					value={searchTerm}
+					onChange={setSearchTerm}
+					placeholder="Buscar por título de oferta..."
 				/>
 			</div>
+
+			<div className="mb-6">
+				<FilterBar
+					selectedStatus={selectedStatus}
+					onStatusChange={setSelectedStatus}
+					selectedType={selectedType}
+					onTypeChange={setSelectedType}
+				/>
+			</div>
+
+			<div className="mb-4">
+				<p className="text-sm text-base-content/70">
+					Mostrando{' '}
+					<span className="font-semibold text-primary">
+						{filteredOffers.length}
+					</span>{' '}
+					{filteredOffers.length === 1
+						? 'oferta'
+						: 'ofertas'}
+				</p>
+			</div>
+
+			<OffersGrid
+				offers={filteredOffers}
+				onApply={handleApply}
+				isLoading={false}
+			/>
 		</section>
 	);
 }

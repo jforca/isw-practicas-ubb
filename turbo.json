@@ -8,15 +8,15 @@
 		"start": {
 			"dependsOn": ["^start"]
 		},
-		"web": {
-			"cache": false,
-			"persistent": true
-		},
-		"mobile": {
-			"cache": false,
-			"persistent": true
-		},
 		"dev": {
+			"cache": false,
+			"persistent": true
+		},
+		"dev:frontend": {
+			"cache": false,
+			"persistent": true
+		},
+		"dev:backend": {
 			"cache": false,
 			"persistent": true
 		}
