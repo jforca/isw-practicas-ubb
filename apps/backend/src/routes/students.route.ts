@@ -9,10 +9,10 @@ import {
 
 const router = Router();
 
-router.get('/', listStudents);
-router.get('/:id', getStudent);
+router.get('/find-many', listStudents);
+router.get('/find-one/:id', getStudent);
 
-router.post('/', createNewStudent);
-router.put('/:id', updateStudentData);
-router.delete('/:id', deleteStudentData);
-export { router as StudentsRouter };
+router.post('/create-one/', createNewStudent);
+router.patch('/update-one/:id', updateStudentData);
+router.delete('/delete-one/:id', deleteStudentData);
+export default router;
