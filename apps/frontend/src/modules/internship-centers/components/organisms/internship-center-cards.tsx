@@ -2,6 +2,7 @@ import { useId, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import type { TInternshipCenter } from '@packages/schema/internship-centers.schema';
 import { Card, Modal } from '@common/components';
+import { env } from '@lib/env';
 import {
 	Eye,
 	PenLine,
@@ -130,6 +131,18 @@ function InternshipCenterCard({
 		useState<File | null>(null);
 	const hasConvention = c.convention_document_id !== null;
 
+	// URL para ver el convenio en nueva pestaña
+	const conventionViewUrl = hasConvention
+		? `${env.VITE_BACKEND_URL}/api/documents/convention/${c.id}/view`
+		: null;
+
+	// Handler para abrir convenio en nueva pestaña
+	const handleViewConvention = () => {
+		if (conventionViewUrl) {
+			window.open(conventionViewUrl, '_blank');
+		}
+	};
+
 	// Referencias a los modales para cerrarlos programáticamente
 	const editModalRef = useRef<HTMLDialogElement>(null);
 	const deleteModalRef = useRef<HTMLDialogElement>(null);
@@ -248,6 +261,7 @@ function InternshipCenterCard({
 							type="button"
 							className={`btn btn-info btn-soft rounded-full size-10 ${!hasConvention ? 'btn-disabled opacity-50 cursor-not-allowed' : ''}`}
 							disabled={!hasConvention}
+							onClick={handleViewConvention}
 						>
 							<FileText className="scale-300" />
 						</button>
@@ -303,7 +317,7 @@ function InternshipCenterCard({
 												Numero Convenio
 											</h3>
 											<p className="bg-gray-200 rounded-lg p-2">
-												{c.convention_document_id}
+												{c.convention_document_id ?? 'N/A'}
 											</p>
 										</div>
 										<div className="flex flex-col gap-2 text-base-content/80">
@@ -353,7 +367,9 @@ function InternshipCenterCard({
 								<Modal.Actions>
 									<button
 										type="button"
-										className="btn btn-info"
+										className={`btn btn-info ${!hasConvention ? 'btn-disabled' : ''}`}
+										disabled={!hasConvention}
+										onClick={handleViewConvention}
 									>
 										<FileText size={18} />
 										Ver Convenio
@@ -592,6 +608,7 @@ function InternshipCenterCard({
 												isUpdating ||
 												isUploading
 											}
+											onClick={handleViewConvention}
 										>
 											<FileText size={18} />
 											Ver Convenio
