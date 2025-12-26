@@ -5,17 +5,18 @@ import {
 	ChileanRUTRegex,
 } from '@packages/utils/regex.utils';
 import type { TInternshipCenter } from '@packages/schema/internship-centers.schema';
-import type {
-	TPagination,
-	TFilters,
-} from '@modules/internship-centers/hooks/find-many-internship-center.hook';
+
 import {
 	InternshipCenterCards,
 	InternshipCenterHeader,
 } from '@modules/internship-centers/components/organisms';
 import { SearchBar } from '@common/components';
-import { UseCreateOneInternshipCenter } from '@modules/internship-centers/hooks/create-one-internship-center.hook';
-import { useUploadConvention } from '@modules/internship-centers/hooks/upload-convention.hook';
+import {
+	UseCreateOneInternshipCenter,
+	UseUploadConvention,
+	type TPagination,
+	type TFilters,
+} from '@modules/internship-centers/hooks';
 import {
 	Plus,
 	IdCard,
@@ -103,7 +104,7 @@ export function InternshipCentersTemplate({
 		handleUpload,
 		isLoading: isUploading,
 		error: uploadError,
-	} = useUploadConvention();
+	} = UseUploadConvention();
 
 	// Handlers
 	const handleInputChange = (

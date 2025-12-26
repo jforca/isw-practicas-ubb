@@ -27,10 +27,12 @@ import {
 	Pagination,
 	PaginationInfo,
 } from '@modules/internship-centers/components/molecules';
-import type { TPagination } from '@modules/internship-centers/hooks/find-many-internship-center.hook';
-import { UseUpdateOneInternshipCenter } from '@modules/internship-centers/hooks/update-one-internship-center.hook';
-import { UseDeleteInternshipCenter } from '@modules/internship-centers/hooks/delete-internship-center.hook';
-import { useUploadConvention } from '@modules/internship-centers/hooks/upload-convention.hook';
+import {
+	UseUploadConvention,
+	UseDeleteOneInternshipCenter,
+	UseUpdateOneInternshipCenter,
+	type TPagination,
+} from '@modules/internship-centers/hooks';
 
 type TInternshipCenterCardsProps = {
 	data: TInternshipCenter[];
@@ -176,13 +178,13 @@ function InternshipCenterCard({
 		handleDelete,
 		isLoading: isDeleting,
 		error: deleteError,
-	} = UseDeleteInternshipCenter();
+	} = UseDeleteOneInternshipCenter();
 
 	const {
 		handleUpload,
 		isLoading: isUploading,
 		error: uploadError,
-	} = useUploadConvention();
+	} = UseUploadConvention();
 
 	// Handler para actualizar el formulario
 	const handleInputChange = (

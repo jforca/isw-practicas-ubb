@@ -3,7 +3,7 @@ import { InternshipCentersTemplate } from '@modules/internship-centers/component
 import {
 	UseFindManyInternshipCenter,
 	type TFilters,
-} from '@modules/internship-centers/hooks/find-many-internship-center.hook';
+} from '@modules/internship-centers/hooks';
 
 export function InternshipCentersPage() {
 	const {

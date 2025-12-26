@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 
-export function UseDeleteInternshipCenter() {
+export function UseDeleteOneInternshipCenter() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [isSuccess, setIsSuccess] = useState(false);
