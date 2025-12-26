@@ -1,7 +1,7 @@
-import { StatsOverview } from '@modules/dashboard-Encargado/components/molecules/stats-overview';
-import { Toolbar } from '@modules/dashboard-Encargado/components/molecules/toolbar';
-import { StudentsTable } from '@modules/dashboard-Encargado/components/organisms/students-table';
-import { StudentPreviewPanel } from '@modules/dashboard-Encargado/components/organisms/student-preview-panel';
+import { StatsOverview } from '@modules/dashboard-encargado/components/molecules/stats-overview';
+import { Toolbar } from '@modules/dashboard-encargado/components/molecules/toolbar';
+import { StudentsTable } from '@modules/dashboard-encargado/components/organisms/students-table';
+import { StudentPreviewPanel } from '@modules/dashboard-encargado/components/organisms/student-preview-panel';
 import type { TStudent } from '@modules/dashboard-Encargado/types';
 
 const mockStudents: TStudent[] = [
