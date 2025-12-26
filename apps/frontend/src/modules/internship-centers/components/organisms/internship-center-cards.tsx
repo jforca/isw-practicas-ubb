@@ -396,10 +396,11 @@ function InternshipCenterCard({
 													size={18}
 													className="inline mr-2"
 												/>
-												Numero Convenio
+												Convenio
 											</h3>
 											<p className="bg-gray-200 rounded-lg p-2">
-												{c.convention_document_id ?? 'N/A'}
+												{c.convention_document_name ??
+													'Sin convenio'}
 											</p>
 										</div>
 										<div className="flex flex-col gap-2 text-base-content/80">
@@ -695,8 +696,8 @@ function InternshipCenterCard({
 															className="text-success"
 														/>
 														<span className="text-sm text-success">
-															Convenio actual: ID #
-															{c.convention_document_id}
+															Convenio actual:{' '}
+															{c.convention_document_name}
 														</span>
 													</div>
 												)}
