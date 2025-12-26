@@ -1,7 +1,7 @@
 import { StatsOverview } from '@modules/dashboard-encargado/components/molecules/stats-overview';
 import { Toolbar } from '@modules/dashboard-encargado/components/molecules/toolbar';
 import { StudentsTable } from '@modules/dashboard-encargado/components/organisms/students-table';
-import { StudentPreviewPanel } from '@modules/dashboard-encargado/components/organisms/student-preview-panel';
+
 import type { TStudent } from '@modules/dashboard-Encargado/types';
 
 const mockStudents: TStudent[] = [
@@ -80,12 +80,9 @@ export function EncargadoDashboardTemplate() {
 
 			<div className="my-2" />
 
-			<div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-				<div className="lg:col-span-2">
+			<div className="grid grid-cols-1 gap-4">
+				<div className="w-full">
 					<StudentsTable students={students} />
-				</div>
-				<div className="lg:col-span-1">
-					<StudentPreviewPanel />
 				</div>
 			</div>
 		</section>
