@@ -6,12 +6,18 @@ export type TStudentUser = User;
 
 const userRepo = AppDataSource.getRepository(User);
 
-export async function findMany() {
-	const rows = await userRepo.find({
+export async function findMany(
+	page: number,
+	limit: number,
+): Promise<[TStudentUser[], number]> {
+	const [rows, total] = await userRepo.findAndCount({
 		where: { user_role: 'student' },
+		take: limit,
+		skip: (page - 1) * limit,
+		order: { name: 'ASC' },
 	});
 
-	return rows;
+	return [rows, total];
 }
 
 export async function findOne(id: string) {

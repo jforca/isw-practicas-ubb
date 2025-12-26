@@ -9,21 +9,35 @@ import {
 import {
 	handleSuccess,
 	handleErrorServer,
+	handleErrorClient,
 } from '@handlers/response.handler';
 import type { TStudentUser } from '@services/students.service';
 
 export async function listStudents(
-	_req: Request,
+	req: Request,
 	res: Response,
 ) {
 	try {
-		const data: TStudentUser[] = await findMany();
-		return handleSuccess(
-			res,
-			200,
-			'Estudiantes obtenidos',
-			data,
-		);
+		const page = req.query.page
+			? parseInt(req.query.page as string, 10)
+			: 1;
+		const limit = req.query.limit
+			? parseInt(req.query.limit as string, 10)
+			: 10;
+
+		const [students, total] = await findMany(page, limit);
+
+		const totalPages = Math.ceil(total / limit);
+
+		return res.status(200).json({
+			payload: students,
+			pagination: {
+				total,
+				page,
+				limit,
+				totalPages,
+			},
+		});
 	} catch (err) {
 		return handleErrorServer(
 			res,
@@ -42,7 +56,7 @@ export async function getStudent(
 		const { id } = req.params;
 		const data: TStudentUser | null = await findOne(id);
 		if (data == null) {
-			return handleErrorServer(
+			return handleErrorClient(
 				res,
 				404,
 				'Estudiante no encontrado',
@@ -75,7 +89,7 @@ export async function createNewStudent(
 		);
 
 		if (data == null) {
-			return handleErrorServer(
+			return handleErrorClient(
 				res,
 				400,
 				'Error al crear estudiante',
@@ -109,7 +123,7 @@ export async function updateStudentData(
 			req.body,
 		);
 		if (data == null) {
-			return handleErrorServer(
+			return handleErrorClient(
 				res,
 				404,
 				'Estudiante no encontrado',
@@ -140,7 +154,7 @@ export async function deleteStudentData(
 		const { id } = req.params;
 		const result = await deleteStudent(id);
 		if (!result) {
-			return handleErrorServer(
+			return handleErrorClient(
 				res,
 				404,
 				'Estudiante no encontrado',
