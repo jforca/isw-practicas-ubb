@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import type { TStudent } from './create-student.hook';
+import type { TStudent } from './create-one-student.hook';
 
 type TUpdateStudentData = Partial<
 	Omit<
