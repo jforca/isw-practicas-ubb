@@ -1,43 +1,33 @@
-import type {
-	TStudent,
-	TStudentStatus,
-} from '@modules/dashboard-Encargado/types';
+import type { TStudent } from '@packages/schema/student.schema';
+import { Loader } from 'lucide-react';
 
 interface IStudentsTableProps {
 	students: TStudent[];
+	isLoading: boolean;
+	error: string | null;
 }
-
-function statusToLabel(s: TStudentStatus) {
-	switch (s) {
-		case 'en_curso':
-			return 'En Curso';
-		case 'revision':
-			return 'Revisión Pendiente';
-		case 'evaluacion':
-			return 'Evaluación Pendiente';
-		default:
-			return 'Sin Actividad';
-	}
-}
-
-function statusToBadge(s: TStudentStatus) {
-	switch (s) {
-		case 'en_curso':
-			return 'badge-success';
-		case 'revision':
-			return 'badge-warning';
-		case 'evaluacion':
-			return 'badge-info';
-		default:
-			return 'badge-ghost';
-	}
-}
-
-// Avatar visual: solo un círculo gris (sin iniciales ni foto)
 
 export function StudentsTable({
 	students,
+	isLoading,
+	error,
 }: IStudentsTableProps) {
+	if (isLoading) {
+		return (
+			<div className="flex justify-center p-10">
+				<Loader className="animate-spin text-primary" />
+			</div>
+		);
+	}
+
+	if (error) {
+		return (
+			<div className="alert alert-error">
+				<span>{error}</span>
+			</div>
+		);
+	}
+
 	return (
 		<div className="card bg-base-100 border border-base-200 shadow-sm">
 			<div className="card-body p-0">
@@ -47,9 +37,8 @@ export function StudentsTable({
 							<tr>
 								<th className="w-10"></th>
 								<th>Alumno</th>
-								<th>Carrera</th>
-								<th>Estado</th>
-								<th>Cursando</th>
+								<th>Email</th>
+								<th>Rol</th>
 								<th>Acciones</th>
 							</tr>
 						</thead>
@@ -58,7 +47,11 @@ export function StudentsTable({
 								<tr key={s.id} className="hover">
 									<td>
 										<div className="avatar">
-											<div className="w-8 h-8 rounded-full bg-base-300" />
+											<div className="w-8 h-8 rounded-full bg-base-300">
+												{s.image && (
+													<img src={s.image} alt={s.name} />
+												)}
+											</div>
 										</div>
 									</td>
 									<td>
@@ -69,25 +62,11 @@ export function StudentsTable({
 											{s.rut}
 										</div>
 									</td>
-									<td className="whitespace-nowrap">
-										{s.career}
-									</td>
+									<td>{s.email}</td>
 									<td>
-										<div
-											className={`badge p-5 ${statusToBadge(s.status)} badge-outline`}
-										>
-											{statusToLabel(s.status)}
+										<div className="badge badge-ghost badge-outline">
+											{s.user_role}
 										</div>
-									</td>
-									<td className="space-x-1">
-										{s.requirements.map((r) => (
-											<span
-												key={r}
-												className="badge badge-sm badge-outline"
-											>
-												{r}
-											</span>
-										))}
 									</td>
 									<td>
 										<div className="flex gap-2 text-primary text-xs">

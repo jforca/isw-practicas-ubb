@@ -1,56 +1,31 @@
+import { useState, useEffect } from 'react';
 import { StatsOverview } from '@modules/dashboard-encargado/components/molecules/stats-overview';
 import { Toolbar } from '@modules/dashboard-encargado/components/molecules/toolbar';
 import { StudentsTable } from '@modules/dashboard-encargado/components/organisms/students-table';
-
-import type { TStudent } from '@modules/dashboard-Encargado/types';
-
-const mockStudents: TStudent[] = [
-	{
-		id: '1',
-		name: 'Ana Pérez',
-		rut: '18.234.567-3',
-		career: 'Ing. Informática',
-		status: 'en_curso',
-		requirements: ['P2'],
-	},
-	{
-		id: '2',
-		name: 'Bruno Díaz',
-		rut: '20.987.654-1',
-		career: 'Ing. Civil Industrial',
-		status: 'revision',
-		requirements: ['P2'],
-	},
-	{
-		id: '3',
-		name: 'Carla Muñoz',
-		rut: '19.111.222-9',
-		career: 'Ing. en Gestión',
-		status: 'evaluacion',
-		requirements: ['P2'],
-	},
-	{
-		id: '4',
-		name: 'Diego Rivas',
-		rut: '21.333.444-5',
-		career: 'Ing. Informática',
-		status: 'sin_actividad',
-		requirements: ['P1'],
-	},
-];
+import { useFindManyStudents } from '@modules/dashboard-encargado/hooks/find-many-student.hook';
+import { Pagination } from '@modules/internship-centers/components/molecules/pagination';
 
 export function EncargadoDashboardTemplate() {
-	const students = mockStudents;
-	const counts = {
-		total: students.length,
-		inCourse: students.filter(
-			(s) => s.status === 'en_curso',
-		).length,
-		review: students.filter((s) => s.status === 'revision')
-			.length,
-		evaluation: students.filter(
-			(s) => s.status === 'evaluacion',
-		).length,
+	const {
+		data: students,
+		pagination,
+		isLoading,
+		error,
+		handleFindMany,
+	} = useFindManyStudents();
+
+	const [currentPage, setCurrentPage] = useState(1);
+	const [limit] = useState(5);
+
+	useEffect(() => {
+		handleFindMany(currentPage, limit);
+	}, [currentPage, limit, handleFindMany]);
+
+	const stats = {
+		total: pagination?.total ?? 0,
+		inCourse: 0,
+		onReview: 0,
+		onEvaluation: 0,
 	};
 
 	return (
@@ -68,22 +43,46 @@ export function EncargadoDashboardTemplate() {
 			</header>
 
 			<StatsOverview
-				total={counts.total}
-				inCourse={counts.inCourse}
-				onReview={counts.review}
-				onEvaluation={counts.evaluation}
+				total={stats.total}
+				inCourse={stats.inCourse}
+				onReview={stats.onReview}
+				onEvaluation={stats.onEvaluation}
 			/>
 
 			<div className="my-3" />
 
-			<Toolbar />
+			<Toolbar
+				onStudentCreated={() => {
+					handleFindMany(currentPage, limit);
+				}}
+			/>
 
 			<div className="my-2" />
 
 			<div className="grid grid-cols-1 gap-4">
 				<div className="w-full">
-					<StudentsTable students={students} />
+					<StudentsTable
+						students={students}
+						isLoading={isLoading}
+						error={error}
+					/>
 				</div>
+				{pagination && pagination.totalPages > 1 && (
+					<div className="flex justify-center mt-4">
+						<Pagination
+							currentPage={currentPage}
+							totalPages={pagination.totalPages}
+							onNextPage={() =>
+								setCurrentPage((prev) => prev + 1)
+							}
+							onPrevPage={() =>
+								setCurrentPage((prev) => prev - 1)
+							}
+							onPageChange={setCurrentPage}
+							isLoading={isLoading}
+						/>
+					</div>
+				)}
 			</div>
 		</section>
 	);

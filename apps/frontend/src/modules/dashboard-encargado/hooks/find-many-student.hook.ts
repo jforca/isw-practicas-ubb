@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { TStudent } from './create-one-student.hook';
+import type { TStudent } from '@packages/schema/student.schema';
 
 export type TPagination = {
 	total: number;
@@ -36,8 +36,8 @@ export function useFindManyStudents() {
 					);
 				}
 
-				setData(result.data.data);
-				setPagination(result.data.pagination);
+				setData(result.payload);
+				setPagination(result.pagination);
 				setIsSuccess(true);
 
 				return result;

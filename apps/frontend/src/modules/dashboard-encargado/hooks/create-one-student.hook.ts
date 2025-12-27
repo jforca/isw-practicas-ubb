@@ -1,19 +1,14 @@
 import { useState, useCallback } from 'react';
-
-export type TStudent = {
-	id: string;
-	name: string;
-	rut: string;
-	email: string;
-	phone?: string;
-	userRole: 'student';
-	createdAt: string;
-	updatedAt: string;
-};
+import type { TStudent } from '@packages/schema/student.schema';
 
 type TCreateStudentData = Omit<
 	TStudent,
-	'id' | 'createdAt' | 'updatedAt' | 'userRole'
+	| 'id'
+	| 'createdAt'
+	| 'updatedAt'
+	| 'user_role'
+	| 'emailverified'
+	| 'image'
 >;
 
 export function UseCreateStudent() {

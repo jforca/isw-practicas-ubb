@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { TStudent } from './create-one-student.hook';
+import type { TStudent } from '@packages/schema/student.schema';
 
 export const UseFindOneStudent = () => {
 	const [data, setData] = useState<TStudent | null>(null);
