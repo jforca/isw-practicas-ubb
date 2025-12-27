@@ -46,7 +46,7 @@ export function UseCreateStudent() {
 
 				setData(result.data);
 				setIsSuccess(true);
-				return result.payload;
+				return result.data;
 			} catch (error) {
 				const errorMessage =
 					error instanceof Error
