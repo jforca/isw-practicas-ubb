@@ -29,7 +29,6 @@ export const ViewLogbookModal: React.FC<
 	return (
 		<div className="modal modal-open">
 			<div className="modal-box w-11/12 max-w-3xl relative">
-				{/* Botón X de la esquina superior derecha */}
 				<button
 					onClick={onClose}
 					className="btn btn-sm btn-circle absolute right-2 top-2"
@@ -62,14 +61,11 @@ export const ViewLogbookModal: React.FC<
 				</div>
 			</div>
 
-			{/* --- CORRECCIÓN AQUÍ --- */}
-			{/* Usamos la estructura oficial de DaisyUI para el backdrop */}
 			<form method="dialog" className="modal-backdrop">
 				<button onClick={onClose} type="button">
 					close
 				</button>
 			</form>
-			{/* ----------------------- */}
 		</div>
 	);
 };

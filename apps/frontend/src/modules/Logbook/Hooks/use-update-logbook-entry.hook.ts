@@ -1,32 +1,37 @@
 import { useState } from 'react';
 
-interface ICreateLogbookDto {
+interface IUpdateLogbookDto {
 	title: string;
 	body: string;
-	internshipId: number;
 }
 
-export function UseCreateLogbookEntry() {
+export function UseUpdateLogbookEntry() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-
-	const createEntry = async (data: ICreateLogbookDto) => {
+	const updateEntry = async (
+		id: number,
+		data: IUpdateLogbookDto,
+	) => {
 		setIsLoading(true);
 		setError(null);
 
 		try {
-			const response = await fetch('/api/logbook-entries', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
+			const response = await fetch(
+				`/api/logbook-entries/${id}`,
+				{
+					method: 'PATCH',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify(data),
 				},
-				body: JSON.stringify(data),
-			});
+			);
 
 			if (!response.ok) {
 				const errorData = await response.json();
 				throw new Error(
-					errorData.message || 'Error al crear la bitácora',
+					errorData.message ||
+						'Error al actualizar la bitácora',
 				);
 			}
 
@@ -44,7 +49,7 @@ export function UseCreateLogbookEntry() {
 	};
 
 	return {
-		createEntry,
+		updateEntry,
 		isLoading,
 		error,
 	};

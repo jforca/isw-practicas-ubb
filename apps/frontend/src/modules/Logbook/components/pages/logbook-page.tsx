@@ -6,25 +6,28 @@ import React, {
 } from 'react';
 import type { ILogbookEntry } from '../types';
 import { LogbookTable } from '../organism/logbook-table-component';
-import { CreateLogbookModal } from '../organism/create-logbook-modal';
-import { ViewLogbookModal } from '../organism/view-logbook-modal'; // <--- IMPORTAR
+import {
+	CreateLogbookModal,
+	type ILogbookFormData,
+} from '../organism/create-logbook-modal';
+import { ViewLogbookModal } from '../organism/view-logbook-modal';
 import { LogbookManagementTemplate } from '../templates/logbook-template';
 import { Button } from '../atoms/button';
 import { UseFindManyLogbookEntries } from '../../Hooks/use-find-many-logbook-entries.hook';
 import { UseCreateLogbookEntry } from '../../Hooks/use-create-logbook-entry.hook';
-
+import { UseUpdateLogbookEntry } from '../../Hooks/use-update-logbook-entry.hook';
 const CURRENT_INTERNSHIP_ID = 1;
 
 export const LogbookPage: React.FC = () => {
-	// --- ESTADOS ---
-	const [isCreateModalOpen, setIsCreateModalOpen] =
+	const [isFormModalOpen, setIsFormModalOpen] =
 		useState(false);
 
-	// Estado para "Ver Detalle": guarda la entrada seleccionada o null si cerrado
+	const [editingData, setEditingData] =
+		useState<ILogbookFormData | null>(null);
+
 	const [selectedEntry, setSelectedEntry] =
 		useState<ILogbookEntry | null>(null);
 
-	// --- HOOKS ---
 	const {
 		data,
 		isLoading: isLoadingList,
@@ -40,6 +43,9 @@ export const LogbookPage: React.FC = () => {
 	const { createEntry, isLoading: isCreating } =
 		UseCreateLogbookEntry();
 
+	const { updateEntry, isLoading: isUpdating } =
+		UseUpdateLogbookEntry();
+
 	useEffect(() => {
 		handleFindMany(0, 5);
 	}, [handleFindMany]);
@@ -49,6 +55,7 @@ export const LogbookPage: React.FC = () => {
 			id: item.id,
 			title: item.title,
 			content: item.body,
+			created_at: item.created_at,
 			createdAt: item.created_at,
 			updatedAt: item.updated_at,
 			internshipId:
@@ -56,27 +63,57 @@ export const LogbookPage: React.FC = () => {
 		}));
 	}, [data]);
 
-	// --- HANDLERS ---
-	const handleCreateSubmit = async (
+	// Handles
+
+	// Crear
+	const handleOpenCreate = () => {
+		setEditingData(null);
+		setIsFormModalOpen(true);
+	};
+
+	// Editar
+	const handleEdit = useCallback(
+		(id: number) => {
+			const entryToEdit = entries.find((e) => e.id === id);
+			if (entryToEdit) {
+				setEditingData({
+					id: entryToEdit.id,
+					title: entryToEdit.title,
+					content: entryToEdit.content,
+				});
+				setIsFormModalOpen(true);
+			}
+		},
+		[entries],
+	);
+
+	const handleFormSubmit = async (
 		title: string,
 		body: string,
 	) => {
-		const success = await createEntry({
-			title,
-			body,
-			internshipId: CURRENT_INTERNSHIP_ID,
-		});
-		if (success) {
-			setIsCreateModalOpen(false);
-			handleFindMany(0, 5);
+		let success = false;
+
+		if (editingData?.id) {
+			success = await updateEntry(editingData.id, {
+				title,
+				body,
+			});
 		} else {
-			alert('Error al crear la entrada');
+			success = await createEntry({
+				title,
+				body,
+				internshipId: CURRENT_INTERNSHIP_ID,
+			});
+		}
+
+		if (success) {
+			setIsFormModalOpen(false);
+			setEditingData(null);
+			handleFindMany(pagination.offset, pagination.limit);
+		} else {
+			alert('Ocurrió un error al guardar.');
 		}
 	};
-
-	const handleEdit = useCallback((id: number) => {
-		console.log(`Editar ID: ${id}`);
-	}, []);
 
 	const handleDelete = useCallback((id: number) => {
 		if (window.confirm(`¿Eliminar registro ${id}?`)) {
@@ -84,32 +121,26 @@ export const LogbookPage: React.FC = () => {
 		}
 	}, []);
 
-	// Handler para abrir el modal de visualización
 	const handleView = useCallback((entry: ILogbookEntry) => {
 		setSelectedEntry(entry);
 	}, []);
 
-	// --- RENDER ---
 	const pageHeader = (
 		<div className="flex justify-between items-center">
 			<h1 className="text-2xl font-bold text-base-content">
 				Gestión de Registros del Logbook
 			</h1>
-			<Button
-				onClick={() => setIsCreateModalOpen(true)}
-				variant="primary"
-			>
+			<Button onClick={handleOpenCreate} variant="primary">
 				+ Nuevo Registro
 			</Button>
 		</div>
 	);
 
 	let contentNode: React.ReactNode;
-	// ... (Tu lógica de loading/error igual que antes) ...
 	if (isLoadingList && entries.length === 0) {
 		contentNode = (
 			<div className="flex justify-center p-8">
-				<span className="loading loading-spinner loading-lg text-primary"></span>
+				<span className="loading loading-spinner text-primary"></span>
 			</div>
 		);
 	} else if (listError) {
@@ -125,11 +156,9 @@ export const LogbookPage: React.FC = () => {
 					entries={entries}
 					onEdit={handleEdit}
 					onDelete={handleDelete}
-					onView={handleView} // <--- CONECTAR AQUÍ
+					onView={handleView}
 				/>
-
 				<div className="flex justify-between items-center mt-4 bg-base-200 p-3 rounded-lg">
-					{/* ... Tu paginación existente ... */}
 					<span className="text-sm text-gray-500">
 						Página {currentPage} de {totalPages || 1}
 					</span>
@@ -140,7 +169,7 @@ export const LogbookPage: React.FC = () => {
 							disabled={
 								pagination.offset === 0 || isLoadingList
 							}
-							className="btn-sm transition-transform duration-200 ease-in-out hover:scale-105 active:scale-95 disabled:hover:scale-100"
+							className="btn-sm"
 						>
 							Anterior
 						</Button>
@@ -150,7 +179,7 @@ export const LogbookPage: React.FC = () => {
 							disabled={
 								!pagination.hasMore || isLoadingList
 							}
-							className="btn-sm transition-transform duration-200 ease-in-out hover:scale-105 active:scale-95 disabled:hover:scale-100"
+							className="btn-sm"
 						>
 							Siguiente
 						</Button>
@@ -167,19 +196,18 @@ export const LogbookPage: React.FC = () => {
 				content={contentNode}
 			/>
 
-			{/* Modal de Creación */}
 			<CreateLogbookModal
-				isOpen={isCreateModalOpen}
-				onClose={() => setIsCreateModalOpen(false)}
-				onSubmit={handleCreateSubmit}
-				isLoading={isCreating}
+				isOpen={isFormModalOpen}
+				onClose={() => setIsFormModalOpen(false)}
+				onSubmit={handleFormSubmit}
+				isLoading={isCreating || isUpdating}
+				initialData={editingData}
 			/>
 
-			{/* Modal de Visualización (NUEVO) */}
 			<ViewLogbookModal
-				isOpen={!!selectedEntry} // Abierto si selectedEntry no es null
+				isOpen={!!selectedEntry}
 				entry={selectedEntry}
-				onClose={() => setSelectedEntry(null)} // Cerrar limpia el estado
+				onClose={() => setSelectedEntry(null)}
 			/>
 		</>
 	);

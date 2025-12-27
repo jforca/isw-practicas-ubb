@@ -1,34 +1,63 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '../atoms/button';
 import { Input } from '../atoms/input';
 import { TextArea } from '../atoms/text-area';
+
+export interface ILogbookFormData {
+	id?: number;
+	title: string;
+	content: string;
+}
 
 interface ICreateLogbookModalProps {
 	isOpen: boolean;
 	onClose: () => void;
 	onSubmit: (title: string, body: string) => Promise<void>;
 	isLoading: boolean;
+	initialData?: ILogbookFormData | null;
 }
 
 export const CreateLogbookModal: React.FC<
 	ICreateLogbookModalProps
-> = ({ isOpen, onClose, onSubmit, isLoading }) => {
+> = ({
+	isOpen,
+	onClose,
+	onSubmit,
+	isLoading,
+	initialData,
+}) => {
 	const [title, setTitle] = useState('');
 	const [body, setBody] = useState('');
 
-	if (!isOpen) return null;
+	useEffect(() => {
+		if (isOpen && initialData) {
+			setTitle(initialData.title);
+			setBody(initialData.content);
+		} else if (isOpen && !initialData) {
+			setTitle('');
+			setBody('');
+		}
+	}, [isOpen, initialData]);
 
 	const handleSubmit = async (
 		e: React.FormEvent<HTMLFormElement>,
 	) => {
-		e.preventDefault(); // Ahora TS sabe que esto es válido
+		e.preventDefault();
 		await onSubmit(title, body);
-		setTitle('');
-		setBody('');
 	};
 
+	if (!isOpen) return null;
+
+	const modalTitle = initialData
+		? 'Editar Bitácora'
+		: 'Nueva Bitácora';
+	const buttonText = isLoading
+		? 'Guardando...'
+		: initialData
+			? 'Actualizar'
+			: 'Guardar Registro';
+
 	return (
-		// Fondo oscuro del modal
 		<div className="modal modal-open">
 			<div className="modal-box relative">
 				<button
@@ -40,7 +69,7 @@ export const CreateLogbookModal: React.FC<
 				</button>
 
 				<h3 className="text-lg font-bold mb-4">
-					Nueva Bitácora
+					{modalTitle}
 				</h3>
 
 				<form onSubmit={handleSubmit} className="space-y-4">
@@ -48,7 +77,9 @@ export const CreateLogbookModal: React.FC<
 						label="Título"
 						placeholder="Ej: Avance semanal..."
 						value={title}
-						onChange={(e) => setTitle(e.target.value)}
+						onChange={(
+							e: React.ChangeEvent<HTMLInputElement>,
+						) => setTitle(e.target.value)}
 						required
 						disabled={isLoading}
 					/>
@@ -57,7 +88,9 @@ export const CreateLogbookModal: React.FC<
 						label="Contenido"
 						placeholder="Describe los avances y tareas realizadas..."
 						value={body}
-						onChange={(e) => setBody(e.target.value)}
+						onChange={(
+							e: React.ChangeEvent<HTMLTextAreaElement>,
+						) => setBody(e.target.value)}
 						required
 						disabled={isLoading}
 					/>
@@ -76,13 +109,16 @@ export const CreateLogbookModal: React.FC<
 							type="submit"
 							disabled={isLoading}
 						>
-							{isLoading
-								? 'Guardando...'
-								: 'Guardar Registro'}
+							{buttonText}
 						</Button>
 					</div>
 				</form>
 			</div>
+			<form method="dialog" className="modal-backdrop">
+				<button onClick={onClose} type="button">
+					close
+				</button>
+			</form>
 		</div>
 	);
 };
