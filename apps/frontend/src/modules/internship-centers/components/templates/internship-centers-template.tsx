@@ -278,7 +278,7 @@ export function InternshipCentersTemplate({
 
 				{/* Filtro de convenio */}
 				<select
-					className="select select-bordered"
+					className="select select-bordered w-full sm:w-auto"
 					value={filters.hasConvention}
 					onChange={(e) =>
 						onFilterConvention(
