@@ -6,7 +6,6 @@ import {
 	OneToOne,
 	OneToMany,
 	RelationId,
-	//  ForeignKey,
 } from 'typeorm';
 import { Internship } from './internship.entity';
 import { EvaluationResponse } from './evaluation-response.entity';
@@ -42,7 +41,6 @@ export class InternshipEvaluation {
 	)
 	responses: EvaluationResponse[];
 
-	// Optional signature document uploaded by supervisor/manager
 	@OneToOne(() => Document, { nullable: true })
 	@JoinColumn({ name: 'signature_document_id' })
 	signature_document: Document | null;

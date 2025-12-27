@@ -123,12 +123,10 @@ export async function rubricController(
 		type: 'SUPERVISOR' | 'REPORT';
 	};
 	if (type !== 'SUPERVISOR' && type !== 'REPORT') {
-		res
-			.status(400)
-			.json({
-				data: null,
-				error: 'Tipo de pauta inválido',
-			});
+		res.status(400).json({
+			data: null,
+			error: 'Tipo de pauta inválido',
+		});
 		return;
 	}
 	try {
@@ -176,21 +174,17 @@ export async function submitResponsesController(
 		}>;
 	};
 	if (!Array.isArray(answers)) {
-		res
-			.status(400)
-			.json({
-				data: null,
-				error: 'Cuerpo inválido: falta answers[]',
-			});
+		res.status(400).json({
+			data: null,
+			error: 'Cuerpo inválido: falta answers[]',
+		});
 		return;
 	}
 	if (type !== 'SUPERVISOR' && type !== 'REPORT') {
-		res
-			.status(400)
-			.json({
-				data: null,
-				error: 'Tipo de evaluación inválido',
-			});
+		res.status(400).json({
+			data: null,
+			error: 'Tipo de evaluación inválido',
+		});
 		return;
 	}
 	try {
@@ -205,13 +199,11 @@ export async function submitResponsesController(
 				Array.isArray(result.missingItemIds)
 					? result.missingItemIds
 					: [];
-			res
-				.status(400)
-				.json({
-					data: null,
-					error: result.error,
-					missingItemIds,
-				});
+			res.status(400).json({
+				data: null,
+				error: result.error,
+				missingItemIds,
+			});
 			return;
 		}
 		res
@@ -239,12 +231,10 @@ export async function attachSignatureController(
 			Number(documentId),
 		);
 		if (!updated) {
-			res
-				.status(404)
-				.json({
-					data: null,
-					error: 'Evaluación o documento no encontrado',
-				});
+			res.status(404).json({
+				data: null,
+				error: 'Evaluación o documento no encontrado',
+			});
 			return;
 		}
 		res.status(200).json({ data: updated, error: null });

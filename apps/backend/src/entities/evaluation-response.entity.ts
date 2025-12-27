@@ -31,11 +31,9 @@ export class EvaluationResponse {
 	@JoinColumn({ name: 'item_id' })
 	item: EvaluationItem;
 
-	// Raw selected value (option key, text, or numeric as string)
 	@Column({ type: 'varchar', length: 255 })
 	selectedValue: string;
 
-	// Parsed numeric value if applicable
 	@Column({
 		type: 'numeric',
 		precision: 7,
@@ -44,7 +42,6 @@ export class EvaluationResponse {
 	})
 	numericValue: number;
 
-	// Computed score for the item (considering weight/maxScore)
 	@Column({
 		type: 'numeric',
 		precision: 7,
