@@ -1,6 +1,11 @@
-import { SearchInput } from '@modules/dashboard-Encargado/components/atoms/search-input';
+import { SearchInput } from '@modules/dashboard-encargado/components/atoms/search-input';
+import { CreateStudentModal } from '@modules/dashboard-encargado/components/organisms/create-student-modal';
 
-export function Toolbar() {
+type TProps = {
+	onStudentCreated?: () => void;
+};
+
+export function Toolbar({ onStudentCreated }: TProps) {
 	return (
 		<div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
 			<div className="flex gap-3 items-center w-full">
@@ -12,12 +17,7 @@ export function Toolbar() {
 			</div>
 
 			<div className="flex items-center gap-3 self-end lg:self-auto text-sm pr-2 lg:pr-20">
-				<button
-					type="button"
-					className="btn btn-sm bg-blue-400"
-				>
-					Nuevo alumno
-				</button>
+				<CreateStudentModal onSuccess={onStudentCreated} />
 				<button
 					type="button"
 					className="btn btn-sm bg-blue-300"
