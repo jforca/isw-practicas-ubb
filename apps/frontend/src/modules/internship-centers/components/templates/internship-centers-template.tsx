@@ -91,6 +91,7 @@ export function InternshipCentersTemplate({
 	const [createErrors, setCreateErrors] = useState<
 		Record<keyof TCreateForm, string | null>
 	>({} as Record<keyof TCreateForm, string | null>);
+
 	const [touched, setTouched] = useState<
 		Record<keyof TCreateForm, boolean>
 	>({} as Record<keyof TCreateForm, boolean>);
@@ -136,7 +137,7 @@ export function InternshipCentersTemplate({
 			case 'company_rut':
 				if (!value) return 'RUT es requerido';
 				if (!ChileanRUTRegex.test(value.replace(/\./g, '')))
-					return 'RUT inválido (ej: 12345678-9)';
+					return 'RUT inválido (ej: 12.345.678-9)';
 				return null;
 			case 'phone':
 				if (!value) return 'Teléfono es requerido';
@@ -352,7 +353,7 @@ export function InternshipCentersTemplate({
 									/>
 									{createErrors.legal_name && (
 										<label className="label">
-											<span className="label-text-alt text-error">
+											<span className="label-text-alt text-error text-sm">
 												{createErrors.legal_name}
 											</span>
 										</label>
@@ -381,7 +382,7 @@ export function InternshipCentersTemplate({
 									/>
 									{createErrors.company_rut && (
 										<label className="label">
-											<span className="label-text-alt text-error">
+											<span className="label-text-alt text-error text-sm">
 												{createErrors.company_rut}
 											</span>
 										</label>
@@ -410,7 +411,7 @@ export function InternshipCentersTemplate({
 									/>
 									{createErrors.phone && (
 										<label className="label">
-											<span className="label-text-alt text-error">
+											<span className="label-text-alt text-error text-sm">
 												{createErrors.phone}
 											</span>
 										</label>
@@ -439,7 +440,7 @@ export function InternshipCentersTemplate({
 									/>
 									{createErrors.email && (
 										<label className="label">
-											<span className="label-text-alt text-error">
+											<span className="label-text-alt text-error text-sm">
 												{createErrors.email}
 											</span>
 										</label>
@@ -469,7 +470,7 @@ export function InternshipCentersTemplate({
 								/>
 								{createErrors.address && (
 									<label className="label">
-										<span className="label-text-alt text-error">
+										<span className="label-text-alt text-error text-sm">
 											{createErrors.address}
 										</span>
 									</label>
@@ -492,7 +493,7 @@ export function InternshipCentersTemplate({
 								/>
 								{createErrors.description && (
 									<label className="label">
-										<span className="label-text-alt text-error">
+										<span className="label-text-alt text-error text-sm">
 											{createErrors.description}
 										</span>
 									</label>
