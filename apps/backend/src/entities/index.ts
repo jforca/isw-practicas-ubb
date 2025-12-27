@@ -7,6 +7,8 @@ export { Coordinator } from './coordinators.entity';
 export { LogbookEntries } from './logbook-entries.entity';
 export { InternshipEvaluation } from './internship-evaluation.entity';
 export { Document } from './documents.entity';
+export { EvaluationItem } from './evaluation-item.entity';
+export { EvaluationResponse } from './evaluation-response.entity';
 export { Application } from './application.entity';
 export { ApplicationDocuments } from './application-documents.entity';
 export { Offer } from './offers.entity';

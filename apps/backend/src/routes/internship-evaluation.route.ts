@@ -5,6 +5,10 @@ import {
 	createController,
 	updateController,
 	deleteController,
+	rubricController,
+	getResponsesController,
+	submitResponsesController,
+	attachSignatureController,
 } from '@controllers/internship-evaluation.controller';
 
 const router = Router();
@@ -12,6 +16,16 @@ const router = Router();
 router.post('/', createController);
 router.get('/find-many', findManyController);
 router.get('/find-one/:id', findOneController);
+router.get(
+	'/find-one/:id/responses',
+	getResponsesController,
+);
+router.get('/rubric/:type', rubricController);
+router.post('/submit/:id/:type', submitResponsesController);
+router.post(
+	'/attach-signature/:id/:documentId',
+	attachSignatureController,
+);
 router.patch('/update/:id', updateController);
 router.delete('/delete/:id', deleteController);
 
