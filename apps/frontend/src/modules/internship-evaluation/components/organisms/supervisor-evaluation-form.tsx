@@ -246,7 +246,7 @@ export function SupervisorEvaluationForm({
 		>
 			<div className="bg-base-100 rounded-box p-6 shadow">
 				<h3 className="text-2xl font-semibold mb-4">
-					IV.- Aspectos a evaluar{' '}
+					Aspectos a evaluar{' '}
 					<span className="text-base-content/60">
 						(Competencias)
 					</span>

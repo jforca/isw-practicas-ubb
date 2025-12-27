@@ -94,9 +94,7 @@ const COMPETENCIES: {
 ];
 
 const getCompetencyBadgeColor = (code: string): string => {
-	if (code === 'CG1') return 'badge-warning';
-	if (code === 'CG3') return 'badge-info';
-	if (code === 'CG5') return 'badge-success';
+	if (code.startsWith('CG')) return 'badge-info';
 	return 'badge-neutral';
 };
 
@@ -108,7 +106,16 @@ export function ReportEvaluationForm({
 
 	const [selections, setSelections] = useState<
 		Record<string, TEvalLetter | null>
-	>({});
+	>(() =>
+		Object.fromEntries(
+			COMPETENCIES.flatMap((competency) =>
+				competency.aspects.map((aspect) => [
+					aspect.id,
+					null,
+				]),
+			),
+		),
+	);
 	const [reportComments, setReportComments] = useState('');
 
 	const handleSelectionChange = (
@@ -138,87 +145,128 @@ export function ReportEvaluationForm({
 		<form
 			id={formId}
 			onSubmit={handleSubmit}
-			className="space-y-6"
+			className="w-full space-y-6"
 		>
-			{/* Competencias */}
-			<div className="space-y-6">
-				{COMPETENCIES.map((competency) => (
-					<div
-						key={competency.code}
-						className="card bg-base-200/50 shadow-md hover:shadow-lg transition-shadow duration-200"
-					>
-						<div className="card-body">
-							{/* Header */}
-							<div className="flex items-start gap-3">
+			<div className="bg-base-100 rounded-box p-6 shadow">
+				<h3 className="text-2xl font-semibold mb-4">
+					Aspectos a evaluar{' '}
+					<span className="text-base-content/60">
+						(Informe)
+					</span>
+				</h3>
+				<div className="bg-info/10 border-l-4 border-info p-4 rounded-r-lg mb-6">
+					<p className="text-sm text-base-content/80">
+						<span className="font-semibold">
+							Instrucciones:
+						</span>{' '}
+						En el espacio de evaluación marque con una "X"
+						la letra que corresponda a lo observado.
+					</p>
+					<div className="flex flex-wrap gap-3 mt-2 text-xs">
+						<span className="badge badge-lg badge-outline">
+							<span className="font-bold mr-1">A</span>{' '}
+							Sobresaliente
+						</span>
+						<span className="badge badge-lg badge-outline">
+							<span className="font-bold mr-1">B</span>{' '}
+							Bueno
+						</span>
+						<span className="badge badge-lg badge-outline">
+							<span className="font-bold mr-1">C</span>{' '}
+							Moderado
+						</span>
+						<span className="badge badge-lg badge-outline">
+							<span className="font-bold mr-1">D</span>{' '}
+							Suficiente
+						</span>
+						<span className="badge badge-lg badge-outline">
+							<span className="font-bold mr-1">E</span>{' '}
+							Insuficiente
+						</span>
+						<span className="badge badge-lg badge-outline">
+							<span className="font-bold mr-1">F</span> No
+							aplica
+						</span>
+					</div>
+				</div>
+
+				<div className="space-y-4">
+					{COMPETENCIES.map((competency) => (
+						<div
+							key={competency.code}
+							className="bg-base-200/50 rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow"
+						>
+							<div className="flex items-start gap-4 mb-4">
 								<span
-									className={`badge ${getCompetencyBadgeColor(competency.code)} badge-lg font-semibold shrink-0`}
+									className={`badge ${getCompetencyBadgeColor(competency.code)} badge-lg font-semibold`}
 								>
 									{competency.code}
 								</span>
-								<p className="text-sm opacity-80">
+								<p className="text-sm text-base-content/80 flex-1">
 									{competency.description}
 								</p>
 							</div>
 
-							{/* Aspectos */}
-							<div className="mt-4 space-y-3">
+							<div className="divider my-3"></div>
+
+							<div className="space-y-4">
 								{competency.aspects.map((aspect) => (
 									<div
 										key={aspect.id}
-										className="bg-base-100 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200"
+										className="bg-base-100 rounded-lg p-4 flex items-center gap-4 hover:bg-base-100/80 transition-colors"
 									>
-										<div className="flex flex-col gap-3">
-											{/* Texto del aspecto */}
-											<p className="text-sm font-medium">
+										<div className="flex-1">
+											<p className="text-sm">
 												{aspect.text}
 											</p>
-
-											{/* Radio buttons */}
+										</div>
+										<div className="shrink-0">
 											<AfRadioGroup
-												name={aspect.id}
-												value={
-													selections[aspect.id] || null
-												}
+												name={`report-${aspect.id}`}
+												value={selections[aspect.id]}
 												onChange={(value) =>
 													handleSelectionChange(
 														aspect.id,
 														value,
 													)
 												}
+												size="sm"
 											/>
 										</div>
 									</div>
 								))}
 							</div>
 						</div>
-					</div>
-				))}
-			</div>
-
-			{/* Observaciones */}
-			<div className="card bg-base-200/50 shadow-md">
-				<div className="card-body">
-					<LabelAtom htmlFor={commentsId}>
-						Observaciones del Reporte
-					</LabelAtom>
-					<TextareaAtom
-						id={commentsId}
-						value={reportComments}
-						onChange={(e) =>
-							setReportComments(e.target.value)
-						}
-						placeholder="Ingrese sus observaciones sobre el informe..."
-					/>
+					))}
 				</div>
 			</div>
 
-			{/* Submit Button */}
-			<div className="flex justify-end">
+			<div className="bg-base-100 rounded-box p-6 shadow">
+				<div className="form-control w-full">
+					<LabelAtom htmlFor={commentsId}>
+						<span className="text-lg font-semibold">
+							V.- Observaciones del informe
+						</span>
+					</LabelAtom>
+					<div className="mt-3">
+						<TextareaAtom
+							id={commentsId}
+							value={reportComments}
+							onChange={(e) =>
+								setReportComments(e.target.value)
+							}
+							placeholder="Ingrese sus observaciones sobre el informe..."
+						/>
+					</div>
+				</div>
+			</div>
+
+			<div className="flex justify-end bg-base-100 rounded-box p-4 shadow">
 				<button
 					type="submit"
-					className="btn btn-primary btn-wide"
+					className="btn btn-primary btn-lg"
 				>
-					Enviar Evaluación
+					Guardar evaluación
 				</button>
 			</div>
 		</form>

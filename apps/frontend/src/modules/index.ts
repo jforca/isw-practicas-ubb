@@ -6,3 +6,4 @@ export { OffersPage } from './offers/components/pages/offers-page';
 export { LogbookPage } from './logbook/components/pages/logbook-page';
 export { ReportPage } from './internship-evaluation/components/pages/report-page';
 export { SupervisorPage } from './internship-evaluation/components/pages/supervisor-page';
+export { EvaluationsPage } from './internship-evaluation/components/pages/evaluations-page';
