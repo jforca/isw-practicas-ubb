@@ -90,20 +90,13 @@ export function UseFindManyLogbookEntries(
 
 				const result = await response.json();
 
-				// para ver si estan llegando las peticiones del backend
-				console.log('Respuesta del Backend:', result);
-
-				if (result && result.data && result.data.data) {
+				if (result?.data?.data) {
 					setData(result.data.data);
 				} else {
 					setData([]);
 				}
 
-				if (
-					result &&
-					result.data &&
-					result.data.pagination
-				) {
+				if (result?.data?.pagination) {
 					setPagination(result.data.pagination);
 				} else {
 					console.warn(
