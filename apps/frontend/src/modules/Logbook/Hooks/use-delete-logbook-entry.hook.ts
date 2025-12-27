@@ -1,39 +1,33 @@
 import { useState } from 'react';
 
-interface ICreateLogbookDto {
-	title: string;
-	body: string;
-	internshipId: number;
-}
-
-export function UseCreateLogbookEntry() {
+export function UseDeleteLogbookEntry() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	const createEntry = async (data: ICreateLogbookDto) => {
+	const deleteEntry = async (id: number) => {
 		setIsLoading(true);
 		setError(null);
 
 		try {
 			const response = await fetch(
-				'/api/logbook-entries/create-one',
+				`/api/logbook-entries/${id}`,
 				{
-					method: 'POST',
+					method: 'DELETE',
 					headers: {
 						'Content-Type': 'application/json',
 					},
-					body: JSON.stringify(data),
 				},
 			);
 
 			if (!response.ok) {
 				const errorData = await response.json();
 				throw new Error(
-					errorData.message || 'Error al crear la bitácora',
+					errorData.message ||
+						'Error al eliminar la bitácora',
 				);
 			}
 
-			return true;
+			return true; // Éxito
 		} catch (err) {
 			setError(
 				err instanceof Error
@@ -47,7 +41,7 @@ export function UseCreateLogbookEntry() {
 	};
 
 	return {
-		createEntry,
+		deleteEntry,
 		isLoading,
 		error,
 	};

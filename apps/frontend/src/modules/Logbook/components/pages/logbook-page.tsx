@@ -11,23 +11,32 @@ import {
 	type ILogbookFormData,
 } from '../organism/create-logbook-modal';
 import { ViewLogbookModal } from '../organism/view-logbook-modal';
+// 👇 1. IMPORTAR EL NUEVO MODAL
+import { DeleteConfirmationModal } from '../organism/delete-confirmation-modal';
 import { LogbookManagementTemplate } from '../templates/logbook-template';
 import { Button } from '../atoms/button';
 import { UseFindManyLogbookEntries } from '../../Hooks/use-find-many-logbook-entries.hook';
 import { UseCreateLogbookEntry } from '../../Hooks/use-create-logbook-entry.hook';
 import { UseUpdateLogbookEntry } from '../../Hooks/use-update-logbook-entry.hook';
+import { UseDeleteLogbookEntry } from '../../Hooks/use-delete-logbook-entry.hook';
+
 const CURRENT_INTERNSHIP_ID = 1;
 
 export const LogbookPage: React.FC = () => {
+	// --- ESTADOS ---
 	const [isFormModalOpen, setIsFormModalOpen] =
 		useState(false);
-
 	const [editingData, setEditingData] =
 		useState<ILogbookFormData | null>(null);
-
 	const [selectedEntry, setSelectedEntry] =
 		useState<ILogbookEntry | null>(null);
 
+	// 👇 2. NUEVO ESTADO: Guarda el ID a eliminar (si es null, el modal está cerrado)
+	const [idToDelete, setIdToDelete] = useState<
+		number | null
+	>(null);
+
+	// --- HOOKS ---
 	const {
 		data,
 		isLoading: isLoadingList,
@@ -42,9 +51,12 @@ export const LogbookPage: React.FC = () => {
 
 	const { createEntry, isLoading: isCreating } =
 		UseCreateLogbookEntry();
-
 	const { updateEntry, isLoading: isUpdating } =
 		UseUpdateLogbookEntry();
+
+	// 👇 Recuperamos 'isDeleting' para usarlo en el modal
+	const { deleteEntry, isLoading: isDeleting } =
+		UseDeleteLogbookEntry();
 
 	useEffect(() => {
 		handleFindMany(0, 5);
@@ -55,23 +67,20 @@ export const LogbookPage: React.FC = () => {
 			id: item.id,
 			title: item.title,
 			content: item.body,
-			created_at: item.created_at,
 			createdAt: item.created_at,
 			updatedAt: item.updated_at,
+
 			internshipId:
 				item.internshipId || item.internship?.id || 0,
 		}));
 	}, [data]);
+	// --- HANDLERS ---
 
-	// Handles
-
-	// Crear
 	const handleOpenCreate = () => {
 		setEditingData(null);
 		setIsFormModalOpen(true);
 	};
 
-	// Editar
 	const handleEdit = useCallback(
 		(id: number) => {
 			const entryToEdit = entries.find((e) => e.id === id);
@@ -92,7 +101,6 @@ export const LogbookPage: React.FC = () => {
 		body: string,
 	) => {
 		let success = false;
-
 		if (editingData?.id) {
 			success = await updateEntry(editingData.id, {
 				title,
@@ -115,16 +123,30 @@ export const LogbookPage: React.FC = () => {
 		}
 	};
 
-	const handleDelete = useCallback((id: number) => {
-		if (window.confirm(`¿Eliminar registro ${id}?`)) {
-			console.log(`Eliminar ID: ${id}`);
-		}
+	// 👇 3. MODIFICADO: Al pulsar eliminar en la tabla, SOLO guardamos el ID
+	const handleDeleteClick = useCallback((id: number) => {
+		setIdToDelete(id); // Esto abre el modal automáticamente
 	}, []);
+
+	// 👇 4. NUEVO: Función que se ejecuta al decir "SÍ" en el modal
+	const handleConfirmDelete = async () => {
+		if (!idToDelete) return;
+
+		const success = await deleteEntry(idToDelete);
+
+		if (success) {
+			setIdToDelete(null); // Cerrar modal
+			handleFindMany(pagination.offset, pagination.limit); // Refrescar tabla
+		} else {
+			alert('No se pudo eliminar el registro.');
+		}
+	};
 
 	const handleView = useCallback((entry: ILogbookEntry) => {
 		setSelectedEntry(entry);
 	}, []);
 
+	// --- RENDER ---
 	const pageHeader = (
 		<div className="flex justify-between items-center">
 			<h1 className="text-2xl font-bold text-base-content">
@@ -137,6 +159,7 @@ export const LogbookPage: React.FC = () => {
 	);
 
 	let contentNode: React.ReactNode;
+	// ... (Lógica de loading/error igual que antes) ...
 	if (isLoadingList && entries.length === 0) {
 		contentNode = (
 			<div className="flex justify-center p-8">
@@ -155,9 +178,11 @@ export const LogbookPage: React.FC = () => {
 				<LogbookTable
 					entries={entries}
 					onEdit={handleEdit}
-					onDelete={handleDelete}
+					onDelete={handleDeleteClick} // <--- Pasamos la función que abre el modal
 					onView={handleView}
 				/>
+
+				{/* Paginación */}
 				<div className="flex justify-between items-center mt-4 bg-base-200 p-3 rounded-lg">
 					<span className="text-sm text-gray-500">
 						Página {currentPage} de {totalPages || 1}
@@ -196,6 +221,7 @@ export const LogbookPage: React.FC = () => {
 				content={contentNode}
 			/>
 
+			{/* Modal Crear/Editar */}
 			<CreateLogbookModal
 				isOpen={isFormModalOpen}
 				onClose={() => setIsFormModalOpen(false)}
@@ -204,10 +230,19 @@ export const LogbookPage: React.FC = () => {
 				initialData={editingData}
 			/>
 
+			{/* Modal Ver Detalle */}
 			<ViewLogbookModal
 				isOpen={!!selectedEntry}
 				entry={selectedEntry}
 				onClose={() => setSelectedEntry(null)}
+			/>
+
+			{/* 👇 5. NUEVO: Modal de Confirmación de Eliminación */}
+			<DeleteConfirmationModal
+				isOpen={!!idToDelete} // Se abre si hay un ID seleccionado
+				onClose={() => setIdToDelete(null)}
+				onConfirm={handleConfirmDelete}
+				isLoading={isDeleting}
 			/>
 		</>
 	);
