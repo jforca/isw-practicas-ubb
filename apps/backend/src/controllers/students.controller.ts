@@ -25,7 +25,13 @@ export async function listStudents(
 			? parseInt(req.query.limit as string, 10)
 			: 10;
 
-		const [students, total] = await findMany(page, limit);
+		const search = req.query.search as string | undefined;
+
+		const [students, total] = await findMany(
+			page,
+			limit,
+			search,
+		);
 
 		const totalPages = Math.ceil(total / limit);
 
