@@ -1,17 +1,22 @@
 import { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import {
+	ChileanNumberRegex,
+	ChileanRUTRegex,
+} from '@packages/utils/regex.utils';
 import type { TInternshipCenter } from '@packages/schema/internship-centers.schema';
-import type {
-	TPagination,
-	TFilters,
-} from '@modules/internship-centers/hooks/find-many-internship-center.hook';
+
 import {
 	InternshipCenterCards,
 	InternshipCenterHeader,
 } from '@modules/internship-centers/components/organisms';
 import { SearchBar } from '@common/components';
-import { UseCreateOneInternshipCenter } from '@modules/internship-centers/hooks/create-one-internship-center.hook';
-import { useUploadConvention } from '@modules/internship-centers/hooks/upload-convention.hook';
+import {
+	UseCreateOneInternshipCenter,
+	UseUploadConvention,
+	type TPagination,
+	type TFilters,
+} from '@modules/internship-centers/hooks';
 import {
 	Plus,
 	IdCard,
@@ -58,14 +63,30 @@ export function InternshipCentersTemplate({
 	onFilterConvention,
 }: TInternshipCentersTemplateProps) {
 	// Estado del formulario de creación
-	const [createForm, setCreateForm] = useState({
-		legal_name: '',
-		company_rut: '',
-		email: '',
-		phone: '',
-		address: '',
-		description: '',
-	});
+	type TCreateForm = {
+		// biome-ignore lint/style/useNamingConvention: a
+		legal_name: string;
+		// biome-ignore lint/style/useNamingConvention: a
+		company_rut: string;
+		email: string;
+		phone: string;
+		address: string;
+		description: string;
+	};
+
+	const [createForm, setCreateForm] = useState<TCreateForm>(
+		{
+			legal_name: '',
+			company_rut: '',
+			email: '',
+			phone: '',
+			address: '',
+			description: '',
+		},
+	);
+	const [createErrors, setCreateErrors] = useState<
+		Record<keyof TCreateForm, string | null>
+	>({} as Record<keyof TCreateForm, string | null>);
 	const [conventionFile, setConventionFile] =
 		useState<File | null>(null);
 
@@ -83,14 +104,82 @@ export function InternshipCentersTemplate({
 		handleUpload,
 		isLoading: isUploading,
 		error: uploadError,
-	} = useUploadConvention();
+	} = UseUploadConvention();
 
 	// Handlers
 	const handleInputChange = (
-		field: keyof typeof createForm,
+		field: keyof TCreateForm,
 		value: string,
 	) => {
 		setCreateForm((prev) => ({ ...prev, [field]: value }));
+		// validar campo al cambiar
+		setCreateErrors((prev) => ({
+			...prev,
+			[field]: validateField(field, value),
+		}));
+	};
+
+	const validateField = (
+		field: keyof TCreateForm,
+		value: string,
+	) => {
+		switch (field) {
+			case 'company_rut':
+				if (!value) return 'RUT es requerido';
+				if (!ChileanRUTRegex.test(value.replace(/\./g, '')))
+					return 'RUT inválido (ej: 12345678-9)';
+				return null;
+			case 'phone':
+				if (!value) return 'Teléfono es requerido';
+				if (
+					!ChileanNumberRegex.test(
+						value.replace(/\s+/g, ''),
+					)
+				)
+					return 'Teléfono inválido (ej: +56912345678)';
+				return null;
+			case 'email':
+				if (!value) return 'Correo es requerido';
+				if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+					return 'Correo inválido';
+				return null;
+			default:
+				if (!value) return 'Este campo es requerido';
+				return null;
+		}
+	};
+
+	const isCreateFormValid = () => {
+		const fields = Object.keys(createForm) as Array<
+			keyof TCreateForm
+		>;
+		let valid = true;
+		const nextErrors: Record<string, string | null> = {};
+		for (const f of fields) {
+			const err = validateField(f, createForm[f] ?? '');
+			(
+				nextErrors as Record<
+					keyof TCreateForm,
+					string | null
+				>
+			)[f] = err;
+			if (err) valid = false;
+		}
+		setCreateErrors(
+			nextErrors as Record<
+				keyof TCreateForm,
+				string | null
+			>,
+		);
+		return valid;
+	};
+
+	const getInputClass = (field: keyof TCreateForm) => {
+		const base = 'input w-full rounded-lg';
+		const err = createErrors[field];
+		if (err) return `${base} input-error`;
+		if (createForm[field]) return `${base} input-success`;
+		return base;
 	};
 
 	const handleFileChange = (
@@ -119,9 +208,12 @@ export function InternshipCentersTemplate({
 	};
 
 	const handleCreate = async () => {
+		if (!isCreateFormValid()) return;
+
 		const result = await handleCreateOne({
 			...createForm,
 			convention_document_id: null,
+			convention_document_name: null,
 		});
 
 		if (!result) return;
@@ -219,10 +311,17 @@ export function InternshipCentersTemplate({
 												e.target.value,
 											)
 										}
-										className="input w-full rounded-lg"
+										className={getInputClass('legal_name')}
 										disabled={isCreating || isUploading}
 										placeholder="Nombre de la empresa"
 									/>
+									{createErrors.legal_name && (
+										<label className="label">
+											<span className="label-text-alt text-error">
+												{createErrors.legal_name}
+											</span>
+										</label>
+									)}
 								</div>
 								<div className="flex flex-col gap-2 text-base-content/80">
 									<h4>
@@ -241,10 +340,17 @@ export function InternshipCentersTemplate({
 												e.target.value,
 											)
 										}
-										className="input w-full rounded-lg"
+										className={getInputClass('company_rut')}
 										disabled={isCreating || isUploading}
 										placeholder="12.345.678-9"
 									/>
+									{createErrors.company_rut && (
+										<label className="label">
+											<span className="label-text-alt text-error">
+												{createErrors.company_rut}
+											</span>
+										</label>
+									)}
 								</div>
 								<div className="flex flex-col gap-2 text-base-content/80">
 									<h4>
@@ -263,10 +369,17 @@ export function InternshipCentersTemplate({
 												e.target.value,
 											)
 										}
-										className="input w-full rounded-lg"
+										className={getInputClass('phone')}
 										disabled={isCreating || isUploading}
 										placeholder="+56 9 1234 5678"
 									/>
+									{createErrors.phone && (
+										<label className="label">
+											<span className="label-text-alt text-error">
+												{createErrors.phone}
+											</span>
+										</label>
+									)}
 								</div>
 								<div className="flex flex-col gap-2 text-base-content/80">
 									<h4>
@@ -285,10 +398,17 @@ export function InternshipCentersTemplate({
 												e.target.value,
 											)
 										}
-										className="input w-full rounded-lg"
+										className={getInputClass('email')}
 										disabled={isCreating || isUploading}
 										placeholder="correo@empresa.com"
 									/>
+									{createErrors.email && (
+										<label className="label">
+											<span className="label-text-alt text-error">
+												{createErrors.email}
+											</span>
+										</label>
+									)}
 								</div>
 							</div>
 							<div className="flex flex-col gap-2 text-base-content/80">
@@ -308,10 +428,17 @@ export function InternshipCentersTemplate({
 											e.target.value,
 										)
 									}
-									className="input w-full rounded-lg"
+									className={getInputClass('address')}
 									disabled={isCreating || isUploading}
 									placeholder="Dirección completa"
 								/>
+								{createErrors.address && (
+									<label className="label">
+										<span className="label-text-alt text-error">
+											{createErrors.address}
+										</span>
+									</label>
+								)}
 							</div>
 							<div className="flex flex-col gap-2 text-base-content/80">
 								<h4>Descripción *</h4>
@@ -324,10 +451,17 @@ export function InternshipCentersTemplate({
 											e.target.value,
 										)
 									}
-									className="input w-full rounded-lg"
+									className={getInputClass('description')}
 									disabled={isCreating || isUploading}
 									placeholder="Breve descripción del centro"
 								/>
+								{createErrors.description && (
+									<label className="label">
+										<span className="label-text-alt text-error">
+											{createErrors.description}
+										</span>
+									</label>
+								)}
 							</div>
 							{/* Sección de Convenio */}
 							<div className="flex flex-col gap-2 text-base-content/80">

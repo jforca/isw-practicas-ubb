@@ -57,11 +57,17 @@ async function uploadConvention(
 			return;
 		}
 
-		// Si ya tiene un convenio, eliminar el documento anterior
-		if (internshipCenter.convention_document_id) {
-			await DocumentServices.deleteOne(
-				internshipCenter.convention_document_id,
+		// Si ya tiene un convenio, primero desasociar y luego eliminar el documento anterior
+		const oldDocumentId =
+			internshipCenter.convention_document_id;
+		if (oldDocumentId) {
+			// Primero desasociar el documento del centro (poner FK en null)
+			await InternshipCenterServices.updateConventionDocument(
+				internshipCenterId,
+				null,
 			);
+			// Ahora sí eliminar el documento antiguo
+			await DocumentServices.deleteOne(oldDocumentId);
 		}
 
 		// Crear el registro del documento con ruta relativa

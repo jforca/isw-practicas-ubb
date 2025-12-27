@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import { env } from '@lib/env';
 
 type TUploadConventionResponse = {
 	success: boolean;
@@ -19,7 +18,7 @@ type TUploadConventionResponse = {
 	error?: string;
 };
 
-export function useUploadConvention() {
+export function UseUploadConvention() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [isSuccess, setIsSuccess] = useState(false);
@@ -38,7 +37,7 @@ export function useUploadConvention() {
 				formData.append('file', file);
 
 				const response = await fetch(
-					`${env.VITE_BACKEND_URL}/api/documents/convention/${internshipCenterId}`,
+					`/api/documents/convention/${internshipCenterId}`,
 					{
 						method: 'POST',
 						body: formData,

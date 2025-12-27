@@ -18,6 +18,10 @@ export default defineConfig(({ mode }) => {
 					__dirname,
 					'./src/modules',
 				),
+				'@packages': path.resolve(
+					__dirname,
+					'../../packages',
+				),
 			},
 		},
 		server: {

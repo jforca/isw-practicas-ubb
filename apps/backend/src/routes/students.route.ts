@@ -1,9 +1,18 @@
 import { Router } from 'express';
-import { listStudents } from '@controllers/students.controller';
+import {
+	listStudents,
+	getStudent,
+	createNewStudent,
+	updateStudentData,
+	deleteStudentData,
+} from '@controllers/students.controller';
 
 const router = Router();
 
-// Lista todos los estudiantes (usuarios con rol student que están en students)
-router.get('/', listStudents);
+router.get('/find-many', listStudents);
+router.get('/find-one/:id', getStudent);
 
+router.post('/create-one/', createNewStudent);
+router.patch('/update-one/:id', updateStudentData);
+router.delete('/delete-one/:id', deleteStudentData);
 export default router;

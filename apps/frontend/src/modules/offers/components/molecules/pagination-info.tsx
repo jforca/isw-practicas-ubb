@@ -24,7 +24,7 @@ export function PaginationInfo({
 				<span className="text-primary font-bold">
 					{total}
 				</span>{' '}
-				centros de prácticas
+				ofertas
 			</p>
 
 			<div className="flex items-center gap-2">

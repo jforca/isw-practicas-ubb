@@ -2,7 +2,7 @@ import { useId, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import type { TInternshipCenter } from '@packages/schema/internship-centers.schema';
 import { Card, Modal } from '@common/components';
-import { env } from '@lib/env';
+
 import {
 	Eye,
 	PenLine,
@@ -15,6 +15,10 @@ import {
 	Loader2,
 } from 'lucide-react';
 import {
+	ChileanNumberRegex,
+	ChileanRUTRegex,
+} from '@packages/utils/regex.utils';
+import {
 	Loader,
 	EmptyState,
 	ErrorState,
@@ -23,10 +27,12 @@ import {
 	Pagination,
 	PaginationInfo,
 } from '@modules/internship-centers/components/molecules';
-import type { TPagination } from '@modules/internship-centers/hooks/find-many-internship-center.hook';
-import { UseUpdateOneInternshipCenter } from '@modules/internship-centers/hooks/update-one-internship-center.hook';
-import { UseDeleteInternshipCenter } from '@modules/internship-centers/hooks/delete-internship-center.hook';
-import { useUploadConvention } from '@modules/internship-centers/hooks/upload-convention.hook';
+import {
+	UseUploadConvention,
+	UseDeleteOneInternshipCenter,
+	UseUpdateOneInternshipCenter,
+	type TPagination,
+} from '@modules/internship-centers/hooks';
 
 type TInternshipCenterCardsProps = {
 	data: TInternshipCenter[];
@@ -117,7 +123,18 @@ function InternshipCenterCard({
 	onRefresh,
 }: TInternshipCenterCardProps) {
 	// Estado del formulario de edición
-	const [editForm, setEditForm] = useState({
+	type TEditForm = {
+		// biome-ignore lint/style/useNamingConvention: a
+		legal_name: string;
+		// biome-ignore lint/style/useNamingConvention: a
+		company_rut: string;
+		email: string;
+		phone: string;
+		address: string;
+		description: string;
+	};
+
+	const [editForm, setEditForm] = useState<TEditForm>({
 		legal_name: c.legal_name,
 		company_rut: c.company_rut,
 		email: c.email,
@@ -125,6 +142,9 @@ function InternshipCenterCard({
 		address: c.address,
 		description: c.description,
 	});
+	const [editErrors, setEditErrors] = useState<
+		Record<keyof TEditForm, string | null>
+	>({} as Record<keyof TEditForm, string | null>);
 
 	// Estado para el archivo de convenio
 	const [conventionFile, setConventionFile] =
@@ -133,7 +153,7 @@ function InternshipCenterCard({
 
 	// URL para ver el convenio en nueva pestaña
 	const conventionViewUrl = hasConvention
-		? `${env.VITE_BACKEND_URL}/api/documents/convention/${c.id}/view`
+		? `/api/documents/convention/${c.id}/view`
 		: null;
 
 	// Handler para abrir convenio en nueva pestaña
@@ -158,24 +178,86 @@ function InternshipCenterCard({
 		handleDelete,
 		isLoading: isDeleting,
 		error: deleteError,
-	} = UseDeleteInternshipCenter();
+	} = UseDeleteOneInternshipCenter();
 
 	const {
 		handleUpload,
 		isLoading: isUploading,
 		error: uploadError,
-	} = useUploadConvention();
+	} = UseUploadConvention();
 
 	// Handler para actualizar el formulario
 	const handleInputChange = (
-		field: keyof typeof editForm,
+		field: keyof TEditForm,
 		value: string,
 	) => {
 		setEditForm((prev) => ({ ...prev, [field]: value }));
+		setEditErrors((prev) => ({
+			...prev,
+			[field]: validateField(field, value),
+		}));
+	};
+
+	const validateField = (
+		field: keyof TEditForm,
+		value: string,
+	) => {
+		switch (field) {
+			case 'company_rut':
+				if (!value) return 'RUT es requerido';
+				if (!ChileanRUTRegex.test(value.replace(/\./g, '')))
+					return 'RUT inválido (ej: 12345678-9)';
+				return null;
+			case 'phone':
+				if (!value) return 'Teléfono es requerido';
+				if (
+					!ChileanNumberRegex.test(
+						value.replace(/\s+/g, ''),
+					)
+				)
+					return 'Teléfono inválido (ej: +56912345678)';
+				return null;
+			case 'email':
+				if (!value) return 'Correo es requerido';
+				if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+					return 'Correo inválido';
+				return null;
+			default:
+				if (!value) return 'Este campo es requerido';
+				return null;
+		}
+	};
+
+	const isEditFormValid = () => {
+		const fields = Object.keys(editForm) as Array<
+			keyof TEditForm
+		>;
+		let valid = true;
+		const nextErrors: Record<
+			keyof TEditForm,
+			string | null
+		> = {} as Record<keyof TEditForm, string | null>;
+		for (const f of fields) {
+			const err = validateField(f, editForm[f] ?? '');
+			nextErrors[f] = err;
+			if (err) valid = false;
+		}
+		setEditErrors(nextErrors);
+		return valid;
+	};
+
+	const getEditInputClass = (field: keyof TEditForm) => {
+		const base = 'input w-full rounded-lg';
+		const err = editErrors[field];
+		if (err) return `${base} input-error`;
+		if (editForm[field]) return `${base} input-success`;
+		return base;
 	};
 
 	// Handler para guardar edición
 	const handleSaveEdit = async () => {
+		if (!isEditFormValid()) return;
+
 		// Primero actualizar los datos del formulario
 		const result = await handleUpdateOne(c.id, editForm);
 		if (!result) return;
@@ -314,10 +396,11 @@ function InternshipCenterCard({
 													size={18}
 													className="inline mr-2"
 												/>
-												Numero Convenio
+												Convenio
 											</h3>
 											<p className="bg-gray-200 rounded-lg p-2">
-												{c.convention_document_id ?? 'N/A'}
+												{c.convention_document_name ??
+													'Sin convenio'}
 											</p>
 										</div>
 										<div className="flex flex-col gap-2 text-base-content/80">
@@ -438,9 +521,18 @@ function InternshipCenterCard({
 															e.target.value,
 														)
 													}
-													className="input w-full rounded-lg"
+													className={getEditInputClass(
+														'legal_name',
+													)}
 													disabled={isUpdating}
 												/>
+												{editErrors.legal_name && (
+													<label className="label">
+														<span className="label-text-alt text-error">
+															{editErrors.legal_name}
+														</span>
+													</label>
+												)}
 											</div>
 											<div className="flex flex-col gap-2 text-base-content/80">
 												<h3>
@@ -459,9 +551,18 @@ function InternshipCenterCard({
 															e.target.value,
 														)
 													}
-													className="input w-full rounded-lg"
+													className={getEditInputClass(
+														'company_rut',
+													)}
 													disabled={isUpdating}
 												/>
+												{editErrors.company_rut && (
+													<label className="label">
+														<span className="label-text-alt text-error">
+															{editErrors.company_rut}
+														</span>
+													</label>
+												)}
 											</div>
 											<div className="flex flex-col gap-2 text-base-content/80">
 												<h3>
@@ -480,9 +581,18 @@ function InternshipCenterCard({
 															e.target.value,
 														)
 													}
-													className="input w-full rounded-lg"
+													className={getEditInputClass(
+														'phone',
+													)}
 													disabled={isUpdating}
 												/>
+												{editErrors.phone && (
+													<label className="label">
+														<span className="label-text-alt text-error">
+															{editErrors.phone}
+														</span>
+													</label>
+												)}
 											</div>
 											<div className="flex flex-col gap-2 text-base-content/80">
 												<h3>
@@ -501,9 +611,18 @@ function InternshipCenterCard({
 															e.target.value,
 														)
 													}
-													className="input w-full rounded-lg"
+													className={getEditInputClass(
+														'email',
+													)}
 													disabled={isUpdating}
 												/>
+												{editErrors.email && (
+													<label className="label">
+														<span className="label-text-alt text-error">
+															{editErrors.email}
+														</span>
+													</label>
+												)}
 											</div>
 										</div>
 										<div className="flex flex-col gap-2 text-base-content/80">
@@ -523,9 +642,18 @@ function InternshipCenterCard({
 														e.target.value,
 													)
 												}
-												className="input w-full rounded-lg"
+												className={getEditInputClass(
+													'address',
+												)}
 												disabled={isUpdating}
 											/>
+											{editErrors.address && (
+												<label className="label">
+													<span className="label-text-alt text-error">
+														{editErrors.address}
+													</span>
+												</label>
+											)}
 										</div>
 										<div className="flex flex-col gap-2 text-base-content/80">
 											<h3>Descripción</h3>
@@ -538,9 +666,18 @@ function InternshipCenterCard({
 														e.target.value,
 													)
 												}
-												className="input w-full rounded-lg"
+												className={getEditInputClass(
+													'description',
+												)}
 												disabled={isUpdating}
 											/>
+											{editErrors.description && (
+												<label className="label">
+													<span className="label-text-alt text-error">
+														{editErrors.description}
+													</span>
+												</label>
+											)}
 										</div>
 										{/* Sección de Convenio */}
 										<div className="flex flex-col gap-2 text-base-content/80">
@@ -559,8 +696,8 @@ function InternshipCenterCard({
 															className="text-success"
 														/>
 														<span className="text-sm text-success">
-															Convenio actual: ID #
-															{c.convention_document_id}
+															Convenio actual:{' '}
+															{c.convention_document_name}
 														</span>
 													</div>
 												)}

@@ -33,7 +33,9 @@
 			"@common/*": ["./src/common/*"],
 			"@common": ["./src/common"],
 			"@modules/*": ["./src/modules/*"],
-			"@modules": ["./src/modules"]
+			"@modules": ["./src/modules"],
+			"@packages/*": ["../../packages/*"],
+			"@packages": ["../../packages"]
 		}
 	},
 	"include": ["src"]

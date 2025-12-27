@@ -15,6 +15,10 @@ export const InternshipCentersSchema = z.object({
 		.positive()
 		.nullable()
 		.default(null),
+	convention_document_name: z
+		.string()
+		.nullable()
+		.default(null),
 	createdAt: z.coerce.date(),
 	updatedAt: z.coerce.date(),
 });

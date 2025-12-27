@@ -32,6 +32,7 @@ async function findMany(
 ) {
 	const queryBuilder = internshipCenterRepository
 		.createQueryBuilder('ic')
+		.leftJoinAndSelect('ic.convention_document', 'doc')
 		.skip(offset)
 		.take(limit)
 		.orderBy('ic.createdAt', 'DESC');
@@ -53,8 +54,16 @@ async function findMany(
 		queryBuilder.andWhere('ic.convention_document IS NULL');
 	}
 
-	const [data, total] =
+	const [rawData, total] =
 		await queryBuilder.getManyAndCount();
+
+	// Transformar datos para incluir el nombre del documento
+	const data = rawData.map((ic) => ({
+		...ic,
+		convention_document_name:
+			ic.convention_document?.file_name ?? null,
+		convention_document: undefined, // Remover objeto completo
+	}));
 
 	return {
 		data,
