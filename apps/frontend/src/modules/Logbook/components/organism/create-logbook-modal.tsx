@@ -17,6 +17,11 @@ interface ICreateLogbookModalProps {
 	initialData?: ILogbookFormData | null;
 }
 
+interface IFormErrors {
+	title?: string;
+	body?: string;
+}
+
 export const CreateLogbookModal: React.FC<
 	ICreateLogbookModalProps
 > = ({
@@ -29,7 +34,11 @@ export const CreateLogbookModal: React.FC<
 	const [title, setTitle] = useState('');
 	const [body, setBody] = useState('');
 
+	const [errors, setErrors] = useState<IFormErrors>({});
+
 	useEffect(() => {
+		setErrors({});
+
 		if (isOpen && initialData) {
 			setTitle(initialData.title);
 			setBody(initialData.content);
@@ -39,11 +48,66 @@ export const CreateLogbookModal: React.FC<
 		}
 	}, [isOpen, initialData]);
 
+	const validateForm = (): boolean => {
+		const newErrors: IFormErrors = {};
+		let isValid = true;
+
+		const hasLetters = /[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ]/;
+
+		if (!title.trim()) {
+			newErrors.title = 'El título es obligatorio.';
+			isValid = false;
+		} else if (title.length < 10) {
+			newErrors.title = `Mínimo 10 caracteres (tienes ${title.length}).`;
+			isValid = false;
+		} else if (!hasLetters.test(title)) {
+			newErrors.title =
+				'El título debe contener texto descriptivo (no solo números o símbolos).';
+			isValid = false;
+		}
+
+		if (!body.trim()) {
+			newErrors.body = 'El contenido es obligatorio.';
+			isValid = false;
+		} else if (body.length < 50) {
+			newErrors.body = `Mínimo 50 caracteres (tienes ${body.length}).`;
+			isValid = false;
+		} else if (!hasLetters.test(body)) {
+			newErrors.body =
+				'El contenido debe tener una redacción válida (no solo números o símbolos).';
+			isValid = false;
+		}
+
+		setErrors(newErrors);
+		return isValid;
+	};
+
 	const handleSubmit = async (
 		e: React.FormEvent<HTMLFormElement>,
 	) => {
 		e.preventDefault();
+
+		if (!validateForm()) {
+			return;
+		}
+
 		await onSubmit(title, body);
+	};
+
+	const handleTitleChange = (
+		e: React.ChangeEvent<HTMLInputElement>,
+	) => {
+		setTitle(e.target.value);
+		if (errors.title)
+			setErrors({ ...errors, title: undefined });
+	};
+
+	const handleBodyChange = (
+		e: React.ChangeEvent<HTMLTextAreaElement>,
+	) => {
+		setBody(e.target.value);
+		if (errors.body)
+			setErrors({ ...errors, body: undefined });
 	};
 
 	if (!isOpen) return null;
@@ -73,27 +137,45 @@ export const CreateLogbookModal: React.FC<
 				</h3>
 
 				<form onSubmit={handleSubmit} className="space-y-4">
-					<Input
-						label="Título"
-						placeholder="Ej: Avance semanal..."
-						value={title}
-						onChange={(
-							e: React.ChangeEvent<HTMLInputElement>,
-						) => setTitle(e.target.value)}
-						required
-						disabled={isLoading}
-					/>
+					<div className="form-control">
+						<Input
+							label="Título"
+							placeholder="Ej: Avance semanal del proyecto..."
+							value={title}
+							onChange={handleTitleChange}
+							disabled={isLoading}
+							className={errors.title ? 'input-error' : ''}
+						/>
 
-					<TextArea
-						label="Contenido"
-						placeholder="Describe los avances y tareas realizadas..."
-						value={body}
-						onChange={(
-							e: React.ChangeEvent<HTMLTextAreaElement>,
-						) => setBody(e.target.value)}
-						required
-						disabled={isLoading}
-					/>
+						{errors.title && (
+							<span className="text-error text-xs mt-1 block">
+								{errors.title}
+							</span>
+						)}
+					</div>
+
+					<div className="form-control">
+						<TextArea
+							label="Contenido"
+							placeholder="Describe los avances y tareas realizadas..."
+							value={body}
+							onChange={handleBodyChange}
+							disabled={isLoading}
+							className={
+								errors.body ? 'textarea-error' : ''
+							}
+						/>
+
+						{errors.body && (
+							<span className="text-error text-xs mt-1 block">
+								{errors.body}
+							</span>
+						)}
+
+						<div className="text-right text-xs text-gray-400 mt-1">
+							{body.length}
+						</div>
+					</div>
 
 					<div className="modal-action">
 						<Button
@@ -114,6 +196,7 @@ export const CreateLogbookModal: React.FC<
 					</div>
 				</form>
 			</div>
+
 			<form method="dialog" className="modal-backdrop">
 				<button onClick={onClose} type="button">
 					close

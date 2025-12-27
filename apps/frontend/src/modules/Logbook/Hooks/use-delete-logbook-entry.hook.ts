@@ -27,7 +27,7 @@ export function UseDeleteLogbookEntry() {
 				);
 			}
 
-			return true; // Éxito
+			return true;
 		} catch (err) {
 			setError(
 				err instanceof Error

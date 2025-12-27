@@ -11,7 +11,6 @@ import {
 	type ILogbookFormData,
 } from '../organism/create-logbook-modal';
 import { ViewLogbookModal } from '../organism/view-logbook-modal';
-// 👇 1. IMPORTAR EL NUEVO MODAL
 import { DeleteConfirmationModal } from '../organism/delete-confirmation-modal';
 import { LogbookManagementTemplate } from '../templates/logbook-template';
 import { Button } from '../atoms/button';
@@ -23,7 +22,6 @@ import { UseDeleteLogbookEntry } from '../../Hooks/use-delete-logbook-entry.hook
 const CURRENT_INTERNSHIP_ID = 1;
 
 export const LogbookPage: React.FC = () => {
-	// --- ESTADOS ---
 	const [isFormModalOpen, setIsFormModalOpen] =
 		useState(false);
 	const [editingData, setEditingData] =
@@ -31,12 +29,10 @@ export const LogbookPage: React.FC = () => {
 	const [selectedEntry, setSelectedEntry] =
 		useState<ILogbookEntry | null>(null);
 
-	// 👇 2. NUEVO ESTADO: Guarda el ID a eliminar (si es null, el modal está cerrado)
 	const [idToDelete, setIdToDelete] = useState<
 		number | null
 	>(null);
 
-	// --- HOOKS ---
 	const {
 		data,
 		isLoading: isLoadingList,
@@ -54,7 +50,6 @@ export const LogbookPage: React.FC = () => {
 	const { updateEntry, isLoading: isUpdating } =
 		UseUpdateLogbookEntry();
 
-	// 👇 Recuperamos 'isDeleting' para usarlo en el modal
 	const { deleteEntry, isLoading: isDeleting } =
 		UseDeleteLogbookEntry();
 
@@ -74,7 +69,6 @@ export const LogbookPage: React.FC = () => {
 				item.internshipId || item.internship?.id || 0,
 		}));
 	}, [data]);
-	// --- HANDLERS ---
 
 	const handleOpenCreate = () => {
 		setEditingData(null);
@@ -123,20 +117,18 @@ export const LogbookPage: React.FC = () => {
 		}
 	};
 
-	// 👇 3. MODIFICADO: Al pulsar eliminar en la tabla, SOLO guardamos el ID
 	const handleDeleteClick = useCallback((id: number) => {
-		setIdToDelete(id); // Esto abre el modal automáticamente
+		setIdToDelete(id);
 	}, []);
 
-	// 👇 4. NUEVO: Función que se ejecuta al decir "SÍ" en el modal
 	const handleConfirmDelete = async () => {
 		if (!idToDelete) return;
 
 		const success = await deleteEntry(idToDelete);
 
 		if (success) {
-			setIdToDelete(null); // Cerrar modal
-			handleFindMany(pagination.offset, pagination.limit); // Refrescar tabla
+			setIdToDelete(null);
+			handleFindMany(pagination.offset, pagination.limit);
 		} else {
 			alert('No se pudo eliminar el registro.');
 		}
@@ -146,7 +138,6 @@ export const LogbookPage: React.FC = () => {
 		setSelectedEntry(entry);
 	}, []);
 
-	// --- RENDER ---
 	const pageHeader = (
 		<div className="flex justify-between items-center">
 			<h1 className="text-2xl font-bold text-base-content">
@@ -159,7 +150,7 @@ export const LogbookPage: React.FC = () => {
 	);
 
 	let contentNode: React.ReactNode;
-	// ... (Lógica de loading/error igual que antes) ...
+
 	if (isLoadingList && entries.length === 0) {
 		contentNode = (
 			<div className="flex justify-center p-8">
@@ -178,11 +169,10 @@ export const LogbookPage: React.FC = () => {
 				<LogbookTable
 					entries={entries}
 					onEdit={handleEdit}
-					onDelete={handleDeleteClick} // <--- Pasamos la función que abre el modal
+					onDelete={handleDeleteClick}
 					onView={handleView}
 				/>
 
-				{/* Paginación */}
 				<div className="flex justify-between items-center mt-4 bg-base-200 p-3 rounded-lg">
 					<span className="text-sm text-gray-500">
 						Página {currentPage} de {totalPages || 1}
@@ -221,7 +211,6 @@ export const LogbookPage: React.FC = () => {
 				content={contentNode}
 			/>
 
-			{/* Modal Crear/Editar */}
 			<CreateLogbookModal
 				isOpen={isFormModalOpen}
 				onClose={() => setIsFormModalOpen(false)}
@@ -230,16 +219,14 @@ export const LogbookPage: React.FC = () => {
 				initialData={editingData}
 			/>
 
-			{/* Modal Ver Detalle */}
 			<ViewLogbookModal
 				isOpen={!!selectedEntry}
 				entry={selectedEntry}
 				onClose={() => setSelectedEntry(null)}
 			/>
 
-			{/* 👇 5. NUEVO: Modal de Confirmación de Eliminación */}
 			<DeleteConfirmationModal
-				isOpen={!!idToDelete} // Se abre si hay un ID seleccionado
+				isOpen={!!idToDelete}
 				onClose={() => setIdToDelete(null)}
 				onConfirm={handleConfirmDelete}
 				isLoading={isDeleting}
