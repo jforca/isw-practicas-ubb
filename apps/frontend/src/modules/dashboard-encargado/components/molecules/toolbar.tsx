@@ -1,19 +1,22 @@
-import { SearchInput } from '@modules/dashboard-encargado/components/atoms/search-input';
+import { SearchBar } from '@common/components';
 import { CreateStudentModal } from '@modules/dashboard-encargado/components/organisms/create-student-modal';
 
 type TProps = {
 	onStudentCreated?: () => void;
+	onSearch?: (value: string) => void;
 };
 
-export function Toolbar({ onStudentCreated }: TProps) {
+export function Toolbar({
+	onStudentCreated,
+	onSearch,
+}: TProps) {
 	return (
 		<div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
 			<div className="flex gap-3 items-center w-full">
-				<SearchInput placeholder="Buscar por nombre, RUT, carrera..." />
-
-				<span className="text-sm text-base-content/70">
-					Todos
-				</span>
+				<SearchBar
+					placeholder="Buscar por nombre, RUT, email..."
+					onSearch={onSearch}
+				/>
 			</div>
 
 			<div className="flex items-center gap-3 self-end lg:self-auto text-sm pr-2 lg:pr-20">
