@@ -6,7 +6,8 @@
 		"build": "rspack build",
 		"start": "node --env-file=.env.production dist/main.js",
 		"dev": "tsx watch --tsconfig tsconfig.json --env-file=.env.development src/index.ts",
-		"dev:backend": "tsx watch --tsconfig tsconfig.json --env-file=.env.development src/index.ts"
+		"dev:backend": "tsx watch --tsconfig tsconfig.json --env-file=.env.development src/index.ts",
+		"seed": "tsx --env-file=.env.development src/seeds/run-seeds.ts"
 	},
 	"license": "ACADEMIC-USE-ONLY",
 	"private": true,
