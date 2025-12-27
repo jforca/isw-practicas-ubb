@@ -39,24 +39,44 @@ async function findOne(req: Request, res: Response) {
 	}
 }
 
-async function findMany(_req: Request, res: Response) {
+async function findMany(req: Request, res: Response) {
 	try {
-		const data = await LogbookEntriesServices.findMany();
+		const offset = Number(req.query.offset) || 0;
+		const limit = Number(req.query.limit) || 10;
+		const internshipId = req.query.internshipId
+			? Number(req.query.internshipId)
+			: undefined;
 
-		if (!data) {
+		const result = await LogbookEntriesServices.findMany(
+			offset,
+			limit,
+			internshipId,
+		);
+
+		if (!result) {
 			return handleErrorServer(
 				res,
 				500,
-				'No se pudieron recuperar las bitacoras',
+				'Error al obtener las bitácoras',
 				null,
 			);
 		}
 
+		const responseData = {
+			data: result.entries,
+			pagination: {
+				total: result.total,
+				offset: offset,
+				limit: limit,
+				hasMore: offset + limit < result.total,
+			},
+		};
+
 		return handleSuccess(
 			res,
 			200,
-			'bitacoras obtenidas con exito',
-			data,
+			'Bitacoras obtenidas con éxito',
+			responseData,
 		);
 	} catch (err) {
 		return handleErrorServer(

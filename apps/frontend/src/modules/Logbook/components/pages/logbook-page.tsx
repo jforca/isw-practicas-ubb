@@ -1,91 +1,57 @@
-import React, { useState, useCallback } from 'react';
+import React, {
+	useEffect,
+	useMemo,
+	useCallback,
+} from 'react';
 import type { ILogbookEntry } from '../types';
 import { LogbookTable } from '../organism/logbook-table-component';
 import { LogbookManagementTemplate } from '../templates/logbook-template';
 import { Button } from '../atoms/button';
+import { UseFindManyLogbookEntries } from '../../Hooks/use-find-many-logbook-entries.hook';
 
-// Datos para probar la visualización de la tabla
-const mockData: ILogbookEntry[] = [
-	{
-		id: 1,
-		title: 'Primer Reporte de la Pasantía',
-		content:
-			'Detalles del inicio de la pasantía, objetivos iniciales y primeras tareas asignadas. Se estableció contacto con el supervisor y el coordinador.',
-		createdAt: new Date('2025-10-01'),
-		updatedAt: new Date('2025-10-01'),
-		internshipId: 10,
-	},
-	{
-		id: 2,
-		title:
-			'Avance en el Desarrollo del Módulo de Autenticación',
-		content:
-			'Implementación de las rutas de login y registro. Integración inicial con TypeORM para la gestión de usuarios y roles.',
-		createdAt: new Date('2025-10-08'),
-		updatedAt: new Date('2025-10-09'),
-		internshipId: 10,
-	},
-	{
-		id: 3,
-		title: 'Reunión Semanal con el Supervisor',
-		content:
-			'Revisión del progreso de la semana. Discusión sobre los desafíos técnicos encontrados en la configuración de la base de datos PostgreSQL.',
-		createdAt: new Date('2025-10-15'),
-		updatedAt: new Date('2025-10-15'),
-		internshipId: 10,
-	},
-	{
-		id: 4,
-		title: 'Configuración del Entorno de Desarrollo',
-		content:
-			'Instalación de Node.js, pnpm y TypeORM. Configuración de ESLint y Prettier para mantener un código limpio.',
-		createdAt: new Date('2025-09-28'),
-		updatedAt: new Date('2025-09-29'),
-		internshipId: 11,
-	},
-	{
-		id: 5,
-		title:
-			'Análisis de Requisitos para el Módulo de Pasantías',
-		content:
-			'Levantamiento de información con el equipo para definir las entidades `Interships` y `Report`. Diseño de la base de datos.',
-		createdAt: new Date('2025-09-25'),
-		updatedAt: new Date('2025-09-26'),
-		internshipId: 11,
-	},
-];
+const CURRENT_INTERNSHIP_ID = 1;
 
 export const LogbookPage: React.FC = () => {
-	// Cargar los datos
-	const [entries, setEntries] =
-		useState<ILogbookEntry[]>(mockData);
+	const {
+		data,
+		isLoading,
+		error,
+		handleFindMany,
+		nextPage,
+		prevPage,
+		currentPage,
+		totalPages,
+		pagination,
+	} = UseFindManyLogbookEntries(CURRENT_INTERNSHIP_ID);
 
-	// Lógica de Manejo (solo con fines evaluativos)
+	useEffect(() => {
+		handleFindMany(0, 5);
+	}, [handleFindMany]);
+
+	const entries: ILogbookEntry[] = useMemo(() => {
+		return data.map((item) => ({
+			id: item.id,
+			title: item.title,
+			content: item.body,
+			createdAt: item.created_at,
+			updatedAt: item.updated_at,
+			internshipId:
+				item.internshipId || item.internship?.id || 0,
+		}));
+	}, [data]);
+
 	const handleEdit = useCallback((id: number) => {
-		alert(
-			`Solo para simular conexion con backend. Intentando editar registro con ID: ${id}`,
-		);
-		console.log(`Simulando edición de ${id}`);
+		console.log(`Editar ID: ${id}`);
 	}, []);
 
 	const handleDelete = useCallback((id: number) => {
-		if (
-			window.confirm(
-				`Solo para simular conexion con backend. ¿Simular eliminación del registro con ID ${id}?`,
-			)
-		) {
-			setEntries((prev) =>
-				prev.filter((entry) => entry.id !== id),
-			);
-			console.log(`Simulando eliminación de ${id}`);
+		if (window.confirm(`¿Eliminar registro ${id}?`)) {
+			console.log(`Eliminar ID: ${id}`);
 		}
 	}, []);
 
 	const handleNewEntry = () => {
-		alert(
-			'Solo para simular conexion con backend. Intentando crear nuevo registro',
-		);
-		console.log('Simulando creación de nuevo registro');
+		console.log('Crear nuevo registro');
 	};
 
 	const pageHeader = (
@@ -99,16 +65,71 @@ export const LogbookPage: React.FC = () => {
 		</div>
 	);
 
-	return (
-		<LogbookManagementTemplate
-			header={pageHeader}
-			content={
+	let contentNode: React.ReactNode;
+
+	if (isLoading && entries.length === 0) {
+		contentNode = (
+			<div className="flex justify-center p-8">
+				<span className="loading loading-spinner loading-lg text-primary"></span>
+			</div>
+		);
+	} else if (error) {
+		contentNode = (
+			<div className="alert alert-error">
+				<span>Error al cargar datos: {error}</span>
+				<Button
+					onClick={() => handleFindMany(0, 5)}
+					variant="secondary"
+				>
+					Reintentar
+				</Button>
+			</div>
+		);
+	} else {
+		contentNode = (
+			<div className="space-y-4">
 				<LogbookTable
 					entries={entries}
 					onEdit={handleEdit}
 					onDelete={handleDelete}
 				/>
-			}
+
+				<div className="flex justify-between items-center mt-4 bg-base-200 p-3 rounded-lg">
+					<span className="text-sm text-gray-500">
+						Página {currentPage} de {totalPages || 1}
+						<span className="ml-2 text-xs opacity-70">
+							(Total: {pagination.total})
+						</span>
+					</span>
+					<div className="flex space-x-2">
+						<Button
+							variant="secondary"
+							onClick={prevPage}
+							disabled={
+								pagination.offset === 0 || isLoading
+							}
+							className="btn-sm"
+						>
+							Anterior
+						</Button>
+						<Button
+							variant="primary"
+							onClick={nextPage}
+							disabled={!pagination.hasMore || isLoading}
+							className="btn-sm"
+						>
+							Siguiente
+						</Button>
+					</div>
+				</div>
+			</div>
+		);
+	}
+
+	return (
+		<LogbookManagementTemplate
+			header={pageHeader}
+			content={contentNode}
 		/>
 	);
 };

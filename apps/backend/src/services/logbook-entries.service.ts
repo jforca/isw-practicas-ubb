@@ -29,18 +29,30 @@ async function findOne(id: number) {
 	}
 }
 
-async function findMany() {
+async function findMany(
+	offset: number,
+	limit: number,
+	internshipId?: number,
+) {
 	try {
 		const logbookEntriesRepo =
 			AppDataSource.getRepository(LogbookEntries);
 
-		const entries = await logbookEntriesRepo.find({
-			relations: ['internship'],
-		});
+		const [entries, total] =
+			await logbookEntriesRepo.findAndCount({
+				where: internshipId
+					? { internship: { id: internshipId } }
+					: {},
+				skip: offset,
+				take: limit,
+				order: { created_at: 'DESC' },
+				relations: ['internship'],
+			});
 
-		return entries;
+		return { entries, total };
 	} catch (error) {
 		console.error('Error al buscar las bitacoras:', error);
+		return null;
 	}
 }
 
