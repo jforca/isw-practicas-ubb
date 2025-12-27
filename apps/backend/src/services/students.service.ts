@@ -1,10 +1,40 @@
 import { AppDataSource } from '@config/db.config';
 import { User } from '@entities';
 import { randomUUID } from 'node:crypto';
+import {
+	Application,
+	ApplicationStatus,
+} from '@entities/application.entity';
+import {
+	Internship,
+	InternshipStatus,
+} from '@entities/internship.entity';
 
 export type TStudentUser = User;
 
+export type TStudentWhithInternshipInfo = TStudentUser & {
+	internshipType: string;
+	internshipStatus: string;
+};
+
 const userRepo = AppDataSource.getRepository(User);
+const applicationRepo =
+	AppDataSource.getRepository(Application);
+const internshipRepo =
+	AppDataSource.getRepository(Internship);
+
+function mapInternshipStatus(status: InternshipStatus) {
+	switch (status) {
+		case InternshipStatus.InProgress:
+			return 'En Curso';
+		case InternshipStatus.PendingEvaluation:
+			return 'Evaluación Pendiente';
+		case InternshipStatus.Finished:
+			return 'Finalizada';
+		default:
+			return 'Desconocido';
+	}
+}
 
 export async function findMany(
 	page: number,
@@ -17,7 +47,57 @@ export async function findMany(
 		order: { name: 'ASC' },
 	});
 
-	return [rows, total];
+	const studentsWithInternshipInfo = await Promise.all(
+		rows.map(async (student) => {
+			const application = await applicationRepo.findOne({
+				where: {
+					student: { id: student.id },
+				},
+				relations: ['offer', 'offer.offerType'],
+				order: { created_at: 'DESC' },
+			});
+
+			let internshipType = 'No inscrito';
+			let internshipStatus = 'No aprobada';
+
+			if (application) {
+				if (
+					application.status === ApplicationStatus.Approved
+				) {
+					internshipType =
+						application.offer.offerType.name ||
+						'No inscrito';
+
+					const internship = await internshipRepo.findOne({
+						where: {
+							application: { id: application.id },
+						},
+					});
+
+					if (internship) {
+						internshipStatus = mapInternshipStatus(
+							internship.status,
+						);
+					} else {
+						internshipStatus = 'Aprobada'; // Preguntar a mis compañeros si esta bien ¡No te olvides Diego! XD
+					}
+				} else {
+					internshipType =
+						application.offer?.offerType?.name ||
+						'No inscrito';
+					internshipStatus = 'No aprobada';
+				}
+			}
+
+			return {
+				...student,
+				internshipType,
+				internshipStatus,
+			};
+		}),
+	);
+
+	return [studentsWithInternshipInfo, total];
 }
 
 export async function findOne(id: string) {
