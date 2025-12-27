@@ -1,8 +1,14 @@
 import type { TStudent } from '@packages/schema/student.schema';
 import { Loader } from 'lucide-react';
 
+// Extender el tipo TStudent para incluir los campos de práctica
+type TStudentWithInternship = TStudent & {
+	internshipType?: string;
+	internshipStatus?: string;
+};
+
 interface IStudentsTableProps {
-	students: TStudent[];
+	students: TStudentWithInternship[];
 	isLoading: boolean;
 	error: string | null;
 }
@@ -38,7 +44,8 @@ export function StudentsTable({
 								<th className="w-10"></th>
 								<th>Alumno</th>
 								<th>Email</th>
-								<th>Rol</th>
+								<th>Práctica</th>
+								<th>Estado</th>
 								<th>Acciones</th>
 							</tr>
 						</thead>
@@ -65,7 +72,12 @@ export function StudentsTable({
 									<td>{s.email}</td>
 									<td>
 										<div className="badge badge-ghost badge-outline">
-											{s.user_role}
+											{s.internshipType || 'No inscrito'}
+										</div>
+									</td>
+									<td>
+										<div className="badge badge-ghost badge-outline">
+											{s.internshipStatus || 'No aprobada'}
 										</div>
 									</td>
 									<td>

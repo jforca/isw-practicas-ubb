@@ -39,13 +39,24 @@ function mapInternshipStatus(status: InternshipStatus) {
 export async function findMany(
 	page: number,
 	limit: number,
-): Promise<[TStudentUser[], number]> {
-	const [rows, total] = await userRepo.findAndCount({
-		where: { user_role: 'student' },
-		take: limit,
-		skip: (page - 1) * limit,
-		order: { name: 'ASC' },
-	});
+	search?: string,
+): Promise<[TStudentWhithInternshipInfo[], number]> {
+	const queryBuilder = userRepo
+		.createQueryBuilder('user')
+		.where('user.user_role = :role', { role: 'student' });
+
+	if (search && search.trim() !== '') {
+		queryBuilder.andWhere(
+			'(user.name ILIKE :search OR user.rut ILIKE :search OR user.email ILIKE :search)',
+			{ search: `%${search.trim()}%` },
+		);
+	}
+
+	const [rows, total] = await queryBuilder
+		.orderBy('user.name', 'ASC')
+		.skip((page - 1) * limit)
+		.take(limit)
+		.getManyAndCount();
 
 	const studentsWithInternshipInfo = await Promise.all(
 		rows.map(async (student) => {
@@ -65,7 +76,7 @@ export async function findMany(
 					application.status === ApplicationStatus.Approved
 				) {
 					internshipType =
-						application.offer.offerType.name ||
+						application.offer?.offerType.name ||
 						'No inscrito';
 
 					const internship = await internshipRepo.findOne({
