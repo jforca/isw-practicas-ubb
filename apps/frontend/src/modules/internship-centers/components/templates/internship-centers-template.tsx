@@ -213,6 +213,7 @@ export function InternshipCentersTemplate({
 		const result = await handleCreateOne({
 			...createForm,
 			convention_document_id: null,
+			convention_document_name: null,
 		});
 
 		if (!result) return;

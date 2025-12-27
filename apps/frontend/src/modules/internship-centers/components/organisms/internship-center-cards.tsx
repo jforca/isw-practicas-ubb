@@ -2,7 +2,7 @@ import { useId, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import type { TInternshipCenter } from '@packages/schema/internship-centers.schema';
 import { Card, Modal } from '@common/components';
-import { env } from '@lib/env';
+
 import {
 	Eye,
 	PenLine,
@@ -153,7 +153,7 @@ function InternshipCenterCard({
 
 	// URL para ver el convenio en nueva pestaña
 	const conventionViewUrl = hasConvention
-		? `${env.VITE_BACKEND_URL}/api/documents/convention/${c.id}/view`
+		? `/api/documents/convention/${c.id}/view`
 		: null;
 
 	// Handler para abrir convenio en nueva pestaña

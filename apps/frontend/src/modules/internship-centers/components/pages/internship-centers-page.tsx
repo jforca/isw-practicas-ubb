@@ -23,7 +23,7 @@ export function InternshipCentersPage() {
 	} = UseFindManyInternshipCenter();
 
 	useEffect(() => {
-		handleFindMany(0, 5);
+		handleFindMany(0, 6);
 	}, [handleFindMany]);
 
 	const handleRefresh = useCallback(() => {

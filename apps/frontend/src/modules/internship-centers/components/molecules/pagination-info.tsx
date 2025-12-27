@@ -43,10 +43,10 @@ export function PaginationInfo({
 					}
 					disabled={isLoading}
 				>
-					<option value={5}>5</option>
-					<option value={10}>10</option>
-					<option value={20}>20</option>
-					<option value={50}>50</option>
+					<option value={6}>6</option>
+					<option value={12}>12</option>
+					<option value={24}>24</option>
+					<option value={48}>48</option>
 				</select>
 			</div>
 		</div>
