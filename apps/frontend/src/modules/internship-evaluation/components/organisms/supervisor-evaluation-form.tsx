@@ -1,149 +1,366 @@
+import { useId, useState, type FormEvent } from 'react';
 import {
-	useId,
-	useMemo,
-	useState,
-	type FormEvent,
-} from 'react';
-import {
-	ScoreButton,
 	LabelAtom,
 	TextareaAtom,
+	AfRadioGroup,
 } from '../atoms';
+
+type TEvalLetter = 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
 
 interface ISupervisorEvaluationFormProps {
 	onSubmit?: (data: {
-		scores: number[];
-		supervisorGrade: number;
-		supervisorComments: string;
+		evaluations: {
+			id: string;
+			value: TEvalLetter | null;
+		}[];
+		observations: string;
 	}) => void;
 }
 
-const ASPECTS = [
-	'Calidad de código',
-	'Resolución de problemas',
-	'Buenas prácticas',
-	'Trabajo en equipo',
-	'Documentación',
+const COMPETENCIES: {
+	code: string;
+	description: string;
+	attitudes: { id: string; text: string }[];
+}[] = [
+	{
+		code: 'CG1',
+		description:
+			'Manifiesta una actitud permanente de búsqueda y actualización de sus aprendizajes, incorporando los cambios sociales, científicos y tecnológicos en el ejercicio y desarrollo de su profesión.',
+		attitudes: [
+			{
+				id: 'CG1-1',
+				text: 'Es capaz de buscar información de manera autónoma.',
+			},
+			{
+				id: 'CG1-2',
+				text: 'Incorpora tendencias sociales, tecnológicas, científicas en su trabajo',
+			},
+		],
+	},
+	{
+		code: 'CG2',
+		description:
+			'Asume un rol activo como ciudadano y profesional, comprometiéndose de manera responsable con su medio social, natural y cultural.',
+		attitudes: [
+			{
+				id: 'CG2-1',
+				text: 'Llega en el horario indicado a los compromisos adquiridos',
+			},
+			{
+				id: 'CG2-2',
+				text: 'Realiza efectivamente las actividades o tareas que le son encomendadas.',
+			},
+			{
+				id: 'CG2-3',
+				text: 'Acepta o asume en forma positiva las diversas instrucciones, hechos y órdenes impartidas por su supervisor.',
+			},
+		],
+	},
+	{
+		code: 'CG3',
+		description:
+			'Establece relaciones dialogantes para el intercambio de aportes constructivos con otras disciplinas y actúa éticamente en su profesión, trabajando de manera asociativa en la consecución de objetivos.',
+		attitudes: [
+			{
+				id: 'CG3-1',
+				text: 'Se relaciona adecuadamente con el personal del Centro de Práctica',
+			},
+			{
+				id: 'CG3-2',
+				text: 'Trabaja colaborativamente en equipos multidisciplinarios',
+			},
+			{
+				id: 'CG3-3',
+				text: 'Durante el trabajo con los demás mantiene un comportamiento ético.',
+			},
+		],
+	},
+	{
+		code: 'CG5',
+		description:
+			'Comunica ideas y sentimientos en forma oral y escrita para interactuar efectivamente en el entorno social y profesional en su lengua materna y en un nivel inicial en un segundo idioma.',
+		attitudes: [
+			{
+				id: 'CG5-1',
+				text: 'Comunica ideas y sentimientos en forma oral y escrita en su lengua materna.',
+			},
+			{
+				id: 'CG5-2',
+				text: 'Comunica ideas y sentimientos en forma oral y escrita en un segundo idioma.',
+			},
+		],
+	},
+	{
+		code: 'CE1',
+		description:
+			'Gestiona sistemas computacionales para responder de forma óptima a los requerimientos de los usuarios evaluando su desempeño en base a los recursos disponibles.',
+		attitudes: [
+			{
+				id: 'CE1-1',
+				text: 'Realiza soporte de servidores y/o herramientas de software avanzado.',
+			},
+			{
+				id: 'CE1-2',
+				text: 'Instala y/o configura software para servidores.',
+			},
+			{
+				id: 'CE1-3',
+				text: 'Colabora en el diseño e implementación de redes de computadores.',
+			},
+			{
+				id: 'CE1-4',
+				text: 'Realiza evaluación de hardware y/o software.',
+			},
+			{
+				id: 'CE1-5',
+				text: 'Colabora en la evaluación del funcionamiento de redes de computadores.',
+			},
+		],
+	},
+	{
+		code: 'CE2',
+		description:
+			'Desarrolla software efectivo y eficiente, para diversos dominios, siguiendo un enfoque de ingeniería.',
+		attitudes: [
+			{
+				id: 'CE2-1',
+				text: 'Diseña procesos de documentación: software, procesos de la información, procesos de negocios tanto a nivel de usuario como de desarrollador.',
+			},
+			{
+				id: 'CE2-2',
+				text: 'Propone y/o aplica métodos de detección y documentación de errores ocurridos durante el desarrollo, puesta en marcha o uso de aplicaciones.',
+			},
+			{
+				id: 'CE2-3',
+				text: 'Diseña y/o implementa módulos de software acotados que utilicen tecnologías avanzadas.',
+			},
+			{
+				id: 'CE2-4',
+				text: 'Colabora en el diseño de procesos de negocios.',
+			},
+		],
+	},
+	{
+		code: 'CE3',
+		description:
+			'Construye bases de datos que permitan satisfacer las necesidades de información de las organizaciones o individuos, mediante el uso de diversas técnicas de modelado.',
+		attitudes: [
+			{
+				id: 'CE3-1',
+				text: 'Participa del diseño y el levantamiento de requisitos para implementar bases de datos.',
+			},
+			{
+				id: 'CE3-2',
+				text: 'Demuestra conocimientos técnicos de algún sistema administrador de bases de datos.',
+			},
+			{
+				id: 'CE3-3',
+				text: 'Domina técnicas que aportan en el modelado de datos y procesos de negocios.',
+			},
+		],
+	},
+	{
+		code: 'CE4',
+		description:
+			'Gestiona los recursos informáticos, de manera de apoyar y dar soporte a los procesos y estrategias de negocio de las organizaciones que permitan el mejoramiento continuo de las mismas.',
+		attitudes: [
+			{
+				id: 'CE4-1',
+				text: 'Colabora en el diseño de un plan informático.',
+			},
+			{
+				id: 'CE4-2',
+				text: 'Colabora en el diseño e implementación de procesos de auditoría informática.',
+			},
+		],
+	},
+	{
+		code: 'CE5',
+		description:
+			'Aplica conocimientos de las ciencias básicas y de la ingeniería para resolver problemas usando pensamiento lógico racional y capacidades analíticas y de abstracción.',
+		attitudes: [
+			{
+				id: 'CE5-1',
+				text: 'Demuestra capacidad de autogestión para investigar tecnologías emergentes.',
+			},
+			{
+				id: 'CE5-2',
+				text: 'Aplica sus conocimientos teóricos para resolver problemas complejos en ámbitos del Ingeniero Civil Informático.',
+			},
+			{
+				id: 'CE5-3',
+				text: 'Demuestra capacidad analítica y de abstracción al enfrentar problemas.',
+			},
+		],
+	},
 ];
 
 export function SupervisorEvaluationForm({
 	onSubmit,
 }: ISupervisorEvaluationFormProps) {
 	const id = useId();
-	const [scores, setScores] = useState<number[]>(
-		Array(ASPECTS.length).fill(1),
+	const [observations, setObservations] = useState('');
+	const [selections, setSelections] = useState<
+		Record<string, TEvalLetter | null>
+	>(() =>
+		Object.fromEntries(
+			COMPETENCIES.flatMap((c) =>
+				c.attitudes.map((a) => [a.id, null]),
+			),
+		),
 	);
-	const [supervisorComments, setSupervisorComments] =
-		useState('');
 
-	const total = useMemo(
-		() => scores.reduce((a, b) => a + b, 0),
-		[scores],
-	);
-	const supervisorGrade = useMemo(() => {
-		const avg = total / scores.length;
-		return Math.round(avg * 100) / 100;
-	}, [total, scores.length]);
-
-	const handleScoreChange = (
-		index: number,
-		value: number,
+	const handlePick = (
+		attitudeId: string,
+		value: TEvalLetter,
 	) => {
-		const copy = [...scores];
-		copy[index] = value;
-		setScores(copy);
+		setSelections((prev) => ({
+			...prev,
+			[attitudeId]: value,
+		}));
 	};
 
 	const handleSubmit = (e: FormEvent) => {
 		e.preventDefault();
 		onSubmit?.({
-			scores,
-			supervisorGrade,
-			supervisorComments,
+			evaluations: Object.entries(selections).map(
+				([key, value]) => ({
+					id: key,
+					value,
+				}),
+			),
+			observations,
 		});
+	};
+
+	const getCompetencyBadgeColor = (code: string) => {
+		if (code.startsWith('CG')) return 'badge-info';
+		if (code.startsWith('CE')) return 'badge-success';
+		return 'badge-neutral';
 	};
 
 	return (
 		<form
 			onSubmit={handleSubmit}
-			className="w-full max-w-2xl"
+			className="w-full space-y-6"
 		>
-			<fieldset className="fieldset rounded-box p-4 gap-4">
-				<h3 className="text-2xl font-semibold">
-					Evaluación del supervisor
+			<div className="bg-base-100 rounded-box p-6 shadow">
+				<h3 className="text-2xl font-semibold mb-4">
+					IV.- Aspectos a evaluar{' '}
+					<span className="text-base-content/60">
+						(Competencias)
+					</span>
 				</h3>
-				<p className="text-sm text-base-content/60">
-					Selecciona el nivel de cumplimiento (1-7) para
-					cada aspecto.
-				</p>
+				<div className="bg-info/10 border-l-4 border-info p-4 rounded-r-lg mb-6">
+					<p className="text-sm text-base-content/80">
+						<span className="font-semibold">
+							Instrucciones:
+						</span>{' '}
+						En el espacio de evaluación marque con una "X"
+						la letra que corresponda a lo observado:
+					</p>
+					<div className="flex flex-wrap gap-3 mt-2 text-xs">
+						<span className="badge badge-lg badge-outline">
+							<span className="font-bold mr-1">A</span>{' '}
+							Sobresaliente
+						</span>
+						<span className="badge badge-lg badge-outline">
+							<span className="font-bold mr-1">B</span>{' '}
+							Bueno
+						</span>
+						<span className="badge badge-lg badge-outline">
+							<span className="font-bold mr-1">C</span>{' '}
+							Moderado
+						</span>
+						<span className="badge badge-lg badge-outline">
+							<span className="font-bold mr-1">D</span>{' '}
+							Suficiente
+						</span>
+						<span className="badge badge-lg badge-outline">
+							<span className="font-bold mr-1">E</span>{' '}
+							Insuficiente
+						</span>
+						<span className="badge badge-lg badge-outline">
+							<span className="font-bold mr-1">F</span> No
+							aplica
+						</span>
+					</div>
+				</div>
 
-				{ASPECTS.map((label, idx) => (
-					<div key={label} className="flex flex-col gap-2">
-						<LabelAtom>{label}</LabelAtom>
-						<div className="flex items-center gap-3">
-							<div className="flex gap-2">
-								{[1, 2, 3, 4, 5, 6, 7].map((v) => (
-									<ScoreButton
-										key={v}
-										value={v}
-										selected={scores[idx] === v}
-										onClick={() =>
-											handleScoreChange(idx, v)
-										}
-									/>
+				<div className="space-y-4">
+					{COMPETENCIES.map((comp) => (
+						<div
+							key={comp.code}
+							className="bg-base-200/50 rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow"
+						>
+							<div className="flex items-start gap-4 mb-4">
+								<span
+									className={`badge ${getCompetencyBadgeColor(comp.code)} badge-lg font-semibold`}
+								>
+									{comp.code}
+								</span>
+								<p className="text-sm text-base-content/80 flex-1">
+									{comp.description}
+								</p>
+							</div>
+
+							<div className="divider my-3"></div>
+
+							<div className="space-y-4">
+								{comp.attitudes.map((att) => (
+									<div
+										key={att.id}
+										className="bg-base-100 rounded-lg p-4 flex items-center gap-4 hover:bg-base-100/80 transition-colors"
+									>
+										<div className="flex-1">
+											<p className="text-sm">{att.text}</p>
+										</div>
+										<div className="shrink-0">
+											<AfRadioGroup
+												name={`eval-${att.id}`}
+												value={selections[att.id]}
+												onChange={(val) =>
+													handlePick(att.id, val)
+												}
+												size="sm"
+											/>
+										</div>
+									</div>
 								))}
 							</div>
-							<div className="text-sm text-base-content/60">
-								Seleccionado: {scores[idx]}
-							</div>
 						</div>
-					</div>
-				))}
+					))}
+				</div>
+			</div>
 
+			<div className="bg-base-100 rounded-box p-6 shadow">
 				<div className="form-control w-full">
-					<LabelAtom htmlFor={`supervisor-comments-${id}`}>
-						Comentario sobre contribuciones
+					<LabelAtom htmlFor={`observations-${id}`}>
+						<span className="text-lg font-semibold">
+							V.- Observaciones del supervisor
+						</span>
 					</LabelAtom>
-					<div className="mt-2">
+					<div className="mt-3">
 						<TextareaAtom
-							id={`supervisor-comments-${id}`}
-							value={supervisorComments}
+							id={`observations-${id}`}
+							value={observations}
 							onChange={(e) =>
-								setSupervisorComments(e.target.value)
+								setObservations(e.target.value)
 							}
-							placeholder="Comentarios sobre las contribuciones del practicante"
+							placeholder="Ingrese observaciones generales sobre el desempeño del practicante..."
 						/>
 					</div>
 				</div>
+			</div>
 
-				<div className="divider" />
-
-				<div className="flex items-center justify-between gap-4">
-					<div>
-						<div className="text-sm">Puntaje total:</div>
-						<div className="text-xl font-medium">
-							{total} / {scores.length * 7}
-						</div>
-					</div>
-					<div>
-						<div className="text-sm">
-							Nota supervisor (promedio):
-						</div>
-						<div className="text-xl font-medium">
-							{supervisorGrade} / 7
-						</div>
-					</div>
-				</div>
-
-				<div className="flex justify-end">
-					<button
-						type="submit"
-						className="btn btn-neutral mt-4"
-					>
-						Guardar evaluación
-					</button>
-				</div>
-			</fieldset>
+			<div className="flex justify-end bg-base-100 rounded-box p-4 shadow">
+				<button
+					type="submit"
+					className="btn btn-primary btn-lg"
+				>
+					Guardar evaluación
+				</button>
+			</div>
 		</form>
 	);
 }

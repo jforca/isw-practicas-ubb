@@ -1,197 +1,226 @@
+import { useId, useState, type FormEvent } from 'react';
 import {
-	useId,
-	useMemo,
-	useState,
-	type FormEvent,
-} from 'react';
-import { TextareaAtom, LabelAtom } from '../atoms';
+	LabelAtom,
+	TextareaAtom,
+	AfRadioGroup,
+} from '../atoms';
+
+type TEvalLetter = 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
 
 interface IReportEvaluationFormProps {
-	supervisorGrade?: number;
-	supervisorComments?: string;
 	onSubmit?: (data: {
-		reportGrade: number;
-		finalGrade: number;
+		evaluations: {
+			id: string;
+			value: TEvalLetter | null;
+		}[];
 		reportComments: string;
 	}) => void;
 }
 
+const COMPETENCIES: {
+	code: string;
+	description: string;
+	aspects: { id: string; text: string }[];
+}[] = [
+	{
+		code: 'CG1',
+		description:
+			'Manifiesta una actitud permanente de búsqueda y actualización de sus aprendizajes, incorporando los cambios sociales, científicos y tecnológicos en el ejercicio y desarrollo de su profesión.',
+		aspects: [
+			{
+				id: 'CG1-1',
+				text: 'Se evidencian los conocimientos y habilidades adquiridas por el estudiante, por la participación en el proyecto.',
+			},
+			{
+				id: 'CG1-2',
+				text: 'Se evidencia la realización de una adecuada revisión bibliográfica, la que se ajusta al formato exigido.',
+			},
+			{
+				id: 'CG1-3',
+				text: 'Se evidencia la aplicación de conocimientos por parte del estudiante, en el proyecto en el cual participó durante su práctica',
+			},
+			{
+				id: 'CG1-4',
+				text: 'Se evidencia el conocimiento de alternativas tecnológicas para resolver un problema planteado',
+			},
+			{
+				id: 'CG1-5',
+				text: 'Propone soluciones que consideran aspectos de impacto social',
+			},
+		],
+	},
+	{
+		code: 'CG3',
+		description:
+			'Establecer relaciones dialogantes para el intercambio de aportes constructivos con otras disciplinas y actúa éticamente en su profesión, trabajando de manera asociativa en la consecución de objetivos.',
+		aspects: [
+			{
+				id: 'CG3-1',
+				text: 'Se presentan evidencias de trabajo colaborativo con personas de otras disciplinas o profesiones y trabaja con ellos de manera asociativa y ética para la consecución de objetivos comunes',
+			},
+		],
+	},
+	{
+		code: 'CG5',
+		description:
+			'Comunicar ideas y sentimientos en forma oral y escrita para interactuar efectivamente en el entorno social y profesional en su lengua materna y en un nivel inicial en un segundo idioma.',
+		aspects: [
+			{
+				id: 'CG5-1',
+				text: 'Las conclusiones reflejan la importancia de los resultados obtenidos, la postura personal frente al tema contiene opiniones personales en relación a lo aprendido.',
+			},
+			{
+				id: 'CG5-2',
+				text: 'En el informe se destacan los aspectos importantes y se describen claramente las actividades desarrolladas por el estudiante, en el proyecto en el cual participó durante su práctica.',
+			},
+			{
+				id: 'CG5-3',
+				text: 'El informe se ajusta al formato y estructura exigido para la Práctica profesional II.',
+			},
+			{
+				id: 'CG5-4',
+				text: 'Las ideas del informe están claramente redactadas con buena ortografía, permitiendo comprender las actividades desarrolladas y los problemas resueltos.',
+			},
+			{
+				id: 'CG5-5',
+				text: 'El informe contiene la bitácora que considera el detalle de las actividades desarrolladas diariamente.',
+			},
+			{
+				id: 'CG5-6',
+				text: 'El informe refleja la utilización de nivel básico del idioma inglés, durante la práctica.',
+			},
+		],
+	},
+];
+
+const getCompetencyBadgeColor = (code: string): string => {
+	if (code === 'CG1') return 'badge-warning';
+	if (code === 'CG3') return 'badge-info';
+	if (code === 'CG5') return 'badge-success';
+	return 'badge-neutral';
+};
+
 export function ReportEvaluationForm({
-	supervisorGrade = 0,
-	supervisorComments = '',
 	onSubmit,
 }: IReportEvaluationFormProps) {
-	const id = useId();
-	// keep a string for the input to avoid aggressive rounding while typing
-	const initialReport = (
-		Math.round((Number(supervisorGrade) || 1) * 100) /
-			100 || 1
-	).toFixed(2);
-	const [reportGradeStr, setReportGradeStr] =
-		useState<string>(initialReport);
+	const formId = useId();
+	const commentsId = useId();
+
+	const [selections, setSelections] = useState<
+		Record<string, TEvalLetter | null>
+	>({});
 	const [reportComments, setReportComments] = useState('');
 
-	const reportGrade = useMemo(() => {
-		const n = parseFloat(reportGradeStr);
-		if (Number.isNaN(n)) return 1;
-		return (
-			Math.round(Math.max(1, Math.min(7, n)) * 100) / 100
-		);
-	}, [reportGradeStr]);
+	const handleSelectionChange = (
+		id: string,
+		value: TEvalLetter | null,
+	) => {
+		setSelections((prev) => ({ ...prev, [id]: value }));
+	};
 
-	const finalGrade = useMemo(() => {
-		const s = Number(supervisorGrade) || 0;
-		const r = Number(reportGrade) || 0;
-		const avg = (s + r) / (s > 0 ? 2 : 1);
-		return Math.round(avg * 100) / 100;
-	}, [supervisorGrade, reportGrade]);
-
-	const isValid = useMemo(() => {
-		if (reportGradeStr === '') return false;
-		const n = parseFloat(reportGradeStr);
-		if (Number.isNaN(n)) return false;
-		return n >= 1 && n <= 7;
-	}, [reportGradeStr]);
-
-	const handleSubmit = (e: FormEvent) => {
+	const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		if (!isValid) return;
-		onSubmit?.({ reportGrade, finalGrade, reportComments });
+
+		const evaluations = Object.entries(selections).map(
+			([id, value]) => ({
+				id,
+				value,
+			}),
+		);
+
+		onSubmit?.({
+			evaluations,
+			reportComments,
+		});
 	};
 
 	return (
 		<form
+			id={formId}
 			onSubmit={handleSubmit}
-			className="w-full max-w-2xl"
+			className="space-y-6"
 		>
-			<fieldset className="fieldset rounded-box p-4 gap-4">
-				<h3 className="text-2xl font-semibold">
-					Evaluación del informe
-				</h3>
+			{/* Competencias */}
+			<div className="space-y-6">
+				{COMPETENCIES.map((competency) => (
+					<div
+						key={competency.code}
+						className="card bg-base-200/50 shadow-md hover:shadow-lg transition-shadow duration-200"
+					>
+						<div className="card-body">
+							{/* Header */}
+							<div className="flex items-start gap-3">
+								<span
+									className={`badge ${getCompetencyBadgeColor(competency.code)} badge-lg font-semibold shrink-0`}
+								>
+									{competency.code}
+								</span>
+								<p className="text-sm opacity-80">
+									{competency.description}
+								</p>
+							</div>
 
-				<div>
-					<div className="text-sm">Nota del supervisor</div>
-					<div className="font-medium">
-						{supervisorGrade} / 7
+							{/* Aspectos */}
+							<div className="mt-4 space-y-3">
+								{competency.aspects.map((aspect) => (
+									<div
+										key={aspect.id}
+										className="bg-base-100 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200"
+									>
+										<div className="flex flex-col gap-3">
+											{/* Texto del aspecto */}
+											<p className="text-sm font-medium">
+												{aspect.text}
+											</p>
+
+											{/* Radio buttons */}
+											<AfRadioGroup
+												name={aspect.id}
+												value={
+													selections[aspect.id] || null
+												}
+												onChange={(value) =>
+													handleSelectionChange(
+														aspect.id,
+														value,
+													)
+												}
+											/>
+										</div>
+									</div>
+								))}
+							</div>
+						</div>
 					</div>
-					<div className="text-sm text-base-content/60 mt-1">
-						Comentario del supervisor:
-					</div>
-					<div className="p-2 bg-base-200 rounded">
-						{supervisorComments || '—'}
-					</div>
-				</div>
+				))}
+			</div>
 
-				<div className="form-control">
-					<LabelAtom htmlFor={`report-grade-${id}`}>
-						Asignar nota al informe (1-7)
-					</LabelAtom>
-					<input
-						id={`report-grade-${id}`}
-						type="text"
-						inputMode="numeric"
-						pattern="[0-9]*"
-						value={reportGradeStr}
-						onChange={(e) => {
-							const raw = e.target.value;
-							// allow empty while typing
-							if (raw === '') {
-								setReportGradeStr('');
-								return;
-							}
-							// allow only digits and dot
-							if (!/^[0-9]*\.?[0-9]*$/.test(raw)) return;
-
-							// if user typed first digit (1-7) and didn't type dot yet, auto-insert dot so next two are decimals
-							if (/^[1-7]$/.test(raw)) {
-								setReportGradeStr(`${raw}.`);
-								return;
-							}
-
-							// split integer and decimals
-							const [intPart, decPart] = raw.split('.');
-
-							// integer part must be 1..7 (or empty if starting with dot)
-							if (intPart && !/^[0-9]+$/.test(intPart))
-								return;
-							if (
-								intPart &&
-								(intPart.length > 1 ||
-									Number(intPart) < 1 ||
-									Number(intPart) > 7)
-							) {
-								// ignore invalid integer part
-								return;
-							}
-
-							// decimals limited to 2 digits
-							if (typeof decPart !== 'undefined') {
-								const dec = decPart.slice(0, 2);
-								setReportGradeStr(`${intPart}.${dec}`);
-								return;
-							}
-
-							// otherwise accept the integer (could be '0' which will be normalized on blur)
-							setReportGradeStr(intPart);
-						}}
-						onBlur={(e) => {
-							const raw = e.target.value;
-							if (raw === '') {
-								setReportGradeStr('1.00');
-								return;
-							}
-							const n = parseFloat(raw);
-							if (Number.isNaN(n)) {
-								setReportGradeStr('1.00');
-								return;
-							}
-							const clamped = Math.max(1, Math.min(7, n));
-							const rounded =
-								Math.round(clamped * 100) / 100;
-							setReportGradeStr(rounded.toFixed(2));
-						}}
-						className="input input-bordered w-36 mt-2"
-					/>
-				</div>
-
-				<div className="form-control">
-					<LabelAtom htmlFor={`report-comments-${id}`}>
-						Comentario del informe
+			{/* Observaciones */}
+			<div className="card bg-base-200/50 shadow-md">
+				<div className="card-body">
+					<LabelAtom htmlFor={commentsId}>
+						Observaciones del Reporte
 					</LabelAtom>
 					<TextareaAtom
-						id={`report-comments-${id}`}
+						id={commentsId}
 						value={reportComments}
 						onChange={(e) =>
 							setReportComments(e.target.value)
 						}
-						placeholder="Comentarios sobre el informe y el desempeño del practicante"
+						placeholder="Ingrese sus observaciones sobre el informe..."
 					/>
 				</div>
+			</div>
 
-				<div className="divider" />
-
-				<div className="p-4 border rounded">
-					<div className="text-sm">
-						Nota report: {reportGrade.toFixed(2)} / 7
-					</div>
-					<div className="text-sm">
-						Nota final (promedio):{' '}
-						<span className="font-medium">
-							{finalGrade.toFixed(2)} / 7
-						</span>
-					</div>
-				</div>
-
-				<div className="flex justify-end">
-					<button
-						className="btn btn-neutral mt-4"
-						type="submit"
-						disabled={!isValid}
-					>
-						Guardar informe
-					</button>
-				</div>
-			</fieldset>
+			{/* Submit Button */}
+			<div className="flex justify-end">
+				<button
+					type="submit"
+					className="btn btn-primary btn-wide"
+				>
+					Enviar Evaluación
+				</button>
+			</div>
 		</form>
 	);
 }
