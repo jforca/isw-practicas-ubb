@@ -5,6 +5,10 @@ import {
 	ChileanRUTRegex,
 } from '@packages/utils/regex.utils';
 import type { TInternshipCenter } from '@packages/schema/internship-centers.schema';
+import {
+	NAME_REGEX,
+	ADDRESS_REGEX,
+} from '@packages/schema/internship-centers.schema';
 
 import {
 	InternshipCenterCards,
@@ -87,6 +91,10 @@ export function InternshipCentersTemplate({
 	const [createErrors, setCreateErrors] = useState<
 		Record<keyof TCreateForm, string | null>
 	>({} as Record<keyof TCreateForm, string | null>);
+	const [touched, setTouched] = useState<
+		Record<keyof TCreateForm, boolean>
+	>({} as Record<keyof TCreateForm, boolean>);
+
 	const [conventionFile, setConventionFile] =
 		useState<File | null>(null);
 
@@ -117,6 +125,7 @@ export function InternshipCentersTemplate({
 			...prev,
 			[field]: validateField(field, value),
 		}));
+		setTouched((prev) => ({ ...prev, [field]: true }));
 	};
 
 	const validateField = (
@@ -143,8 +152,32 @@ export function InternshipCentersTemplate({
 				if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
 					return 'Correo inválido';
 				return null;
+			case 'legal_name':
+				if (!value) return 'Nombre legal es requerido';
+				if (value.length < 2)
+					return 'Nombre demasiado corto';
+				if (!NAME_REGEX.test(value))
+					return 'Nombre contiene caracteres inválidos';
+				if (!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(value))
+					return 'Nombre debe contener letras';
+				return null;
+			case 'address':
+				if (!value) return 'Dirección es requerida';
+				if (value.length < 5)
+					return 'Dirección demasiado corta';
+				if (!ADDRESS_REGEX.test(value))
+					return 'Dirección contiene caracteres inválidos';
+				if (!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(value))
+					return 'Dirección debe contener letras';
+				return null;
+			case 'description':
+				if (!value) return 'Descripción es requerida';
+				if (value.length < 10)
+					return 'Descripción demasiado corta';
+				if (!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(value))
+					return 'Descripción debe contener texto legible';
+				return null;
 			default:
-				if (!value) return 'Este campo es requerido';
 				return null;
 		}
 	};
@@ -177,8 +210,10 @@ export function InternshipCentersTemplate({
 	const getInputClass = (field: keyof TCreateForm) => {
 		const base = 'input w-full rounded-lg';
 		const err = createErrors[field];
+		const isTouched = touched[field];
 		if (err) return `${base} input-error`;
-		if (createForm[field]) return `${base} input-success`;
+		if (isTouched && createForm[field])
+			return `${base} input-success`;
 		return base;
 	};
 

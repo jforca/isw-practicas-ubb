@@ -4,8 +4,10 @@ import {
 } from '../utils/regex.utils';
 import { z } from 'zod/v4';
 
-const NAME_REGEX = /^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s.,&\-()]+$/u;
-const ADDRESS_REGEX = /^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s.,º#\-/()]+$/u;
+export const NAME_REGEX =
+	/^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s.,&\-()]+$/u;
+export const ADDRESS_REGEX =
+	/^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s.,º#\-/()]+$/u;
 
 export const InternshipCentersSchema = z.object({
 	id: z.coerce.number().int().positive(),
