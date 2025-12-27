@@ -4,6 +4,8 @@ import { seedOffersTypes } from './seeders/offers-types.seed';
 import { seedCoordinators } from './seeders/coordinators.seed';
 import { seedInternshipCenters } from './seeders/internship-centers.seed';
 import { seedOffers } from './seeders/offers.seed';
+import { seedEvaluationItems } from './seeders/evaluation-items.seed';
+import { seedInternshipEvaluations } from './seeders/internship-evaluations.seed';
 
 async function run() {
 	try {
@@ -11,14 +13,12 @@ async function run() {
 		console.log('Conexión DB iniciada para seeds.');
 
 		await seedUsers();
-
 		await seedCoordinators();
-
 		await seedInternshipCenters();
-
 		await seedOffersTypes();
-
 		await seedOffers();
+		await seedEvaluationItems();
+		await seedInternshipEvaluations();
 
 		console.log('Seeds ejecutados correctamente.');
 	} catch (error) {

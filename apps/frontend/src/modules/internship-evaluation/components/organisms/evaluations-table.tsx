@@ -3,9 +3,12 @@ import { Link } from 'react-router';
 import { InputAtom, LabelAtom } from '../atoms';
 import { UseFindManyInternshipEvaluation } from '../../hooks/find-many-internship-evaluation.hook';
 
-const formatGrade = (grade?: number | null) => {
+const formatGrade = (grade?: number | string | null) => {
 	if (grade == null) return '—';
-	return grade.toFixed(2);
+	const num =
+		typeof grade === 'string' ? parseFloat(grade) : grade;
+	if (isNaN(num)) return '—';
+	return num.toFixed(2);
 };
 
 export function EvaluationsTable() {

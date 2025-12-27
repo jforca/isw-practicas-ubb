@@ -15,7 +15,7 @@ export function UseDeleteInternshipEvaluation() {
 
 		try {
 			const response = await fetch(
-				`/api/internship-evaluation/delete/${id}`,
+				`/api/internship-evaluations/delete/${id}`,
 				{
 					method: 'DELETE',
 				},

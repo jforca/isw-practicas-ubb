@@ -41,9 +41,9 @@ export class Internship {
 	@JoinColumn({ name: 'supervisor_id' })
 	supervisor: Supervisor;
 
-	@OneToOne(() => Application)
+	@OneToOne(() => Application, { nullable: true })
 	@JoinColumn({ name: 'application_id' })
-	application: Application;
+	application: Application | null;
 
 	@Column({
 		type: 'enum',

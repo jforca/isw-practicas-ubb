@@ -23,7 +23,7 @@ export function UseUpdateOneInternshipEvaluation() {
 
 			try {
 				const response = await fetch(
-					`/api/internship-evaluation/update/${id}`,
+					`/api/internship-evaluations/update/${id}`,
 					{
 						method: 'PATCH',
 						headers: {

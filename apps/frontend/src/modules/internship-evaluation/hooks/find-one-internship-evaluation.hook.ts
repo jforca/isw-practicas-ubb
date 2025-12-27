@@ -13,7 +13,7 @@ export function UseFindOneInternshipEvaluation() {
 
 		try {
 			const response = await fetch(
-				`/api/internship-evaluation/find-one/${id}`,
+				`/api/internship-evaluations/find-one/${id}`,
 			);
 
 			if (!response.ok) {

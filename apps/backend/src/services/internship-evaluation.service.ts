@@ -356,10 +356,20 @@ export async function deleteEvaluation(
 export async function listEvaluations() {
 	try {
 		return await internshipEvaluationRepo.find({
-			relations: ['internship'],
+			relations: [
+				'internship',
+				'internship.supervisor',
+				'internship.supervisor.user',
+				'internship.coordinator',
+				'internship.coordinator.user',
+				'internship.application',
+				'internship.application.student',
+				'signature_document',
+			],
 		});
 	} catch (error) {
 		console.error('Error al listar evaluaciones:', error);
+		throw error;
 	}
 }
 

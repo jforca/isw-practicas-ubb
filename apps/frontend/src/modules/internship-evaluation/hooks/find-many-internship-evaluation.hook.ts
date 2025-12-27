@@ -62,7 +62,7 @@ export function UseFindManyInternshipEvaluation() {
 				}
 
 				const response = await fetch(
-					`/api/internship-evaluation/find-many?${params.toString()}`,
+					`/api/internship-evaluations/find-many?${params.toString()}`,
 				);
 
 				if (!response.ok) {
@@ -70,9 +70,11 @@ export function UseFindManyInternshipEvaluation() {
 				}
 
 				const result = await response.json();
+				console.log('API Response:', result);
 				setData(result.data.data);
 				setPagination(result.data.pagination);
 			} catch (err) {
+				console.error('Fetch error:', err);
 				setError(
 					err instanceof Error
 						? err.message

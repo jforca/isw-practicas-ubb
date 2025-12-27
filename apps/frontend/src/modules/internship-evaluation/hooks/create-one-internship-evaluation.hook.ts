@@ -32,7 +32,7 @@ export function UseCreateOneInternshipEvaluation() {
 
 			try {
 				const response = await fetch(
-					'/api/internship-evaluation/',
+					'/api/internship-evaluations/',
 					{
 						method: 'POST',
 						headers: {

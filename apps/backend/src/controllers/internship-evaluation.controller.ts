@@ -34,11 +34,48 @@ export async function findOneController(
 }
 
 export async function findManyController(
-	_req: Request,
+	req: Request,
 	res: Response,
 ) {
+	const offset = Number(req.query.offset) || 0;
+	const limit = Number(req.query.limit) || 10;
+	const search = req.query.search as string | undefined;
+
 	const list = await listEvaluations();
-	res.status(200).json({ data: list || [], error: null });
+
+	// Filtrar por búsqueda si se proporciona
+	let filtered = list || [];
+	if (search) {
+		const searchLower = search.toLowerCase();
+		filtered = filtered.filter(
+			(item) =>
+				item.id.toString().includes(searchLower) ||
+				item.internship?.supervisor?.user?.name
+					?.toLowerCase()
+					.includes(searchLower) ||
+				item.internship?.coordinator?.user?.name
+					?.toLowerCase()
+					.includes(searchLower),
+		);
+	}
+
+	// Aplicar paginación
+	const total = filtered.length;
+	const paginated = filtered.slice(offset, offset + limit);
+	const hasMore = offset + limit < total;
+
+	res.status(200).json({
+		data: {
+			data: paginated,
+			pagination: {
+				total,
+				offset,
+				limit,
+				hasMore,
+			},
+		},
+		error: null,
+	});
 }
 
 export async function deleteController(
