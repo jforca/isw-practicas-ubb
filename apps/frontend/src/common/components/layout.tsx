@@ -7,6 +7,7 @@ import {
 	LogOut,
 	BookCheck,
 	School,
+	UsersRound,
 } from 'lucide-react';
 
 export function Layout() {
@@ -84,6 +85,19 @@ export function Layout() {
 										<School size={28} />
 										<span className="paragraph-1">
 											Supervisor
+										</span>
+									</NavLink>
+								</li>
+								<li>
+									<NavLink
+										to="/app/students"
+										className={({ isActive }) =>
+											`flex flex-col items-center gap-1${isActive ? ' text-primary' : ''}`
+										}
+									>
+										<UsersRound size={28} />
+										<span className="paragraph-1">
+											Alumnos
 										</span>
 									</NavLink>
 								</li>
