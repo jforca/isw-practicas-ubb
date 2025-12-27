@@ -79,9 +79,19 @@ export function CreateStudentForm({
 				if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
 					return 'Correo inválido (ej: correo@ejemplo.com)';
 				return null;
-			case 'name':
+			case 'name': {
 				if (!value) return 'El nombre es obligatorio';
+				// Validar que solo contenga letras, espacios y acentos
+				const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/;
+				if (!nameRegex.test(value)) {
+					return 'El nombre solo puede contener letras y espacios';
+				}
+				// Validar que tenga al menos 2 caracteres
+				if (value.trim().length < 2) {
+					return 'El nombre debe tener al menos 2 caracteres';
+				}
 				return null;
+			}
 			default:
 				if (!value) return 'Este campo es obligatorio';
 				return null;

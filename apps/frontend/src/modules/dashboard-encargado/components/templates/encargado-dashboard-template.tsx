@@ -75,6 +75,9 @@ export function EncargadoDashboardTemplate() {
 						students={students}
 						isLoading={isLoading}
 						error={error}
+						onStudentDeleted={() => {
+							handleFindMany(currentPage, limit);
+						}}
 					/>
 				</div>
 				{pagination && pagination.totalPages > 1 && (
