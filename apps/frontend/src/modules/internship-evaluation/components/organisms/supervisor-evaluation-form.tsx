@@ -4,10 +4,15 @@ import {
 	TextareaAtom,
 	AfRadioGroup,
 } from '../atoms';
-
-type TEvalLetter = 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
+import {
+	calculateAverageGrade,
+	type TEvalLetter,
+} from '../../lib/grade-converter';
+import { UseUpdateOneInternshipEvaluation } from '../../hooks/update-one-internship-evaluation.hook';
 
 interface ISupervisorEvaluationFormProps {
+	evaluationId?: number;
+	onSuccess?: () => void;
 	onSubmit?: (data: {
 		evaluations: {
 			id: string;
@@ -196,8 +201,13 @@ const COMPETENCIES: {
 ];
 
 export function SupervisorEvaluationForm({
+	evaluationId,
+	onSuccess,
 	onSubmit,
 }: ISupervisorEvaluationFormProps) {
+	const { handleUpdateOne, isLoading, error, isSuccess } =
+		UseUpdateOneInternshipEvaluation();
+
 	const id = useId();
 	const [observations, setObservations] = useState('');
 	const [selections, setSelections] = useState<
@@ -220,17 +230,37 @@ export function SupervisorEvaluationForm({
 		}));
 	};
 
-	const handleSubmit = (e: FormEvent) => {
+	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
-		onSubmit?.({
-			evaluations: Object.entries(selections).map(
-				([key, value]) => ({
-					id: key,
-					value,
-				}),
-			),
-			observations,
-		});
+
+		const evaluationsList = Object.entries(selections).map(
+			([key, value]) => ({
+				id: key,
+				value,
+			}),
+		);
+
+		// Calcular la nota numérica del promedio de evaluaciones A-F
+		const supervisorGrade =
+			calculateAverageGrade(evaluationsList);
+
+		if (evaluationId) {
+			// Actualizar evaluación existente
+			await handleUpdateOne(evaluationId, {
+				supervisorGrade,
+				supervisorComments: observations,
+			});
+		} else {
+			// Llamar callback personalizado (para creación o flujo custom)
+			onSubmit?.({
+				evaluations: evaluationsList,
+				observations,
+			});
+		}
+
+		if (isSuccess) {
+			onSuccess?.();
+		}
 	};
 
 	const getCompetencyBadgeColor = (code: string) => {
@@ -357,10 +387,25 @@ export function SupervisorEvaluationForm({
 				<button
 					type="submit"
 					className="btn btn-primary btn-lg"
+					disabled={isLoading}
 				>
-					Guardar evaluación
+					{isLoading
+						? 'Guardando...'
+						: 'Guardar evaluación'}
 				</button>
 			</div>
+
+			{error && (
+				<div className="alert alert-error">
+					<span>{error}</span>
+				</div>
+			)}
+
+			{isSuccess && (
+				<div className="alert alert-success">
+					<span>Evaluación guardada correctamente</span>
+				</div>
+			)}
 		</form>
 	);
 }

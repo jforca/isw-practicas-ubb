@@ -4,10 +4,15 @@ import {
 	TextareaAtom,
 	AfRadioGroup,
 } from '../atoms';
-
-type TEvalLetter = 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
+import {
+	calculateAverageGrade,
+	type TEvalLetter,
+} from '../../lib/grade-converter';
+import { UseUpdateOneInternshipEvaluation } from '../../hooks/update-one-internship-evaluation.hook';
 
 interface IReportEvaluationFormProps {
+	evaluationId?: number;
+	onSuccess?: () => void;
 	onSubmit?: (data: {
 		evaluations: {
 			id: string;
@@ -99,8 +104,13 @@ const getCompetencyBadgeColor = (code: string): string => {
 };
 
 export function ReportEvaluationForm({
+	evaluationId,
+	onSuccess,
 	onSubmit,
 }: IReportEvaluationFormProps) {
+	const { handleUpdateOne, isLoading, error, isSuccess } =
+		UseUpdateOneInternshipEvaluation();
+
 	const formId = useId();
 	const commentsId = useId();
 
@@ -125,20 +135,39 @@ export function ReportEvaluationForm({
 		setSelections((prev) => ({ ...prev, [id]: value }));
 	};
 
-	const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+	const handleSubmit = async (
+		e: FormEvent<HTMLFormElement>,
+	) => {
 		e.preventDefault();
 
-		const evaluations = Object.entries(selections).map(
+		const evaluationsList = Object.entries(selections).map(
 			([id, value]) => ({
 				id,
 				value,
 			}),
 		);
 
-		onSubmit?.({
-			evaluations,
-			reportComments,
-		});
+		// Calcular la nota numérica del promedio de evaluaciones A-F
+		const reportGrade =
+			calculateAverageGrade(evaluationsList);
+
+		if (evaluationId) {
+			// Actualizar evaluación existente
+			await handleUpdateOne(evaluationId, {
+				reportGrade,
+				reportComments,
+			});
+		} else {
+			// Llamar callback personalizado
+			onSubmit?.({
+				evaluations: evaluationsList,
+				reportComments,
+			});
+		}
+
+		if (isSuccess) {
+			onSuccess?.();
+		}
 	};
 
 	return (
@@ -265,10 +294,25 @@ export function ReportEvaluationForm({
 				<button
 					type="submit"
 					className="btn btn-primary btn-lg"
+					disabled={isLoading}
 				>
-					Guardar evaluación
+					{isLoading
+						? 'Guardando...'
+						: 'Guardar evaluación'}
 				</button>
 			</div>
+
+			{error && (
+				<div className="alert alert-error">
+					<span>{error}</span>
+				</div>
+			)}
+
+			{isSuccess && (
+				<div className="alert alert-success">
+					<span>Evaluación guardada correctamente</span>
+				</div>
+			)}
 		</form>
 	);
 }
