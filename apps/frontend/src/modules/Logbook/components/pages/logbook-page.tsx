@@ -108,15 +108,16 @@ export const LogbookPage: React.FC = () => {
 							disabled={
 								pagination.offset === 0 || isLoading
 							}
-							className="btn-sm"
+							className="btn-sm transition-transform duration-200 ease-in-out hover:scale-105 active:scale-95 disabled:hover:scale-100"
 						>
 							Anterior
 						</Button>
+
 						<Button
 							variant="primary"
 							onClick={nextPage}
 							disabled={!pagination.hasMore || isLoading}
-							className="btn-sm"
+							className="btn-sm transition-transform duration-200 ease-in-out hover:scale-105 active:scale-95 disabled:hover:scale-100"
 						>
 							Siguiente
 						</Button>
