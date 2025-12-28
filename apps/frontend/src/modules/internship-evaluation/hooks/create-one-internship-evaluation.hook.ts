@@ -13,6 +13,18 @@ export type TInternshipEvaluation =
 	TCreateInternshipEvaluationData & {
 		id: number;
 		completedAt: string;
+		internship?: {
+			supervisor?: { user?: { name?: string } };
+			coordinator?: { user?: { name?: string } };
+			application?: {
+				student?: { id?: string; name?: string };
+			};
+		};
+		signatureDocument?: {
+			id: number;
+			fileNname: string;
+			fileNpath: string;
+		};
 	};
 
 export function UseCreateOneInternshipEvaluation() {

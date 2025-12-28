@@ -55,6 +55,9 @@ export async function findManyController(
 					.includes(searchLower) ||
 				item.internship?.coordinator?.user?.name
 					?.toLowerCase()
+					.includes(searchLower) ||
+				item.internship?.application?.student?.name
+					?.toLowerCase()
 					.includes(searchLower),
 		);
 	}

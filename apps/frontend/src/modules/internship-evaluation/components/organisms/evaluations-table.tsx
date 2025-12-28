@@ -11,6 +11,9 @@ const formatGrade = (grade?: number | string | null) => {
 	return num.toFixed(2);
 };
 
+const formatText = (value?: string | null) =>
+	value?.trim() || '—';
+
 export function EvaluationsTable() {
 	const searchId = useId();
 	const {
@@ -70,7 +73,9 @@ export function EvaluationsTable() {
 				<table className="table table-zebra w-full">
 					<thead>
 						<tr>
-							<th className="text-xs uppercase">ID</th>
+							<th className="text-xs uppercase">
+								Estudiante
+							</th>
 							<th className="text-xs uppercase">
 								Supervisor
 							</th>
@@ -78,10 +83,19 @@ export function EvaluationsTable() {
 								Encargado
 							</th>
 							<th className="text-xs uppercase">
+								Nota supervisor
+							</th>
+							<th className="text-xs uppercase">
+								Nota encargado
+							</th>
+							<th className="text-xs uppercase">
 								Nota final
 							</th>
 							<th className="text-xs uppercase text-center">
-								Acciones
+								Evaluaciones
+							</th>
+							<th className="text-xs uppercase text-center">
+								Firma
 							</th>
 						</tr>
 					</thead>
@@ -89,7 +103,7 @@ export function EvaluationsTable() {
 						{isLoading && (
 							<tr>
 								<td
-									colSpan={5}
+									colSpan={8}
 									className="text-center py-6 text-base-content/60"
 								>
 									Cargando evaluaciones...
@@ -100,7 +114,7 @@ export function EvaluationsTable() {
 						{error && !isLoading && (
 							<tr>
 								<td
-									colSpan={5}
+									colSpan={8}
 									className="text-center py-6 text-error"
 								>
 									{error}
@@ -114,7 +128,22 @@ export function EvaluationsTable() {
 							data.map((item) => (
 								<tr key={item.id}>
 									<td className="font-semibold">
-										#{item.id}
+										{formatText(
+											item.internship?.application?.student
+												?.name,
+										)}
+									</td>
+									<td>
+										{formatText(
+											item.internship?.supervisor?.user
+												?.name,
+										)}
+									</td>
+									<td>
+										{formatText(
+											item.internship?.coordinator?.user
+												?.name,
+										)}
 									</td>
 									<td>
 										{formatGrade(item.supervisorGrade)}
@@ -139,13 +168,40 @@ export function EvaluationsTable() {
 											</Link>
 										</div>
 									</td>
+									<td className="text-center">
+										{item.signatureDocument ? (
+											<button
+												type="button"
+												className="btn btn-circle btn-ghost btn-sm"
+												title="Ver firma"
+												onClick={() =>
+													window.open(
+														item.signatureDocument
+															?.fileNpath,
+														'_blank',
+													)
+												}
+											>
+												📄
+											</button>
+										) : (
+											<button
+												type="button"
+												className="btn btn-circle btn-ghost btn-sm"
+												title="Sin firma"
+												disabled
+											>
+												—
+											</button>
+										)}
+									</td>
 								</tr>
 							))}
 
 						{!isLoading && !error && !hasData && (
 							<tr>
 								<td
-									colSpan={5}
+									colSpan={8}
 									className="text-center py-6 text-base-content/60"
 								>
 									No hay evaluaciones registradas.
