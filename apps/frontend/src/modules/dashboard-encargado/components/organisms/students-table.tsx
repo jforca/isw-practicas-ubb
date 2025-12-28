@@ -8,6 +8,7 @@ import { useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { UseDeleteStudent } from '@modules/dashboard-encargado/hooks/delete-one-student.hook';
 import { UpdateStudentModal } from '@modules/dashboard-encargado/components/organisms/update-student';
+import { StudentDetailsModal } from '@modules/dashboard-encargado/components/organisms/student-details-modal';
 
 // Extender el tipo TStudent para incluir los campos de práctica
 type TStudentWithInternship = TStudent & {
@@ -133,7 +134,7 @@ function StudentRow({
 				</td>
 				<td>
 					<div className="flex gap-2 text-primary text-xs">
-						<span className="cursor-default">Ver</span>
+						<StudentDetailsModal studentId={student.id} />
 						<UpdateStudentModal
 							studentId={student.id}
 							onSuccess={() => {

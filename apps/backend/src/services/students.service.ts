@@ -241,3 +241,85 @@ export async function deleteStudent(id: string) {
 		return false;
 	}
 }
+
+export async function getStudentDetails(id: string) {
+	try {
+		// 1. Obtener datos básicos del estudiante (User + Student)
+		const user = await userRepo.findOneBy({
+			id,
+			user_role: 'student',
+		});
+		if (!user) return null;
+
+		const studentProfile = await studentRepo.findOneBy({
+			id,
+		});
+
+		// 2. Obtener Postulaciones (Applications)
+		const applications = await applicationRepo.find({
+			where: { student: { id } },
+			relations: ['offer', 'offer.offerType'],
+			order: { created_at: 'DESC' },
+		});
+
+		// 3. Enriquecer cada postulación con datos de la práctica (si existe)
+		const applicationsWithDetails = await Promise.all(
+			applications.map(async (app) => {
+				const internship = await internshipRepo.findOne({
+					where: { application: { id: app.id } },
+					relations: [
+						'coordinator',
+						'supervisor',
+						'final_report',
+					],
+				});
+
+				let evaluations = null;
+				let logbookEntries = null;
+
+				if (internship) {
+					// Obtener Evaluaciones
+					const evaluationRepo =
+						AppDataSource.getRepository(
+							'InternshipEvaluation',
+						);
+					evaluations = await evaluationRepo.findOne({
+						where: { internship: { id: internship.id } },
+					});
+
+					// Obtener Bitácora
+					const logbookRepo = AppDataSource.getRepository(
+						'LogbookEntries',
+					);
+					logbookEntries = await logbookRepo.find({
+						where: { internship: { id: internship.id } },
+						order: { created_at: 'DESC' },
+					});
+				}
+
+				return {
+					...app,
+					internship: internship
+						? {
+								...internship,
+								evaluations,
+								logbookEntries,
+							}
+						: null,
+				};
+			}),
+		);
+
+		return {
+			user,
+			student: studentProfile,
+			applications: applicationsWithDetails,
+		};
+	} catch (error) {
+		console.error(
+			'Error al obtener detalles del estudiante:',
+			error,
+		);
+		return null;
+	}
+}
