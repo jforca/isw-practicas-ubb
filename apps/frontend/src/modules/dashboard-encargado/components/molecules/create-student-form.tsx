@@ -4,13 +4,21 @@ import {
 	ChileanRUTRegex,
 } from '@packages/utils/regex.utils';
 import { UseCreateStudent } from '@modules/dashboard-encargado/hooks/create-one-student.hook';
-import { User, Mail, Phone, Loader2 } from 'lucide-react';
+import {
+	User,
+	Mail,
+	Phone,
+	Loader2,
+	Briefcase,
+} from 'lucide-react';
+import { StudentInternship } from '@packages/schema/student.schema';
 
 type TCreateForm = {
 	name: string;
 	email: string;
 	rut: string;
 	phone: string;
+	currentInternship: string;
 };
 
 interface ICreateStudentFormProps {
@@ -26,6 +34,7 @@ export function CreateStudentForm({
 			email: '',
 			rut: '',
 			phone: '',
+			currentInternship: StudentInternship.Practica1,
 		},
 	);
 	const [createErrors, setCreateErrors] = useState<
@@ -92,6 +101,9 @@ export function CreateStudentForm({
 				}
 				return null;
 			}
+			case 'currentInternship':
+				if (!value) return 'Este campo es obligatorio';
+				return null;
 			default:
 				if (!value) return 'Este campo es obligatorio';
 				return null;
@@ -140,6 +152,7 @@ export function CreateStudentForm({
 			phone: createForm.phone
 				? createForm.phone.replace(/\s+/g, '')
 				: null,
+			currentInternship: createForm.currentInternship,
 		};
 
 		const result = await handleCreate(studentData);
@@ -150,6 +163,7 @@ export function CreateStudentForm({
 				email: '',
 				rut: '',
 				phone: '',
+				currentInternship: StudentInternship.Practica1,
 			});
 			setCreateErrors(
 				{} as Record<keyof TCreateForm, string | null>,
@@ -265,6 +279,32 @@ export function CreateStudentForm({
 							</span>
 						</label>
 					)}
+				</div>
+
+				<div className="flex flex-col gap-2">
+					<h4>
+						<Briefcase size={18} className="inline mr-2" />
+						Práctica Actual
+					</h4>
+					<select
+						value={createForm.currentInternship}
+						onChange={(e) =>
+							handleInputChange(
+								'currentInternship',
+								e.target.value,
+							)
+						}
+						className="select select-bordered w-full"
+						disabled={isLoading}
+					>
+						{Object.values(StudentInternship).map(
+							(value) => (
+								<option key={value} value={value}>
+									{value}
+								</option>
+							),
+						)}
+					</select>
 				</div>
 			</div>
 

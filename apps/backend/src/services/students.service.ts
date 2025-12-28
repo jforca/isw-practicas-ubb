@@ -1,5 +1,6 @@
 import { AppDataSource } from '@config/db.config';
 import { User } from '@entities';
+import { Student } from '@entities/students.entity';
 import { randomUUID } from 'node:crypto';
 import {
 	Application,
@@ -9,15 +10,19 @@ import {
 	Internship,
 	InternshipStatus,
 } from '@entities/internship.entity';
+import { StudentInternship } from '@packages/schema/student.schema';
+import type { TStudentInternship } from '@packages/schema/student.schema';
 
 export type TStudentUser = User;
 
 export type TStudentWhithInternshipInfo = TStudentUser & {
 	internshipType: string;
 	internshipStatus: string;
+	currentInternship: string;
 };
 
 const userRepo = AppDataSource.getRepository(User);
+const studentRepo = AppDataSource.getRepository(Student);
 const applicationRepo =
 	AppDataSource.getRepository(Application);
 const internshipRepo =
@@ -43,6 +48,11 @@ export async function findMany(
 ): Promise<[TStudentWhithInternshipInfo[], number]> {
 	const queryBuilder = userRepo
 		.createQueryBuilder('user')
+		.leftJoinAndSelect(
+			'Student',
+			'student',
+			'student.id = user.id',
+		)
 		.where('user.user_role = :role', { role: 'student' });
 
 	if (search && search.trim() !== '') {
@@ -59,10 +69,10 @@ export async function findMany(
 		.getManyAndCount();
 
 	const studentsWithInternshipInfo = await Promise.all(
-		rows.map(async (student) => {
+		rows.map(async (user) => {
 			const application = await applicationRepo.findOne({
 				where: {
-					student: { id: student.id },
+					student: { id: user.id },
 				},
 				relations: ['offer', 'offer.offerType'],
 				order: { created_at: 'DESC' },
@@ -100,15 +110,25 @@ export async function findMany(
 				}
 			}
 
+			const studentDetails = await studentRepo.findOneBy({
+				id: user.id,
+			});
+
 			return {
-				...student,
+				...user,
 				internshipType,
 				internshipStatus,
+				currentInternship:
+					studentDetails?.currentInternship ||
+					StudentInternship.practica1,
 			};
 		}),
 	);
 
-	return [studentsWithInternshipInfo, total];
+	return [
+		studentsWithInternshipInfo as TStudentWhithInternshipInfo[],
+		total,
+	];
 }
 
 export async function findOne(id: string) {
@@ -130,17 +150,29 @@ export async function findOne(id: string) {
 }
 
 export async function createStudent(
-	studentData: Partial<TStudentUser>,
+	studentData: Partial<
+		TStudentUser & { currentInternship?: string }
+	>,
 ) {
 	try {
-		const newStudent = userRepo.create({
+		const newUser = userRepo.create({
 			...studentData,
 			id: randomUUID(),
 			user_role: 'student',
 		});
 
-		const savedStudent = await userRepo.save(newStudent);
-		return savedStudent;
+		const savedUser = await userRepo.save(newUser);
+
+		const newStudent = studentRepo.create({
+			id: savedUser.id,
+			currentInternship:
+				(studentData.currentInternship as TStudentInternship) ||
+				StudentInternship.practica1,
+		});
+
+		await studentRepo.save(newStudent);
+
+		return { ...savedUser, ...newStudent };
 	} catch (error) {
 		console.error('Error al crear el estudiante:', error);
 		return null;
@@ -149,25 +181,41 @@ export async function createStudent(
 
 export async function updateStudent(
 	id: string,
-	studentData: Partial<TStudentUser>,
+	studentData: Partial<
+		TStudentUser & { currentInternship?: string }
+	>,
 ) {
 	try {
-		const studentToUpdate = await userRepo.findOneBy({
+		const userToUpdate = await userRepo.findOneBy({
 			id,
 			user_role: 'student',
 		});
 
-		if (!studentToUpdate) {
+		if (!userToUpdate) {
 			console.error(
 				'Estudiante no encontrado para actualizar',
 			);
 			return null;
 		}
 
-		userRepo.merge(studentToUpdate, studentData);
-		const updatedStudent =
-			await userRepo.save(studentToUpdate);
-		return updatedStudent;
+		userRepo.merge(userToUpdate, studentData);
+		const savedUser = await userRepo.save(userToUpdate);
+
+		if (studentData.currentInternship) {
+			let studentEntity = await studentRepo.findOneBy({
+				id,
+			});
+
+			if (!studentEntity) {
+				studentEntity = studentRepo.create({ id });
+			}
+
+			studentEntity.currentInternship =
+				studentData.currentInternship as TStudentInternship;
+			await studentRepo.save(studentEntity);
+		}
+
+		return savedUser;
 	} catch (error) {
 		console.error(
 			'Error al actualizar el estudiante:',

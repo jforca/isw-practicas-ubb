@@ -122,9 +122,9 @@ function ModalHeader({
 	className = '',
 }: IModalHeaderProps) {
 	return (
-		<h3 className={`font-bold text-lg ${className}`}>
+		<div className={`font-bold text-lg ${className}`}>
 			{children}
-		</h3>
+		</div>
 	);
 }
 
