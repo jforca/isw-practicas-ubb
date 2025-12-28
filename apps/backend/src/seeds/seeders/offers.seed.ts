@@ -23,17 +23,17 @@ export async function seedOffers() {
 	}
 
 	const type1 = await typeRepo.findOne({
-		where: { name: 'PRACTICA 1' },
+		where: { name: 'Práctica I' },
 	});
 	const type2 = await typeRepo.findOne({
-		where: { name: 'PRACTICA 2' },
+		where: { name: 'Práctica II' },
 	});
 	const coordinators = await coordRepo.find();
 	const centers = await centerRepo.find();
 
 	if (!type1 && !type2) {
 		console.log(
-			'No se encontraron tipos de oferta (PRACTICA 1/2).',
+			'No se encontraron tipos de oferta (Práctica I/II).',
 		);
 		return;
 	}

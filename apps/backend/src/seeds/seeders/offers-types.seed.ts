@@ -10,8 +10,8 @@ export async function seedOffersTypes() {
 	}
 
 	const types: Partial<OffersType>[] = [
-		{ name: 'PRACTICA 1', is_active: true },
-		{ name: 'PRACTICA 2', is_active: true },
+		{ name: 'Práctica I', is_active: true },
+		{ name: 'Práctica II', is_active: true },
 	];
 
 	await repo.save(types as OffersType[]);
