@@ -201,9 +201,13 @@ export async function findMany(
 				if (
 					application.status === ApplicationStatus.Approved
 				) {
+					const offerTypes =
+						await application.offer?.offerOfferTypes;
+					const firstOfferType = offerTypes?.[0];
+					const typeDetails =
+						await firstOfferType?.offerType;
 					internshipType =
-						application.offer?.offerOfferTypes?.[0]
-							?.offerType?.name || 'No inscrito';
+						typeDetails?.name || 'No inscrito';
 
 					const internship = await internshipRepo.findOne({
 						where: {
@@ -219,9 +223,13 @@ export async function findMany(
 						internshipStatus = 'Aprobada';
 					}
 				} else {
+					const offerTypes =
+						await application.offer?.offerOfferTypes;
+					const firstOfferType = offerTypes?.[0];
+					const typeDetails =
+						await firstOfferType?.offerType;
 					internshipType =
-						application.offer?.offerOfferTypes?.[0]
-							?.offerType?.name || 'No inscrito';
+						typeDetails?.name || 'No inscrito';
 					internshipStatus = 'No aprobada';
 				}
 			}
