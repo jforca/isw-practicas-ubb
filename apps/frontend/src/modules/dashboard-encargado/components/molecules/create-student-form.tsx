@@ -34,7 +34,7 @@ export function CreateStudentForm({
 			email: '',
 			rut: '',
 			phone: '',
-			currentInternship: StudentInternship.Practica1,
+			currentInternship: StudentInternship.practica1,
 		},
 	);
 	const [createErrors, setCreateErrors] = useState<
@@ -163,7 +163,7 @@ export function CreateStudentForm({
 				email: '',
 				rut: '',
 				phone: '',
-				currentInternship: StudentInternship.Practica1,
+				currentInternship: StudentInternship.practica1,
 			});
 			setCreateErrors(
 				{} as Record<keyof TCreateForm, string | null>,

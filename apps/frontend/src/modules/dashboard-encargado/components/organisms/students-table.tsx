@@ -122,7 +122,7 @@ function StudentRow({
 				<td>{student.email}</td>
 				<td>
 					<div className="badge badge-ghost badge-outline">
-						{student.internshipType || 'No inscrito'}
+						{student.currentInternship}
 					</div>
 				</td>
 				<td>
