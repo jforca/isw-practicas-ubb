@@ -25,6 +25,12 @@ import type {
 import { UseUpdateOneOffer } from '@modules/offers/hooks/update-one-offer.hook';
 import { UseDeleteOffer } from '@modules/offers/hooks/delete-offer.hook';
 
+// Reproducir reglas de validación del backend (mantener en sync con packages/schema/offers.schema.ts)
+const OFFER_TITLE_REGEX =
+	/^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s.,\-()]+$/u;
+const OFFER_DESCRIPTION_REGEX =
+	/^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s.,;:!?¿¡\-()/'"%]+$/u;
+
 type TOfferCardsProps = {
 	data: TOffer[];
 	pagination: TPagination;
@@ -170,12 +176,40 @@ function OfferCard({
 		switch (field) {
 			case 'title':
 				if (!value) return 'El título es requerido';
+				if (typeof value === 'string') {
+					if (value.length < 5)
+						return 'El título debe tener al menos 5 caracteres';
+					if (value.length > 155)
+						return 'El título no puede exceder 155 caracteres';
+					if (!OFFER_TITLE_REGEX.test(value))
+						return 'El título contiene caracteres no permitidos';
+					if (!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(value))
+						return 'El título debe contener letras';
+				}
 				return null;
 			case 'description':
 				if (!value) return 'La descripción es requerida';
+				if (typeof value === 'string') {
+					if (value.length < 10)
+						return 'La descripción debe tener al menos 10 caracteres';
+					if (value.length > 255)
+						return 'La descripción no puede exceder 255 caracteres';
+					if (!OFFER_DESCRIPTION_REGEX.test(value))
+						return 'La descripción contiene caracteres no permitidos';
+					if (!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(value))
+						return 'La descripción debe contener texto legible';
+				}
 				return null;
 			case 'deadline':
 				if (!value) return 'La fecha límite es requerida';
+				if (typeof value === 'string') {
+					const d = new Date(value);
+					if (Number.isNaN(d.getTime()))
+						return 'Formato de fecha inválido';
+					const now = new Date();
+					if (!(d > now))
+						return 'La fecha límite debe ser en el futuro';
+				}
 				return null;
 			case 'offerTypeIds':
 				if (
@@ -226,7 +260,22 @@ function OfferCard({
 		const base = 'input w-full rounded-lg';
 		const err = editErrors[field];
 		if (err) return `${base} input-error`;
-		if (editForm[field]) return `${base} input-success`;
+		const val = editForm[field];
+		if (
+			val &&
+			(typeof val === 'string' ? val.trim() !== '' : true)
+		)
+			return `${base} input-success`;
+		return base;
+	};
+
+	const getEditTextareaClass = (field: keyof TEditForm) => {
+		const base = 'textarea textarea-bordered w-full';
+		const err = editErrors[field];
+		if (err) return `${base} textarea-error`;
+		const val = editForm[field];
+		if (val && typeof val === 'string' && val.trim() !== '')
+			return `${base} textarea-success`;
 		return base;
 	};
 
@@ -725,11 +774,9 @@ function OfferCard({
 														e.target.value,
 													)
 												}
-												className={`textarea textarea-bordered w-full ${
-													editErrors.description
-														? 'textarea-error'
-														: ''
-												}`}
+												className={getEditTextareaClass(
+													'description',
+												)}
 												rows={3}
 												disabled={isUpdating}
 											/>
