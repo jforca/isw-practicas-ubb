@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 interface ICreateLogbookDto {
 	title: string;
-	body: string;
+	content: string;
 	internshipId: number;
 }
 
