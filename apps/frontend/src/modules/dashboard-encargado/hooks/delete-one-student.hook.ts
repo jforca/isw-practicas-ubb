@@ -22,7 +22,14 @@ export function UseDeleteStudent() {
 			);
 
 			if (!response.ok) {
-				const errorResult = await response.json();
+				const text = await response.text();
+				let errorResult: { message?: string };
+				try {
+					errorResult = JSON.parse(text);
+				} catch {
+					console.error('Error parsing response:', text);
+					throw new Error('Error desconocido del servidor');
+				}
 				throw new Error(
 					errorResult.message ||
 						'Error al eliminar el estudiante',

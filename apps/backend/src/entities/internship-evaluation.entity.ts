@@ -57,7 +57,7 @@ export class InternshipEvaluation {
 	})
 	reportComments: string | null;
 
-	@OneToOne(() => Internship)
+	@OneToOne(() => Internship, { onDelete: 'CASCADE' })
 	@JoinColumn({ name: 'internship_id' })
 	internship: Internship;
 

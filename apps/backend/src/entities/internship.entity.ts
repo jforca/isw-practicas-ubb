@@ -42,7 +42,10 @@ export class Internship {
 	@JoinColumn({ name: 'supervisor_id' })
 	supervisor: Supervisor;
 
-	@OneToOne(() => Application, { nullable: true })
+	@OneToOne(() => Application, {
+		nullable: true,
+		onDelete: 'CASCADE',
+	})
 	@JoinColumn({ name: 'application_id' })
 	application: Application | null;
 
