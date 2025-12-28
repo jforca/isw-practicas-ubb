@@ -1,4 +1,4 @@
-import { StatCard } from '@modules/dashboard-Encargado/components/atoms/stat-card';
+import { StatCard } from '@modules/dashboard-encargado/components/atoms/stat-card';
 
 interface IStatsOverviewProps {
 	total: number;
@@ -29,7 +29,7 @@ export function StatsOverview({
 			<StatCard
 				label="Revisión"
 				value={onReview}
-				description="Postulaciones nuevas"
+				description="Alumnos con Práctica no aprobada"
 			/>
 			<StatCard
 				label="Evaluación"

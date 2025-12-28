@@ -6,10 +6,12 @@ import {
 	updateStudentData,
 	deleteStudentData,
 	getStudentDetailsData,
+	getStats,
 } from '@controllers/students.controller';
 
 const router = Router();
 
+router.get('/stats', getStats);
 router.get('/find-many', listStudents);
 router.get('/find-one/:id', getStudent);
 router.get('/details/:id', getStudentDetailsData);

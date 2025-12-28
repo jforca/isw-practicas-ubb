@@ -5,6 +5,8 @@ import { StudentsTable } from '@modules/dashboard-encargado/components/organisms
 import { useFindManyStudents } from '@modules/dashboard-encargado/hooks/find-many-student.hook';
 import { Pagination } from '@modules/internship-centers/components/molecules/pagination';
 
+import { useDashboardStats } from '@modules/dashboard-encargado/hooks/use-dashboard-stats.hook';
+
 export function EncargadoDashboardTemplate() {
 	const {
 		data: students,
@@ -16,19 +18,14 @@ export function EncargadoDashboardTemplate() {
 		filters,
 	} = useFindManyStudents();
 
+	const { stats } = useDashboardStats();
+
 	const [currentPage, setCurrentPage] = useState(1);
 	const [limit] = useState(5);
 
 	useEffect(() => {
 		handleFindMany(currentPage, limit);
 	}, [currentPage, limit, handleFindMany]);
-
-	const stats = {
-		total: pagination?.total ?? 0,
-		inCourse: 0,
-		onReview: 0,
-		onEvaluation: 0,
-	};
 
 	const handleSearch = useCallback(
 		(search: string) => {
@@ -53,10 +50,10 @@ export function EncargadoDashboardTemplate() {
 			</header>
 
 			<StatsOverview
-				total={stats.total}
-				inCourse={stats.inCourse}
-				onReview={stats.onReview}
-				onEvaluation={stats.onEvaluation}
+				total={stats.totalStudents}
+				inCourse={stats.activeInternships}
+				onReview={stats.unapprovedInternships}
+				onEvaluation={stats.pendingEvaluation}
 			/>
 
 			<div className="my-3" />

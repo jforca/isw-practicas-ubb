@@ -446,3 +446,44 @@ export async function getStudentDetails(id: string) {
 		return null;
 	}
 }
+
+export async function getDashboardStats() {
+	try {
+		const totalStudents = await userRepo.count({
+			where: { user_role: 'student' },
+		});
+
+		const activeInternships = await internshipRepo.count({
+			where: { status: InternshipStatus.InProgress },
+		});
+
+		const unapprovedInternships =
+			await applicationRepo.count({
+				where: [
+					{ status: ApplicationStatus.Pending },
+					{ status: ApplicationStatus.Rejected },
+				],
+			});
+
+		const pendingEvaluation = await internshipRepo.count({
+			where: {
+				status: InternshipStatus.PendingEvaluation,
+			},
+		});
+
+		return {
+			totalStudents,
+			activeInternships,
+			unapprovedInternships,
+			pendingEvaluation,
+		};
+	} catch (error) {
+		console.error('Error getting dashboard stats:', error);
+		return {
+			totalStudents: 0,
+			activeInternships: 0,
+			unapprovedInternships: 0,
+			pendingEvaluation: 0,
+		};
+	}
+}
