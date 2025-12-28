@@ -297,9 +297,22 @@ export async function createStudent(
 		await studentRepo.save(newStudent);
 
 		return { ...savedUser, ...newStudent };
-	} catch (error) {
+	} catch (error: unknown) {
+		const dbError = error as {
+			code?: string;
+			detail?: string;
+			message?: string;
+		};
+		if (dbError.code === '23505') {
+			if (dbError.detail?.includes('rut')) {
+				throw new Error('El RUT ya está registrado');
+			}
+			if (dbError.detail?.includes('email')) {
+				throw new Error('El correo ya está registrado');
+			}
+		}
 		console.error('Error al crear el estudiante:', error);
-		return null;
+		throw new Error('Error al crear el estudiante');
 	}
 }
 
@@ -340,12 +353,25 @@ export async function updateStudent(
 		}
 
 		return savedUser;
-	} catch (error) {
+	} catch (error: unknown) {
+		const dbError = error as {
+			code?: string;
+			detail?: string;
+			message?: string;
+		};
+		if (dbError.code === '23505') {
+			if (dbError.detail?.includes('rut')) {
+				throw new Error('El RUT ya está registrado');
+			}
+			if (dbError.detail?.includes('email')) {
+				throw new Error('El correo ya está registrado');
+			}
+		}
 		console.error(
 			'Error al actualizar el estudiante:',
 			error,
 		);
-		return null;
+		throw new Error('Error al actualizar el estudiante');
 	}
 }
 

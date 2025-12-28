@@ -122,12 +122,24 @@ export async function createNewStudent(
 			'Estudiante creado con exito',
 			data,
 		);
-	} catch (err) {
+	} catch (err: unknown) {
+		const error = err as Error;
+		if (
+			error.message === 'El RUT ya está registrado' ||
+			error.message === 'El correo ya está registrado'
+		) {
+			return handleErrorClient(
+				res,
+				409,
+				error.message,
+				error,
+			);
+		}
 		return handleErrorServer(
 			res,
 			500,
 			'Error al crear estudiante',
-			err,
+			error,
 		);
 	}
 }
@@ -156,12 +168,24 @@ export async function updateStudentData(
 			'Estudiante actualizado con exito',
 			data,
 		);
-	} catch (err) {
+	} catch (err: unknown) {
+		const error = err as Error;
+		if (
+			error.message === 'El RUT ya está registrado' ||
+			error.message === 'El correo ya está registrado'
+		) {
+			return handleErrorClient(
+				res,
+				409,
+				error.message,
+				error,
+			);
+		}
 		return handleErrorServer(
 			res,
 			500,
 			'Error al actualizar estudiante',
-			err,
+			error,
 		);
 	}
 }

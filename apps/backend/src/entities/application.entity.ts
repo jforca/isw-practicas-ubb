@@ -30,7 +30,7 @@ export class Application {
 	})
 	status: ApplicationStatus;
 
-	@ManyToOne(() => User)
+	@ManyToOne(() => User, { onDelete: 'CASCADE' })
 	@JoinColumn({ name: 'student_id' })
 	student: User;
 

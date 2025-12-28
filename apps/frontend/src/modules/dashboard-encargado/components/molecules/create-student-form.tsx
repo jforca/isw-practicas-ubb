@@ -88,10 +88,20 @@ export function CreateStudentForm({
 
 	useEffect(() => {
 		if (error) {
-			setCreateErrors((prev) => ({
-				...prev,
-				email: error,
-			}));
+			if (error.includes('RUT')) {
+				setCreateErrors((prev) => ({
+					...prev,
+					rut: error,
+				}));
+			} else if (
+				error.includes('correo') ||
+				error.includes('email')
+			) {
+				setCreateErrors((prev) => ({
+					...prev,
+					email: error,
+				}));
+			}
 		}
 	}, [error]);
 
@@ -154,6 +164,10 @@ export function CreateStudentForm({
 					if (value.trim().length < 2) {
 						return 'El nombre debe tener al menos 2 caracteres';
 					}
+					// Validar que tenga máximo 50 caracteres
+					if (value.trim().length > 50) {
+						return 'El nombre no puede tener más de 50 caracteres';
+					}
 				}
 				return null;
 			}
@@ -198,13 +212,24 @@ export function CreateStudentForm({
 		return base;
 	};
 
+	const capitalizeName = (name: string) => {
+		return name
+			.toLowerCase()
+			.split(' ')
+			.map(
+				(word) =>
+					word.charAt(0).toUpperCase() + word.slice(1),
+			)
+			.join(' ');
+	};
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 
 		if (!isCreateFormValid()) return;
 
 		const studentData = {
-			name: createForm.name,
+			name: capitalizeName(createForm.name),
 			email: createForm.email,
 			rut: createForm.rut.replace(/\./g, ''),
 			phone: createForm.phone
@@ -275,11 +300,9 @@ export function CreateStudentForm({
 						placeholder="Juan Pérez"
 					/>
 					{createErrors.name && (
-						<label className="label">
-							<span className="label-text-alt text-error">
-								{createErrors.name}
-							</span>
-						</label>
+						<span className="text-error text-xs mt-1 block">
+							{createErrors.name}
+						</span>
 					)}
 				</div>
 
@@ -299,11 +322,9 @@ export function CreateStudentForm({
 						placeholder="12.345.678-9"
 					/>
 					{createErrors.rut && (
-						<label className="label">
-							<span className="label-text-alt text-error">
-								{createErrors.rut}
-							</span>
-						</label>
+						<span className="text-error text-xs mt-1 block">
+							{createErrors.rut}
+						</span>
 					)}
 				</div>
 
@@ -323,11 +344,9 @@ export function CreateStudentForm({
 						placeholder="correo@ejemplo.com"
 					/>
 					{createErrors.email && (
-						<label className="label">
-							<span className="label-text-alt text-error">
-								{createErrors.email}
-							</span>
-						</label>
+						<span className="text-error text-xs mt-1 block">
+							{createErrors.email}
+						</span>
 					)}
 				</div>
 
@@ -347,11 +366,9 @@ export function CreateStudentForm({
 						placeholder="+56 9 1234 5678"
 					/>
 					{createErrors.phone && (
-						<label className="label">
-							<span className="label-text-alt text-error">
-								{createErrors.phone}
-							</span>
-						</label>
+						<span className="text-error text-xs mt-1 block">
+							{createErrors.phone}
+						</span>
 					)}
 				</div>
 
