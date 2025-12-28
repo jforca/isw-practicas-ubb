@@ -6,6 +6,7 @@ import {
 	updateStudent,
 	deleteStudent,
 	getStudentDetails,
+	getDashboardStats,
 } from '@services/students.service';
 import {
 	handleSuccess,
@@ -224,6 +225,28 @@ export async function getStudentDetailsData(
 			res,
 			500,
 			'Error al obtener detalles del estudiante',
+			err,
+		);
+	}
+}
+
+export async function getStats(
+	_req: Request,
+	res: Response,
+) {
+	try {
+		const stats = await getDashboardStats();
+		return handleSuccess(
+			res,
+			200,
+			'Estadísticas obtenidas con éxito',
+			stats,
+		);
+	} catch (err) {
+		return handleErrorServer(
+			res,
+			500,
+			'Error al obtener estadísticas',
 			err,
 		);
 	}
