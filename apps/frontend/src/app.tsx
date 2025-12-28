@@ -26,11 +26,11 @@ function App() {
 					<Route path="app" element={<Layout />}>
 						<Route path="internship">
 							<Route
-								path="report"
+								path="evaluations"
 								element={<EvaluationsPage />}
 							/>
 							<Route
-								path="evaluations"
+								path="report"
 								element={<ReportPage />}
 							/>
 							<Route

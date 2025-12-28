@@ -2,10 +2,12 @@ import { SupervisorEvaluationForm } from '@modules/internship-evaluation/compone
 
 interface ISupervisorTemplateProps {
 	evaluationId?: number;
+	onSuccess?: () => void;
 }
 
 export function SupervisorTemplate({
 	evaluationId,
+	onSuccess,
 }: ISupervisorTemplateProps) {
 	return (
 		<div className="p-8 min-h-[70vh]">
@@ -13,6 +15,7 @@ export function SupervisorTemplate({
 				<div className="p-4 rounded bg-base-100">
 					<SupervisorEvaluationForm
 						evaluationId={evaluationId}
+						onSuccess={onSuccess}
 					/>
 				</div>
 				<p className="text-base-content/30 text-sm mt-6">

@@ -28,6 +28,20 @@ export class InternshipEvaluation {
 	@Column({ type: 'timestamp' })
 	completedAt: Date;
 
+	@Column({
+		type: 'varchar',
+		length: 1024,
+		nullable: true,
+	})
+	supervisorComments: string | null;
+
+	@Column({
+		type: 'varchar',
+		length: 1024,
+		nullable: true,
+	})
+	reportComments: string | null;
+
 	@OneToOne(() => Internship)
 	@JoinColumn({ name: 'internship_id' })
 	internship: Internship;

@@ -59,50 +59,76 @@ export async function seedInternshipEvaluations() {
 	}
 
 	const responses: EvaluationResponse[] = [];
-	for (const item of supItems) {
+	const letters = ['A', 'B', 'C', 'D', 'E'];
+	const values = [7, 6, 5, 4, 3];
+
+	for (let i = 0; i < supItems.length; i++) {
+		const item = supItems[i];
 		const resp = new EvaluationResponse();
 		resp.evaluation = savedEv;
 		resp.item = item;
-		if (item.optionsSchema) {
-			resp.selectedValue = 'SI';
-			resp.numericValue = 1;
-			resp.score =
-				Number(item.weight || 1) *
-				Math.min(1, Number(item.maxScore || 1));
-		} else {
-			const base = Math.min(
-				Number(item.maxScore || 1),
-				Math.ceil(Number(item.maxScore || 1) * 0.7),
-			);
-			resp.selectedValue = String(base);
-			resp.numericValue = base;
-			resp.score = Number(item.weight || 1) * base;
-		}
+		const idx = i % 5;
+		resp.selectedValue = letters[idx];
+		resp.numericValue = values[idx];
+		resp.score = values[idx];
 		resp.comment = null;
 		responses.push(resp);
 	}
 
 	await responseRepo.save(responses);
 
-	let totalWeighted = 0;
-	let totalMax = 0;
-	for (const r of responses) {
-		const maxWeighted =
-			Number(r.item.maxScore || 1) *
-			Number(r.item.weight || 1);
-		totalMax += maxWeighted;
-		totalWeighted += Math.min(
-			Number(r.score || 0),
-			maxWeighted,
+	// Recalcular nota promedio para supervisor
+	const totalScore = responses.reduce(
+		(sum, r) => sum + r.score,
+		0,
+	);
+	const avgGrade =
+		Math.round((totalScore / responses.length) * 100) / 100;
+	ev.supervisorGrade = avgGrade;
+
+	// Crear respuestas de REPORT también
+	const reportItems = await itemRepo.find({
+		where: { evaluationType: 'REPORT', isActive: true },
+		order: { order: 'ASC', id: 'ASC' },
+	});
+	if (reportItems.length) {
+		const reportResponses: EvaluationResponse[] = [];
+		for (let i = 0; i < reportItems.length; i++) {
+			const item = reportItems[i];
+			const resp = new EvaluationResponse();
+			resp.evaluation = savedEv;
+			resp.item = item;
+			const idx = i % 5;
+			resp.selectedValue = letters[idx];
+			resp.numericValue = values[idx];
+			resp.score = values[idx];
+			resp.comment = null;
+			reportResponses.push(resp);
+		}
+		await responseRepo.save(reportResponses);
+
+		const reportTotalScore = reportResponses.reduce(
+			(sum, r) => sum + r.score,
+			0,
 		);
+		const reportAvgGrade =
+			Math.round(
+				(reportTotalScore / reportResponses.length) * 100,
+			) / 100;
+		ev.reportGrade = reportAvgGrade;
 	}
-	const ratio = totalMax > 0 ? totalWeighted / totalMax : 0;
-	const supGrade = Math.round(ratio * 7 * 100) / 100;
-	savedEv.supervisorGrade = supGrade;
-	savedEv.finalGrade = supGrade; // aún sin encargado
-	await evalRepo.save(savedEv);
+
+	// Calcular nota final
+	if (ev.supervisorGrade && ev.reportGrade) {
+		ev.finalGrade =
+			Math.round(
+				((ev.supervisorGrade + ev.reportGrade) / 2) * 100,
+			) / 100;
+	}
+
+	await evalRepo.save(ev);
 
 	console.log(
-		'Seed: internship evaluation creada con respuestas de supervisor y firma faltante.',
+		`✓ Seed: Evaluación creada con ${responses.length} respuestas de supervisor (${avgGrade}) y ${reportItems.length} respuestas de report (${ev.reportGrade}). Nota final: ${ev.finalGrade}`,
 	);
 }

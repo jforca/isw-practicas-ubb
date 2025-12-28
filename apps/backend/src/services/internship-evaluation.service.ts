@@ -109,6 +109,22 @@ function parseNumericValue(
 		if (opt && typeof opt.score === 'number')
 			return Number(opt.score);
 	}
+
+	// Mapeo directo de letras A-F a puntajes (escala 0-7)
+	const letterScores: Record<string, number> = {
+		A: 7,
+		B: 6,
+		C: 5,
+		D: 4,
+		E: 2,
+		F: 0,
+	};
+
+	const upperVal = String(selectedValue).toUpperCase();
+	if (upperVal in letterScores) {
+		return letterScores[upperVal];
+	}
+
 	const n = Number(selectedValue);
 	if (!Number.isNaN(n)) return n;
 	return 0;
@@ -150,21 +166,25 @@ function safeParseJSON(json: string | null): TRubricSchema {
 function computeAggregatedGrade(
 	responses: EvaluationResponse[],
 ) {
-	let totalWeightedScore = 0;
-	let totalWeightMax = 0;
+	if (responses.length === 0) return 0;
+
+	let totalScore = 0;
+	let count = 0;
+
 	for (const res of responses) {
-		const item = res.item;
-		const maxWeighted =
-			Number(item.maxScore || 1) * Number(item.weight || 1);
-		totalWeightMax += maxWeighted;
-		totalWeightedScore += Math.min(
-			Number(res.score || 0),
-			maxWeighted,
-		);
+		const numericValue = Number(res.numericValue || 0);
+		totalScore += numericValue;
+		count += 1;
 	}
-	if (totalWeightMax <= 0) return 0;
-	const ratio = totalWeightedScore / totalWeightMax; // 0..1
-	const grade = Math.round(ratio * 7 * 100) / 100; // scale to 7.00
+
+	if (count === 0) return 0;
+
+	// Promedio simple de todos los items
+	const average = totalScore / count;
+
+	// Redondear a 2 decimales
+	const grade = Math.round(average * 100) / 100;
+
 	return grade;
 }
 
@@ -197,19 +217,8 @@ export async function submitEvaluationResponses(
 		items.map((i) => [i.id, i]),
 	);
 
-	const providedIds = new Set<number>(
-		answers.map((a) => Number(a.itemId)),
-	);
-	const missing = items.filter(
-		(i) => !providedIds.has(i.id),
-	);
-	if (missing.length > 0) {
-		return {
-			ok: false,
-			error: 'Faltan respuestas para completar la pauta',
-			missingItemIds: missing.map((m) => m.id),
-		} as const;
-	}
+	// Permitir guardado parcial e incremental para ambos tipos
+	// Se calcula la nota con las respuestas disponibles
 
 	const upserts: EvaluationResponse[] = [];
 	for (const ans of answers) {
@@ -217,9 +226,6 @@ export async function submitEvaluationResponses(
 		if (!item) continue;
 		const selectedStr = String(ans.value);
 		const nVal = parseNumericValue(selectedStr, item);
-		const score =
-			Math.min(Number(item.maxScore || 1), nVal) *
-			Number(item.weight || 1);
 
 		let existing = await responseRepo.findOne({
 			where: {
@@ -235,47 +241,84 @@ export async function submitEvaluationResponses(
 		}
 		existing.selectedValue = selectedStr;
 		existing.numericValue = nVal;
-		existing.score = score;
+		existing.score = nVal; // Guardar directamente el valor numérico
 		existing.comment =
 			typeof ans.comment === 'string' ? ans.comment : null;
 		upserts.push(existing);
 	}
 
 	await responseRepo.save(upserts);
-	const updatedResponses = await responseRepo.find({
-		where: { evaluation: { id: evaluationId } },
+
+	// Obtener todas las respuestas del tipo que se está guardando (no todas)
+	const typeResponses = await responseRepo.find({
+		where: {
+			evaluation: { id: evaluationId },
+			item: { evaluationType: type },
+		},
 		relations: ['item'],
 	});
 
-	const grade = computeAggregatedGrade(updatedResponses);
+	const grade = computeAggregatedGrade(typeResponses);
 	if (type === 'SUPERVISOR') {
 		evaluation.supervisorGrade = grade;
 	} else {
 		evaluation.reportGrade = grade;
 	}
-	if (
-		typeof evaluation.supervisorGrade === 'number' &&
-		!Number.isNaN(evaluation.supervisorGrade) &&
-		typeof evaluation.reportGrade === 'number' &&
-		!Number.isNaN(evaluation.reportGrade)
-	) {
-		const s = Number(evaluation.supervisorGrade) || 0;
-		const r = Number(evaluation.reportGrade) || 0;
-		evaluation.finalGrade =
-			Math.round(((s + r) / 2) * 100) / 100;
-	} else {
-		evaluation.finalGrade =
-			Math.round(
-				((Number(evaluation.supervisorGrade) || 0) +
-					(Number(evaluation.reportGrade) || 0)) *
-					100,
-			) / 100;
+
+	// Cargar la evaluación actualizada para obtener ambas notas
+	const freshEval = await internshipEvaluationRepo.findOne({
+		where: { id: evaluationId },
+	});
+	if (!freshEval) {
+		return {
+			ok: false,
+			error:
+				'Evaluación no encontrada después de actualizar',
+		} as const;
 	}
-	evaluation.completedAt =
-		evaluation.completedAt || new Date();
+
+	// Copiar las notas calculadas
+	freshEval.supervisorGrade =
+		freshEval.supervisorGrade || evaluation.supervisorGrade;
+	freshEval.reportGrade =
+		freshEval.reportGrade || evaluation.reportGrade;
+
+	// Si es SUPERVISOR, actualizar la nota de supervisor
+	if (type === 'SUPERVISOR') {
+		freshEval.supervisorGrade = grade;
+	}
+	// Si es REPORT, actualizar la nota de report
+	else {
+		freshEval.reportGrade = grade;
+	}
+
+	// Calcular nota final como promedio de supervisor y report
+	const supervisorGrade =
+		Number(freshEval.supervisorGrade) || 0;
+	const reportGrade = Number(freshEval.reportGrade) || 0;
+
+	if (supervisorGrade > 0 && reportGrade > 0) {
+		// Ambas notas existen, promediar
+		freshEval.finalGrade =
+			Math.round(
+				((supervisorGrade + reportGrade) / 2) * 100,
+			) / 100;
+	} else if (supervisorGrade > 0) {
+		// Solo supervisor tiene nota
+		freshEval.finalGrade = supervisorGrade;
+	} else if (reportGrade > 0) {
+		// Solo report tiene nota
+		freshEval.finalGrade = reportGrade;
+	} else {
+		// Ninguna tiene nota
+		freshEval.finalGrade = 0;
+	}
+
+	freshEval.completedAt =
+		freshEval.completedAt || new Date();
 
 	const savedEval =
-		await internshipEvaluationRepo.save(evaluation);
+		await internshipEvaluationRepo.save(freshEval);
 	return { ok: true, evaluation: savedEval } as const;
 }
 
@@ -413,23 +456,50 @@ export async function updateEvaluation(
 	changes: Partial<{
 		supervisorGrade: number;
 		reportGrade: number;
+		supervisorComments: string;
+		reportComments: string;
 	}>,
 ) {
+	let evaluation: InternshipEvaluation | null = null;
+
 	if (typeof changes.supervisorGrade !== 'undefined') {
-		const updated = await applySupervisorNote(
+		evaluation = await applySupervisorNote(
 			id,
 			Number(changes.supervisorGrade ?? 0),
 		);
-		if (!updated) return null;
+		if (!evaluation) return null;
 	}
 
 	if (typeof changes.reportGrade !== 'undefined') {
-		const updated = await applyReportNote(
+		evaluation = await applyReportNote(
 			id,
 			Number(changes.reportGrade ?? 0),
 		);
-		return updated;
+		if (!evaluation) return null;
 	}
 
-	return await getEvaluation(id);
+	if (!evaluation) {
+		evaluation = await internshipEvaluationRepo.findOne({
+			where: { id },
+		});
+		if (!evaluation) return null;
+	}
+
+	let dirty = false;
+	if (typeof changes.supervisorComments !== 'undefined') {
+		evaluation.supervisorComments =
+			changes.supervisorComments;
+		dirty = true;
+	}
+	if (typeof changes.reportComments !== 'undefined') {
+		evaluation.reportComments = changes.reportComments;
+		dirty = true;
+	}
+
+	if (dirty) {
+		evaluation =
+			await internshipEvaluationRepo.save(evaluation);
+	}
+
+	return evaluation;
 }

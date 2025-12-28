@@ -5,6 +5,7 @@ import { seedCoordinators } from './seeders/coordinators.seed';
 import { seedInternshipCenters } from './seeders/internship-centers.seed';
 import { seedOffers } from './seeders/offers.seed';
 import { seedEvaluationItems } from './seeders/evaluation-items.seed';
+import { seedSignatureDocuments } from './seeders/signature-documents.seed';
 import { seedInternshipEvaluations } from './seeders/internship-evaluations.seed';
 
 async function run() {
@@ -18,6 +19,7 @@ async function run() {
 		await seedOffersTypes();
 		await seedOffers();
 		await seedEvaluationItems();
+		await seedSignatureDocuments();
 		await seedInternshipEvaluations();
 
 		console.log('Seeds ejecutados correctamente.');

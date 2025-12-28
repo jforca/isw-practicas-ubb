@@ -1,14 +1,18 @@
-import { useId, useState, type FormEvent } from 'react';
+import {
+	useEffect,
+	useId,
+	useState,
+	type FormEvent,
+} from 'react';
 import {
 	LabelAtom,
 	TextareaAtom,
 	AfRadioGroup,
 } from '../atoms';
-import {
-	calculateAverageGrade,
-	type TEvalLetter,
-} from '../../lib/grade-converter';
+import { type TEvalLetter } from '../../lib/grade-converter';
 import { UseUpdateOneInternshipEvaluation } from '../../hooks/update-one-internship-evaluation.hook';
+import { UseFindOneInternshipEvaluation } from '../../hooks/find-one-internship-evaluation.hook';
+import { UseFindEvaluationResponses } from '../../hooks/find-evaluation-responses.hook';
 
 interface IReportEvaluationFormProps {
 	evaluationId?: number;
@@ -98,6 +102,14 @@ const COMPETENCIES: {
 	},
 ];
 
+const normalizeText = (value: string) =>
+	value
+		.toLowerCase()
+		.replace(/^[a-z]{2}\d+-\d+:\s*/i, '')
+		.replace(/[^a-z0-9áéíóúüñ\s]/gi, ' ')
+		.replace(/\s+/g, ' ')
+		.trim();
+
 const getCompetencyBadgeColor = (code: string): string => {
 	if (code.startsWith('CG')) return 'badge-info';
 	return 'badge-neutral';
@@ -106,10 +118,18 @@ const getCompetencyBadgeColor = (code: string): string => {
 export function ReportEvaluationForm({
 	evaluationId,
 	onSuccess,
-	onSubmit,
+	onSubmit: _onSubmit,
 }: IReportEvaluationFormProps) {
 	const { handleUpdateOne, isLoading, error, isSuccess } =
 		UseUpdateOneInternshipEvaluation();
+	const { handleFindOne } =
+		UseFindOneInternshipEvaluation();
+	const { handleFindResponses } =
+		UseFindEvaluationResponses();
+
+	const [rubricMap, setRubricMap] = useState<
+		Map<string, number>
+	>(new Map());
 
 	const formId = useId();
 	const commentsId = useId();
@@ -127,6 +147,89 @@ export function ReportEvaluationForm({
 		),
 	);
 	const [reportComments, setReportComments] = useState('');
+	const [existingReportGrade, setExistingReportGrade] =
+		useState<number | null>(null);
+	const [localSuccess, setLocalSuccess] = useState(false);
+
+	// biome-ignore lint(correctness/useExhaustiveDependencies): Las dependencias se controlan manualmente
+	useEffect(() => {
+		const load = async () => {
+			if (!evaluationId) return;
+			try {
+				const rubricRes = await fetch(
+					'/api/internship-evaluations/rubric/REPORT',
+				);
+				if (rubricRes.ok) {
+					const rubricJson = await rubricRes.json();
+					const list: Array<{
+						id: number;
+						label: string;
+					}> = Array.isArray(rubricJson?.data)
+						? rubricJson.data
+						: [];
+					const map = new Map<string, number>();
+					for (const item of list) {
+						if (!item?.label || !item?.id) continue;
+						const normalized = normalizeText(item.label);
+						if (!normalized) continue;
+						map.set(normalized, Number(item.id));
+					}
+					if (map.size > 0) setRubricMap(map);
+				}
+			} catch (err) {
+				console.error(
+					'No se pudo cargar la pauta de informe',
+					err,
+				);
+			}
+			const ev = await handleFindOne(evaluationId);
+			if (ev?.reportGrade != null) {
+				const num = Number(ev.reportGrade);
+				if (!Number.isNaN(num)) setExistingReportGrade(num);
+			}
+			if (ev?.reportComments) {
+				setReportComments(ev.reportComments);
+			}
+
+			const responses =
+				await handleFindResponses(evaluationId);
+			if (Array.isArray(responses) && responses.length) {
+				const labelToId = new Map(
+					COMPETENCIES.flatMap((c) =>
+						c.aspects.map((a) => [
+							normalizeText(a.text),
+							a.id,
+						]),
+					),
+				);
+				setSelections((prev) => {
+					const next = { ...prev };
+					for (const res of responses) {
+						if (res.item.evaluationType !== 'REPORT')
+							continue;
+						const key = labelToId.get(
+							normalizeText(res.item.label),
+						);
+						if (!key) continue;
+						const val = res.selectedValue?.toUpperCase();
+						if (
+							val === 'A' ||
+							val === 'B' ||
+							val === 'C' ||
+							val === 'D' ||
+							val === 'E' ||
+							val === 'F'
+						) {
+							next[key] = val as TEvalLetter;
+						}
+					}
+					return next;
+				});
+			}
+		};
+		load();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [evaluationId]);
 
 	const handleSelectionChange = (
 		id: string,
@@ -139,35 +242,90 @@ export function ReportEvaluationForm({
 		e: FormEvent<HTMLFormElement>,
 	) => {
 		e.preventDefault();
+		setLocalSuccess(false);
 
-		const evaluationsList = Object.entries(selections).map(
-			([id, value]) => ({
-				id,
-				value,
+		const answered = Object.values(selections).some(
+			(v) => v !== null,
+		);
+		if (!answered) {
+			window.alert(
+				'Ingresa al menos una respuesta antes de guardar el informe.',
+			);
+			return;
+		}
+
+		if (!evaluationId) return;
+		if (rubricMap.size === 0) {
+			window.alert(
+				'No se pudo cargar la pauta de informe. Intenta recargar.',
+			);
+			return;
+		}
+
+		const answers = COMPETENCIES.flatMap((comp) =>
+			comp.aspects.map((asp) => {
+				const itemId = rubricMap.get(
+					normalizeText(asp.text),
+				);
+				const val = selections[asp.id];
+				return typeof itemId === 'number' && val
+					? {
+							itemId,
+							value: val,
+						}
+					: null;
 			}),
+		).filter(
+			(a): a is { itemId: number; value: TEvalLetter } =>
+				a !== null,
 		);
 
-		// Calcular la nota numérica del promedio de evaluaciones A-F
-		const reportGrade =
-			calculateAverageGrade(evaluationsList);
-
-		if (evaluationId) {
-			// Actualizar evaluación existente
-			await handleUpdateOne(evaluationId, {
-				reportGrade,
-				reportComments,
-			});
-		} else {
-			// Llamar callback personalizado
-			onSubmit?.({
-				evaluations: evaluationsList,
-				reportComments,
-			});
+		try {
+			const submitRes = await fetch(
+				`/api/internship-evaluations/submit/${evaluationId}/REPORT`,
+				{
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ answers }),
+				},
+			);
+			if (!submitRes.ok) {
+				const errJson = await submitRes.json();
+				throw new Error(
+					errJson?.error ||
+						'No se pudieron guardar las respuestas del informe',
+				);
+			}
+			const submitJson = await submitRes.json();
+			const newGrade = submitJson?.data?.reportGrade;
+			if (typeof newGrade === 'number') {
+				setExistingReportGrade(Number(newGrade));
+			}
+		} catch (err) {
+			const msg =
+				err instanceof Error
+					? err.message
+					: 'Error al guardar las respuestas del informe';
+			window.alert(msg);
+			return;
 		}
 
-		if (isSuccess) {
-			onSuccess?.();
+		// Guardar comentarios (la nota se actualiza en submit)
+		const updateResult = await handleUpdateOne(
+			evaluationId,
+			{
+				reportComments,
+			},
+		);
+		if (updateResult === null) {
+			window.alert(
+				'No se pudieron guardar los comentarios del informe',
+			);
+			return;
 		}
+		setLocalSuccess(true);
+		setTimeout(() => setLocalSuccess(false), 3500);
+		onSuccess?.();
 	};
 
 	return (
@@ -183,6 +341,14 @@ export function ReportEvaluationForm({
 						(Informe)
 					</span>
 				</h3>
+				{existingReportGrade != null && (
+					<div className="alert alert-info mb-4 text-sm">
+						<div>
+							Nota previa del encargado:{' '}
+							{existingReportGrade.toFixed(2)} / 7
+						</div>
+					</div>
+				)}
 				<div className="bg-info/10 border-l-4 border-info p-4 rounded-r-lg mb-6">
 					<p className="text-sm text-base-content/80">
 						<span className="font-semibold">
@@ -308,7 +474,7 @@ export function ReportEvaluationForm({
 				</div>
 			)}
 
-			{isSuccess && (
+			{(isSuccess || localSuccess) && (
 				<div className="alert alert-success">
 					<span>Evaluación guardada correctamente</span>
 				</div>

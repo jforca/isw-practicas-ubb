@@ -7,7 +7,7 @@ const formatGrade = (grade?: number | string | null) => {
 	if (grade == null) return '—';
 	const num =
 		typeof grade === 'string' ? parseFloat(grade) : grade;
-	if (isNaN(num)) return '—';
+	if (Number.isNaN(num)) return '—';
 	return num.toFixed(2);
 };
 
