@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { StatsOverview } from '@modules/dashboard-encargado/components/molecules/stats-overview';
 import { Toolbar } from '@modules/dashboard-encargado/components/molecules/toolbar';
 import { StudentsTable } from '@modules/dashboard-encargado/components/organisms/students-table';
@@ -12,6 +12,7 @@ export function EncargadoDashboardTemplate() {
 		isLoading,
 		error,
 		handleFindMany,
+		updateFilters,
 	} = useFindManyStudents();
 
 	const [currentPage, setCurrentPage] = useState(1);
@@ -27,6 +28,14 @@ export function EncargadoDashboardTemplate() {
 		onReview: 0,
 		onEvaluation: 0,
 	};
+
+	const handleSearch = useCallback(
+		(search: string) => {
+			updateFilters({ search });
+			setCurrentPage(1);
+		},
+		[updateFilters],
+	);
 
 	return (
 		<section className="p-4 container">
@@ -55,6 +64,7 @@ export function EncargadoDashboardTemplate() {
 				onStudentCreated={() => {
 					handleFindMany(currentPage, limit);
 				}}
+				onSearch={handleSearch}
 			/>
 
 			<div className="my-2" />
@@ -65,6 +75,9 @@ export function EncargadoDashboardTemplate() {
 						students={students}
 						isLoading={isLoading}
 						error={error}
+						onStudentDeleted={() => {
+							handleFindMany(currentPage, limit);
+						}}
 					/>
 				</div>
 				{pagination && pagination.totalPages > 1 && (
