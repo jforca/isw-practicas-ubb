@@ -25,6 +25,12 @@ import type {
 import { UseUpdateOneOffer } from '@modules/offers/hooks/update-one-offer.hook';
 import { UseDeleteOffer } from '@modules/offers/hooks/delete-offer.hook';
 
+// Reproducir reglas de validación del backend (mantener en sync con packages/schema/offers.schema.ts)
+const OFFER_TITLE_REGEX =
+	/^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s.,\-()]+$/u;
+const OFFER_DESCRIPTION_REGEX =
+	/^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s.,;:!?¿¡\-()/'"%]+$/u;
+
 type TOfferCardsProps = {
 	data: TOffer[];
 	pagination: TPagination;
@@ -122,12 +128,13 @@ function OfferCard({
 	internshipCenters,
 	onRefresh,
 }: TOfferCardProps) {
+	// Cambiar para soportar múltiples tipos de práctica
 	type TEditForm = {
 		title: string;
 		description: string;
 		deadline: string;
 		status: 'published' | 'closed' | 'filled';
-		offerTypeId: number;
+		offerTypeIds: number[];
 		internshipCenterId: number;
 	};
 
@@ -136,12 +143,20 @@ function OfferCard({
 		description: o.description,
 		deadline: o.deadline.split('T')[0],
 		status: o.status,
-		offerTypeId: o.offerType.id,
+		offerTypeIds: Array.isArray(o.offerTypes)
+			? o.offerTypes.map((t) => t.id)
+			: o.offerType
+				? [o.offerType.id]
+				: [],
 		internshipCenterId: o.internshipCenter.id,
 	});
 	const [editErrors, setEditErrors] = useState<
 		Record<keyof TEditForm, string | null>
 	>({} as Record<keyof TEditForm, string | null>);
+
+	const [touched, setTouched] = useState<
+		Record<keyof TEditForm, boolean>
+	>({} as Record<keyof TEditForm, boolean>);
 
 	const editModalRef = useRef<HTMLDialogElement>(null);
 	const deleteModalRef = useRef<HTMLDialogElement>(null);
@@ -158,34 +173,54 @@ function OfferCard({
 		error: deleteError,
 	} = UseDeleteOffer();
 
-	const handleInputChange = (
-		field: keyof TEditForm,
-		value: string | number,
-	) => {
-		setEditForm((prev) => ({ ...prev, [field]: value }));
-		setEditErrors((prev) => ({
-			...prev,
-			[field]: validateField(field, value),
-		}));
-	};
-
 	const validateField = (
 		field: keyof TEditForm,
-		value: string | number,
+		value: string | number | number[],
 	) => {
 		switch (field) {
 			case 'title':
 				if (!value) return 'El título es requerido';
+				if (typeof value === 'string') {
+					if (value.length < 5)
+						return 'El título debe tener al menos 5 caracteres';
+					if (value.length > 155)
+						return 'El título no puede exceder 155 caracteres';
+					if (!OFFER_TITLE_REGEX.test(value))
+						return 'El título contiene caracteres no permitidos';
+					if (!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(value))
+						return 'El título debe contener letras';
+				}
 				return null;
 			case 'description':
 				if (!value) return 'La descripción es requerida';
+				if (typeof value === 'string') {
+					if (value.length < 10)
+						return 'La descripción debe tener al menos 10 caracteres';
+					if (value.length > 255)
+						return 'La descripción no puede exceder 255 caracteres';
+					if (!OFFER_DESCRIPTION_REGEX.test(value))
+						return 'La descripción contiene caracteres no permitidos';
+					if (!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(value))
+						return 'La descripción debe contener texto legible';
+				}
 				return null;
 			case 'deadline':
 				if (!value) return 'La fecha límite es requerida';
+				if (typeof value === 'string') {
+					const d = new Date(value);
+					if (Number.isNaN(d.getTime()))
+						return 'Formato de fecha inválido';
+					const now = new Date();
+					if (!(d > now))
+						return 'La fecha límite debe ser en el futuro';
+				}
 				return null;
-			case 'offerTypeId':
-				if (!value)
-					return 'El tipo de práctica es requerido';
+			case 'offerTypeIds':
+				if (
+					!value ||
+					(Array.isArray(value) && value.length === 0)
+				)
+					return 'Debe seleccionar al menos un tipo de práctica';
 				return null;
 			case 'internshipCenterId':
 				if (!value)
@@ -194,6 +229,18 @@ function OfferCard({
 			default:
 				return null;
 		}
+	};
+
+	const handleInputChange = (
+		field: keyof TEditForm,
+		value: string | number | number[],
+	) => {
+		setEditForm((prev) => ({ ...prev, [field]: value }));
+		setEditErrors((prev) => ({
+			...prev,
+			[field]: validateField(field, value),
+		}));
+		setTouched((prev) => ({ ...prev, [field]: true }));
 	};
 
 	const isEditFormValid = () => {
@@ -218,7 +265,30 @@ function OfferCard({
 		const base = 'input w-full rounded-lg';
 		const err = editErrors[field];
 		if (err) return `${base} input-error`;
-		if (editForm[field]) return `${base} input-success`;
+		const isTouched = touched[field];
+		const val = editForm[field];
+		if (
+			isTouched &&
+			val &&
+			(typeof val === 'string' ? val.trim() !== '' : true)
+		)
+			return `${base} input-success`;
+		return base;
+	};
+
+	const getEditTextareaClass = (field: keyof TEditForm) => {
+		const base = 'textarea textarea-bordered w-full';
+		const err = editErrors[field];
+		if (err) return `${base} textarea-error`;
+		const isTouched = touched[field];
+		const val = editForm[field];
+		if (
+			isTouched &&
+			val &&
+			typeof val === 'string' &&
+			val.trim() !== ''
+		)
+			return `${base} textarea-success`;
 		return base;
 	};
 
@@ -230,7 +300,7 @@ function OfferCard({
 			description: editForm.description,
 			deadline: editForm.deadline,
 			status: editForm.status,
-			offerTypeId: editForm.offerTypeId,
+			offerTypeIds: editForm.offerTypeIds,
 			internshipCenterId: editForm.internshipCenterId,
 		});
 
@@ -254,9 +324,17 @@ function OfferCard({
 			description: o.description,
 			deadline: o.deadline.split('T')[0],
 			status: o.status,
-			offerTypeId: o.offerType.id,
+			offerTypeIds: Array.isArray(o.offerTypes)
+				? o.offerTypes.map((t) => t.id)
+				: o.offerType
+					? [o.offerType.id]
+					: [],
 			internshipCenterId: o.internshipCenter.id,
 		});
+		setEditErrors(
+			{} as Record<keyof TEditForm, string | null>,
+		);
+		setTouched({} as Record<keyof TEditForm, boolean>);
 	};
 
 	const formattedDeadline = new Date(
@@ -278,6 +356,40 @@ function OfferCard({
 			className: 'badge-warning',
 		},
 	};
+
+	// Visualización de tipos de práctica — soporta varias formas de payload
+	const payload = o as unknown as Record<string, unknown>;
+	const rawOfferTypes = Array.isArray(payload.offerTypes)
+		? (payload.offerTypes as Array<Record<string, unknown>>)
+		: undefined;
+	const rawOfferOfferTypes = Array.isArray(
+		payload.offerOfferTypes,
+	)
+		? (payload.offerOfferTypes as Array<
+				Record<string, unknown>
+			>)
+		: undefined;
+	const rawOfferType = payload.offerType as
+		| Record<string, unknown>
+		| undefined;
+
+	const extractedOfferTypes =
+		rawOfferTypes ??
+		rawOfferOfferTypes?.map(
+			(oot) => oot.offerType as Record<string, unknown>,
+		) ??
+		(rawOfferType ? [rawOfferType] : []);
+
+	const offerTypeNames = extractedOfferTypes
+		.map((t) =>
+			t && typeof t.name === 'string' ? t.name : undefined,
+		)
+		.filter((n): n is string => Boolean(n));
+	let showOfferType = 'Sin tipo';
+	if (offerTypeNames.length === 1)
+		showOfferType = offerTypeNames[0];
+	if (offerTypeNames.length === 2)
+		showOfferType = 'Práctica I & II';
 
 	return (
 		<Card className="hover:scale-102 transition-transform">
@@ -302,7 +414,7 @@ function OfferCard({
 							className="text-primary"
 						/>
 						<span className="text-sm font-medium text-primary">
-							{o.offerType.name}
+							{showOfferType}
 						</span>
 					</div>
 				</Card.Container>
@@ -358,7 +470,7 @@ function OfferCard({
 												className="text-primary"
 											/>
 											<span className="text-sm font-medium text-primary">
-												{o.offerType.name}
+												{showOfferType}
 											</span>
 										</div>
 									</div>
@@ -466,7 +578,7 @@ function OfferCard({
 												/>
 												{editErrors.title && (
 													<label className="label">
-														<span className="label-text-alt text-error">
+														<span className="label-text-alt text-error text-sm">
 															{editErrors.title}
 														</span>
 													</label>
@@ -480,30 +592,93 @@ function OfferCard({
 													/>
 													Tipo de Práctica *
 												</h4>
-												<select
-													value={editForm.offerTypeId}
-													onChange={(e) =>
-														handleInputChange(
-															'offerTypeId',
-															Number(e.target.value),
-														)
-													}
-													className="select select-bordered w-full"
-													disabled={isUpdating}
-												>
-													{offerTypes.map((type) => (
-														<option
-															key={type.id}
-															value={type.id}
-														>
-															{type.name}
-														</option>
-													))}
-												</select>
-												{editErrors.offerTypeId && (
+												{/* Checkboxes para Práctica 1 y Práctica 2 */}
+												{(() => {
+													const t1 = offerTypes[0];
+													const t2 = offerTypes[1];
+													return (
+														<div className="flex flex-row gap-4 items-center">
+															<label className="label cursor-pointer inline-flex items-center">
+																<input
+																	type="checkbox"
+																	className="checkbox mr-2"
+																	checked={
+																		!!t1 &&
+																		editForm.offerTypeIds.includes(
+																			t1.id,
+																		)
+																	}
+																	onChange={(e) => {
+																		if (!t1) return;
+																		if (e.target.checked) {
+																			handleInputChange(
+																				'offerTypeIds',
+																				Array.from(
+																					new Set([
+																						...editForm.offerTypeIds,
+																						t1.id,
+																					]),
+																				),
+																			);
+																		} else {
+																			handleInputChange(
+																				'offerTypeIds',
+																				editForm.offerTypeIds.filter(
+																					(id) =>
+																						id !== t1.id,
+																				),
+																			);
+																		}
+																	}}
+																/>
+																<span className="label-text">
+																	Práctica 1
+																</span>
+															</label>
+															<label className="label cursor-pointer inline-flex items-center">
+																<input
+																	type="checkbox"
+																	className="checkbox mr-2"
+																	checked={
+																		!!t2 &&
+																		editForm.offerTypeIds.includes(
+																			t2.id,
+																		)
+																	}
+																	onChange={(e) => {
+																		if (!t2) return;
+																		if (e.target.checked) {
+																			handleInputChange(
+																				'offerTypeIds',
+																				Array.from(
+																					new Set([
+																						...editForm.offerTypeIds,
+																						t2.id,
+																					]),
+																				),
+																			);
+																		} else {
+																			handleInputChange(
+																				'offerTypeIds',
+																				editForm.offerTypeIds.filter(
+																					(id) =>
+																						id !== t2.id,
+																				),
+																			);
+																		}
+																	}}
+																/>
+																<span className="label-text">
+																	Práctica 2
+																</span>
+															</label>
+														</div>
+													);
+												})()}
+												{editErrors.offerTypeIds && (
 													<label className="label">
-														<span className="label-text-alt text-error">
-															{editErrors.offerTypeId}
+														<span className="label-text-alt text-error text-sm">
+															{editErrors.offerTypeIds}
 														</span>
 													</label>
 												)}
@@ -542,7 +717,7 @@ function OfferCard({
 												</select>
 												{editErrors.internshipCenterId && (
 													<label className="label">
-														<span className="label-text-alt text-error">
+														<span className="label-text-alt text-error text-sm">
 															{
 																editErrors.internshipCenterId
 															}
@@ -574,7 +749,7 @@ function OfferCard({
 												/>
 												{editErrors.deadline && (
 													<label className="label">
-														<span className="label-text-alt text-error">
+														<span className="label-text-alt text-error text-sm">
 															{editErrors.deadline}
 														</span>
 													</label>
@@ -616,17 +791,15 @@ function OfferCard({
 														e.target.value,
 													)
 												}
-												className={`textarea textarea-bordered w-full ${
-													editErrors.description
-														? 'textarea-error'
-														: ''
-												}`}
+												className={getEditTextareaClass(
+													'description',
+												)}
 												rows={3}
 												disabled={isUpdating}
 											/>
 											{editErrors.description && (
 												<label className="label">
-													<span className="label-text-alt text-error">
+													<span className="label-text-alt text-error text-sm">
 														{editErrors.description}
 													</span>
 												</label>

@@ -5,6 +5,11 @@ import {
 	handleErrorServer,
 	handleErrorClient,
 } from '@handlers/response.handler';
+import {
+	CreateOfferSchema,
+	UpdateOfferSchema,
+} from '@packages/schema/offers.schema';
+import { OfferStatus } from '@entities';
 
 async function findOne(req: Request, res: Response) {
 	try {
@@ -72,37 +77,38 @@ async function findMany(req: Request, res: Response) {
 
 async function createOne(req: Request, res: Response) {
 	try {
+		const parseResult = CreateOfferSchema.safeParse(
+			req.body,
+		);
+
+		if (!parseResult.success) {
+			const errorMessages = parseResult.error.issues
+				.map((issue) => issue.message)
+				.join(', ');
+			handleErrorClient(
+				res,
+				400,
+				'Datos de entrada inválidos',
+				errorMessages,
+			);
+			return;
+		}
+
 		const {
 			title,
 			description,
 			deadline,
 			status,
-			offerTypeId,
+			offerTypeIds,
 			internshipCenterId,
-		} = req.body;
-
-		if (
-			!title ||
-			!description ||
-			!deadline ||
-			!offerTypeId ||
-			!internshipCenterId
-		) {
-			handleErrorClient(
-				res,
-				400,
-				'Faltan campos requeridos',
-				'Todos los campos son obligatorios',
-			);
-			return;
-		}
+		} = parseResult.data;
 
 		const response = await offersService.createOne({
 			title,
 			description,
 			deadline: new Date(deadline),
-			status,
-			offerTypeId,
+			status: status as OfferStatus,
+			offerTypeIds,
 			internshipCenterId,
 		});
 
@@ -113,6 +119,19 @@ async function createOne(req: Request, res: Response) {
 			response,
 		);
 	} catch (error) {
+		if (
+			error instanceof Error &&
+			error.message === 'DUPLICATE_OFFER'
+		) {
+			handleErrorClient(
+				res,
+				409,
+				'Oferta duplicada',
+				'Ya existe una oferta con el mismo título, centro de prácticas y tipos de oferta',
+			);
+			return;
+		}
+
 		handleErrorServer(
 			res,
 			500,
@@ -127,14 +146,32 @@ async function createOne(req: Request, res: Response) {
 async function updateOne(req: Request, res: Response) {
 	try {
 		const { id } = req.params;
+
+		const parseResult = UpdateOfferSchema.safeParse(
+			req.body,
+		);
+
+		if (!parseResult.success) {
+			const errorMessages = parseResult.error.issues
+				.map((issue) => issue.message)
+				.join(', ');
+			handleErrorClient(
+				res,
+				400,
+				'Datos de entrada inválidos',
+				errorMessages,
+			);
+			return;
+		}
+
 		const {
 			title,
 			description,
 			deadline,
 			status,
-			offerTypeId,
+			offerTypeIds,
 			internshipCenterId,
-		} = req.body;
+		} = parseResult.data;
 
 		const response = await offersService.updateOne(
 			Number(id),
@@ -142,8 +179,10 @@ async function updateOne(req: Request, res: Response) {
 				title,
 				description,
 				deadline: deadline ? new Date(deadline) : undefined,
-				status,
-				offerTypeId,
+				status: status
+					? (status as OfferStatus)
+					: undefined,
+				offerTypeIds,
 				internshipCenterId,
 			},
 		);
