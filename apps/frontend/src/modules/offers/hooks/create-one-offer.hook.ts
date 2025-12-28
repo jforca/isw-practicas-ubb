@@ -6,7 +6,7 @@ type TCreateOfferData = {
 	description: string;
 	deadline: string;
 	status?: 'published' | 'closed' | 'filled';
-	offerTypeId: number;
+	offerTypeIds: number[];
 	internshipCenterId: number;
 };
 

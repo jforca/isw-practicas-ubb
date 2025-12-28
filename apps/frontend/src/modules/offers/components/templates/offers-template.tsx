@@ -8,6 +8,7 @@ import {
 	Calendar,
 	Loader2,
 } from 'lucide-react';
+
 import { OffersHeader } from '@modules/offers/components/organisms/offers-header';
 import { OfferCards } from '@modules/offers/components/organisms/offer-cards';
 import {
@@ -51,12 +52,12 @@ export function OffersTemplate() {
 		handleFindMany(0, pagination.limit);
 	}, [handleFindMany, pagination.limit]);
 
-	// Estado del formulario de creación
+	// Estado del formulario de creación (soporta uno o dos tipos)
 	type TCreateForm = {
 		title: string;
 		description: string;
 		deadline: string;
-		offerTypeId: number | '';
+		offerTypeIds: number[];
 		internshipCenterId: number | '';
 	};
 
@@ -65,7 +66,7 @@ export function OffersTemplate() {
 			title: '',
 			description: '',
 			deadline: '',
-			offerTypeId: '',
+			offerTypeIds: [],
 			internshipCenterId: '',
 		},
 	);
@@ -95,18 +96,27 @@ export function OffersTemplate() {
 	// Handlers del formulario de creación
 	const handleInputChange = (
 		field: keyof TCreateForm,
-		value: string | number,
+		value: string | number | number[],
 	) => {
-		setCreateForm((prev) => ({ ...prev, [field]: value }));
+		setCreateForm(
+			(prev) =>
+				({
+					...prev,
+					[field]: value,
+				}) as unknown as TCreateForm,
+		);
 		setCreateErrors((prev) => ({
 			...prev,
-			[field]: validateField(field, value),
+			[field]: validateField(
+				field,
+				value as string | number | number[],
+			),
 		}));
 	};
 
 	const validateField = (
 		field: keyof TCreateForm,
-		value: string | number,
+		value: string | number | number[] | undefined,
 	) => {
 		switch (field) {
 			case 'title':
@@ -118,9 +128,12 @@ export function OffersTemplate() {
 			case 'deadline':
 				if (!value) return 'La fecha límite es requerida';
 				return null;
-			case 'offerTypeId':
-				if (!value)
-					return 'El tipo de práctica es requerido';
+			case 'offerTypeIds':
+				if (
+					!value ||
+					(Array.isArray(value) && value.length === 0)
+				)
+					return 'Debe seleccionar al menos un tipo de práctica';
 				return null;
 			case 'internshipCenterId':
 				if (!value)
@@ -162,7 +175,7 @@ export function OffersTemplate() {
 			title: '',
 			description: '',
 			deadline: '',
-			offerTypeId: '',
+			offerTypeIds: [],
 			internshipCenterId: '',
 		});
 		setCreateErrors(
@@ -178,7 +191,7 @@ export function OffersTemplate() {
 			title: createForm.title,
 			description: createForm.description,
 			deadline: createForm.deadline,
-			offerTypeId: createForm.offerTypeId as number,
+			offerTypeIds: createForm.offerTypeIds,
 			internshipCenterId:
 				createForm.internshipCenterId as number,
 		});
@@ -300,32 +313,93 @@ export function OffersTemplate() {
 										/>
 										Tipo de Práctica *
 									</h4>
-									<select
-										value={createForm.offerTypeId}
-										onChange={(e) =>
-											handleInputChange(
-												'offerTypeId',
-												e.target.value
-													? Number(e.target.value)
-													: '',
-											)
-										}
-										className="select select-bordered w-full"
-										disabled={isCreating}
-									>
-										<option value="">
-											Seleccionar tipo...
-										</option>
-										{offerTypes.map((type) => (
-											<option key={type.id} value={type.id}>
-												{type.name}
-											</option>
-										))}
-									</select>
-									{createErrors.offerTypeId && (
+									<div className="flex flex-col gap-2 text-base-content/80">
+										{/* Mostrar dos checkboxes: Práctica 1 y Práctica 2 (vertical) */}
+										{(() => {
+											const t1 = offerTypes[0];
+											const t2 = offerTypes[1];
+											return (
+												<div className="flex flex-row gap-4 items-center">
+													<label className="label cursor-pointer inline-flex items-center">
+														<input
+															type="checkbox"
+															className="checkbox mr-2"
+															checked={
+																!!t1 &&
+																createForm.offerTypeIds.includes(
+																	t1.id,
+																)
+															}
+															onChange={(e) => {
+																if (!t1) return;
+																if (e.target.checked) {
+																	handleInputChange(
+																		'offerTypeIds',
+																		Array.from(
+																			new Set([
+																				...createForm.offerTypeIds,
+																				t1.id,
+																			]),
+																		),
+																	);
+																} else {
+																	handleInputChange(
+																		'offerTypeIds',
+																		createForm.offerTypeIds.filter(
+																			(id) => id !== t1.id,
+																		),
+																	);
+																}
+															}}
+														/>
+														<span className="label-text">
+															Práctica 1
+														</span>
+													</label>
+													<label className="label cursor-pointer inline-flex items-center">
+														<input
+															type="checkbox"
+															className="checkbox mr-2"
+															checked={
+																!!t2 &&
+																createForm.offerTypeIds.includes(
+																	t2.id,
+																)
+															}
+															onChange={(e) => {
+																if (!t2) return;
+																if (e.target.checked) {
+																	handleInputChange(
+																		'offerTypeIds',
+																		Array.from(
+																			new Set([
+																				...createForm.offerTypeIds,
+																				t2.id,
+																			]),
+																		),
+																	);
+																} else {
+																	handleInputChange(
+																		'offerTypeIds',
+																		createForm.offerTypeIds.filter(
+																			(id) => id !== t2.id,
+																		),
+																	);
+																}
+															}}
+														/>
+														<span className="label-text">
+															Práctica 2
+														</span>
+													</label>
+												</div>
+											);
+										})()}
+									</div>
+									{createErrors.offerTypeIds && (
 										<label className="label">
 											<span className="label-text-alt text-error">
-												{createErrors.offerTypeId}
+												{createErrors.offerTypeIds}
 											</span>
 										</label>
 									)}

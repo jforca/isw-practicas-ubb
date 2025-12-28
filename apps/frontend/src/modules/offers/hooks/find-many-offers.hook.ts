@@ -6,12 +6,20 @@ export type TOffer = {
 	description: string;
 	deadline: string;
 	status: 'published' | 'closed' | 'filled';
-	offerType: {
+	// Mantener `offerType` por compatibilidad, pero preferir `offerTypes`
+	offerType?: {
 		id: number;
 		name: string;
 		// biome-ignore lint/style/useNamingConvention: backend snake_case
 		is_active: boolean;
 	};
+
+	offerTypes?: {
+		id: number;
+		name: string;
+		// biome-ignore lint/style/useNamingConvention: backend snake_case
+		is_active: boolean;
+	}[];
 	internshipCenter: {
 		id: number;
 		// biome-ignore lint/style/useNamingConvention: backend snake_case

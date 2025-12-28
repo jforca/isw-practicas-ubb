@@ -14,3 +14,4 @@ export { InternshipCenter } from './internship-centers.entity';
 export { Supervisor } from './supervisor.entity';
 export { Internship } from './internship.entity';
 export { OffersType } from './offers-types.entity';
+export { OfferOfferType } from './offer-offer-type.entity';

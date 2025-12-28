@@ -122,12 +122,13 @@ function OfferCard({
 	internshipCenters,
 	onRefresh,
 }: TOfferCardProps) {
+	// Cambiar para soportar múltiples tipos de práctica
 	type TEditForm = {
 		title: string;
 		description: string;
 		deadline: string;
 		status: 'published' | 'closed' | 'filled';
-		offerTypeId: number;
+		offerTypeIds: number[];
 		internshipCenterId: number;
 	};
 
@@ -136,7 +137,11 @@ function OfferCard({
 		description: o.description,
 		deadline: o.deadline.split('T')[0],
 		status: o.status,
-		offerTypeId: o.offerType.id,
+		offerTypeIds: Array.isArray(o.offerTypes)
+			? o.offerTypes.map((t) => t.id)
+			: o.offerType
+				? [o.offerType.id]
+				: [],
 		internshipCenterId: o.internshipCenter.id,
 	});
 	const [editErrors, setEditErrors] = useState<
@@ -158,20 +163,9 @@ function OfferCard({
 		error: deleteError,
 	} = UseDeleteOffer();
 
-	const handleInputChange = (
-		field: keyof TEditForm,
-		value: string | number,
-	) => {
-		setEditForm((prev) => ({ ...prev, [field]: value }));
-		setEditErrors((prev) => ({
-			...prev,
-			[field]: validateField(field, value),
-		}));
-	};
-
 	const validateField = (
 		field: keyof TEditForm,
-		value: string | number,
+		value: string | number | number[],
 	) => {
 		switch (field) {
 			case 'title':
@@ -183,9 +177,12 @@ function OfferCard({
 			case 'deadline':
 				if (!value) return 'La fecha límite es requerida';
 				return null;
-			case 'offerTypeId':
-				if (!value)
-					return 'El tipo de práctica es requerido';
+			case 'offerTypeIds':
+				if (
+					!value ||
+					(Array.isArray(value) && value.length === 0)
+				)
+					return 'Debe seleccionar al menos un tipo de práctica';
 				return null;
 			case 'internshipCenterId':
 				if (!value)
@@ -194,6 +191,17 @@ function OfferCard({
 			default:
 				return null;
 		}
+	};
+
+	const handleInputChange = (
+		field: keyof TEditForm,
+		value: string | number | number[],
+	) => {
+		setEditForm((prev) => ({ ...prev, [field]: value }));
+		setEditErrors((prev) => ({
+			...prev,
+			[field]: validateField(field, value),
+		}));
 	};
 
 	const isEditFormValid = () => {
@@ -230,7 +238,7 @@ function OfferCard({
 			description: editForm.description,
 			deadline: editForm.deadline,
 			status: editForm.status,
-			offerTypeId: editForm.offerTypeId,
+			offerTypeIds: editForm.offerTypeIds,
 			internshipCenterId: editForm.internshipCenterId,
 		});
 
@@ -254,7 +262,11 @@ function OfferCard({
 			description: o.description,
 			deadline: o.deadline.split('T')[0],
 			status: o.status,
-			offerTypeId: o.offerType.id,
+			offerTypeIds: Array.isArray(o.offerTypes)
+				? o.offerTypes.map((t) => t.id)
+				: o.offerType
+					? [o.offerType.id]
+					: [],
 			internshipCenterId: o.internshipCenter.id,
 		});
 	};
@@ -279,6 +291,40 @@ function OfferCard({
 		},
 	};
 
+	// Visualización de tipos de práctica — soporta varias formas de payload
+	const payload = o as unknown as Record<string, unknown>;
+	const rawOfferTypes = Array.isArray(payload.offerTypes)
+		? (payload.offerTypes as Array<Record<string, unknown>>)
+		: undefined;
+	const rawOfferOfferTypes = Array.isArray(
+		payload.offerOfferTypes,
+	)
+		? (payload.offerOfferTypes as Array<
+				Record<string, unknown>
+			>)
+		: undefined;
+	const rawOfferType = payload.offerType as
+		| Record<string, unknown>
+		| undefined;
+
+	const extractedOfferTypes =
+		rawOfferTypes ??
+		rawOfferOfferTypes?.map(
+			(oot) => oot.offerType as Record<string, unknown>,
+		) ??
+		(rawOfferType ? [rawOfferType] : []);
+
+	const offerTypeNames = extractedOfferTypes
+		.map((t) =>
+			t && typeof t.name === 'string' ? t.name : undefined,
+		)
+		.filter((n): n is string => Boolean(n));
+	let showOfferType = 'Sin tipo';
+	if (offerTypeNames.length === 1)
+		showOfferType = offerTypeNames[0];
+	if (offerTypeNames.length === 2)
+		showOfferType = 'Práctica I & II';
+
 	return (
 		<Card className="hover:scale-102 transition-transform">
 			<Card.Body>
@@ -302,7 +348,7 @@ function OfferCard({
 							className="text-primary"
 						/>
 						<span className="text-sm font-medium text-primary">
-							{o.offerType.name}
+							{showOfferType}
 						</span>
 					</div>
 				</Card.Container>
@@ -358,7 +404,7 @@ function OfferCard({
 												className="text-primary"
 											/>
 											<span className="text-sm font-medium text-primary">
-												{o.offerType.name}
+												{showOfferType}
 											</span>
 										</div>
 									</div>
@@ -480,30 +526,93 @@ function OfferCard({
 													/>
 													Tipo de Práctica *
 												</h4>
-												<select
-													value={editForm.offerTypeId}
-													onChange={(e) =>
-														handleInputChange(
-															'offerTypeId',
-															Number(e.target.value),
-														)
-													}
-													className="select select-bordered w-full"
-													disabled={isUpdating}
-												>
-													{offerTypes.map((type) => (
-														<option
-															key={type.id}
-															value={type.id}
-														>
-															{type.name}
-														</option>
-													))}
-												</select>
-												{editErrors.offerTypeId && (
+												{/* Checkboxes para Práctica 1 y Práctica 2 */}
+												{(() => {
+													const t1 = offerTypes[0];
+													const t2 = offerTypes[1];
+													return (
+														<div className="flex flex-row gap-4 items-center">
+															<label className="label cursor-pointer inline-flex items-center">
+																<input
+																	type="checkbox"
+																	className="checkbox mr-2"
+																	checked={
+																		!!t1 &&
+																		editForm.offerTypeIds.includes(
+																			t1.id,
+																		)
+																	}
+																	onChange={(e) => {
+																		if (!t1) return;
+																		if (e.target.checked) {
+																			handleInputChange(
+																				'offerTypeIds',
+																				Array.from(
+																					new Set([
+																						...editForm.offerTypeIds,
+																						t1.id,
+																					]),
+																				),
+																			);
+																		} else {
+																			handleInputChange(
+																				'offerTypeIds',
+																				editForm.offerTypeIds.filter(
+																					(id) =>
+																						id !== t1.id,
+																				),
+																			);
+																		}
+																	}}
+																/>
+																<span className="label-text">
+																	Práctica 1
+																</span>
+															</label>
+															<label className="label cursor-pointer inline-flex items-center">
+																<input
+																	type="checkbox"
+																	className="checkbox mr-2"
+																	checked={
+																		!!t2 &&
+																		editForm.offerTypeIds.includes(
+																			t2.id,
+																		)
+																	}
+																	onChange={(e) => {
+																		if (!t2) return;
+																		if (e.target.checked) {
+																			handleInputChange(
+																				'offerTypeIds',
+																				Array.from(
+																					new Set([
+																						...editForm.offerTypeIds,
+																						t2.id,
+																					]),
+																				),
+																			);
+																		} else {
+																			handleInputChange(
+																				'offerTypeIds',
+																				editForm.offerTypeIds.filter(
+																					(id) =>
+																						id !== t2.id,
+																				),
+																			);
+																		}
+																	}}
+																/>
+																<span className="label-text">
+																	Práctica 2
+																</span>
+															</label>
+														</div>
+													);
+												})()}
+												{editErrors.offerTypeIds && (
 													<label className="label">
 														<span className="label-text-alt text-error">
-															{editErrors.offerTypeId}
+															{editErrors.offerTypeIds}
 														</span>
 													</label>
 												)}
