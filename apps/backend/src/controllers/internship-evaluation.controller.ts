@@ -12,6 +12,36 @@ import {
 } from '@services/internship-evaluation.service';
 import { DocumentServices } from '@services/documents.service';
 import path from 'node:path';
+import {
+	InternshipEvaluation,
+	Internship,
+	Coordinator,
+	Supervisor,
+	Application,
+} from '@entities';
+
+function isPromiseLike<T>(
+	v: T | Promise<T>,
+): v is Promise<T> {
+	return (
+		typeof v === 'object' &&
+		v !== null &&
+		typeof (v as { then?: unknown }).then === 'function'
+	);
+}
+
+type TResolvedInternship = Omit<
+	Internship,
+	'coordinator' | 'supervisor' | 'application'
+> & {
+	coordinator?: Coordinator | null;
+	supervisor?: Supervisor | null;
+	application?: Application | null;
+};
+type TResolvedEvaluation = Omit<
+	InternshipEvaluation,
+	'internship'
+> & { internship?: TResolvedInternship | null };
 
 export async function findOneController(
 	req: Request,
@@ -28,7 +58,6 @@ export async function findOneController(
 		});
 		return;
 	}
-
 	res.status(200).json({
 		data: ev,
 		error: null,
@@ -45,17 +74,73 @@ export async function findManyController(
 
 	const list = await listEvaluations();
 
+	// Resolver posibles relaciones lazy (TypeORM puede devolver Promises)
+	const resolvedList: TResolvedEvaluation[] =
+		await Promise.all(
+			(list || []).map(
+				async (item): Promise<TResolvedEvaluation> => {
+					if (!item.internship)
+						return {
+							...item,
+							internship: null,
+						} as TResolvedEvaluation;
+
+					const internshipRaw = item.internship as
+						| Internship
+						| Promise<Internship>;
+
+					const resolvedInternship = isPromiseLike(
+						internshipRaw,
+					)
+						? await internshipRaw
+						: internshipRaw;
+
+					// coordinator en la entidad está tipado como Promise<Coordinator>
+					const coordinatorObj =
+						resolvedInternship.coordinator
+							? await resolvedInternship.coordinator
+							: null;
+
+					const supervisorObj =
+						resolvedInternship.supervisor ?? null;
+					const applicationObj =
+						resolvedInternship.application ?? null;
+
+					const resolvedInternshipTyped: TResolvedInternship =
+						{
+							...resolvedInternship,
+							coordinator: coordinatorObj,
+							supervisor: supervisorObj,
+							application: applicationObj,
+						};
+
+					return {
+						...item,
+						internship: resolvedInternshipTyped,
+					} as TResolvedEvaluation;
+				},
+			),
+		);
+
 	// Filtrar por búsqueda si se proporciona
-	let filtered = list || [];
+	let filtered = resolvedList || [];
 	if (search) {
 		const searchLower = search.toLowerCase();
 		filtered = filtered.filter(
-			(item) =>
+			(item: TResolvedEvaluation) =>
 				item.id.toString().includes(searchLower) ||
-				item.internship?.supervisor?.user?.name
+				(
+					item.internship?.supervisor as
+						| Supervisor
+						| undefined
+				)?.user?.name
 					?.toLowerCase()
 					.includes(searchLower) ||
-				item.internship?.coordinator?.user?.name
+				(
+					item.internship?.coordinator as
+						| Coordinator
+						| undefined
+				)?.user?.name
 					?.toLowerCase()
 					.includes(searchLower) ||
 				item.internship?.application?.student?.name

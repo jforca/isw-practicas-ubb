@@ -8,7 +8,7 @@ import {
 	CreateDateColumn,
 	UpdateDateColumn,
 } from 'typeorm';
-import { InternshipEvaluation } from './internship-evaluation.entity';
+import type { InternshipEvaluation } from './internship-evaluation.entity';
 import { EvaluationItem } from './evaluation-item.entity';
 
 @Entity()
@@ -18,8 +18,10 @@ export class EvaluationResponse {
 	id: number;
 
 	@ManyToOne(
-		() => InternshipEvaluation,
-		(ev) => ev.responses,
+		() =>
+			require('./internship-evaluation.entity')
+				.InternshipEvaluation,
+		(ev: InternshipEvaluation) => ev.responses,
 		{
 			onDelete: 'CASCADE',
 		},
