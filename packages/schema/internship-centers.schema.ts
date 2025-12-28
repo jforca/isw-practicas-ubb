@@ -8,6 +8,8 @@ export const NAME_REGEX =
 	/^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s.,&\-()]+$/u;
 export const ADDRESS_REGEX =
 	/^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s.,º#\-/()]+$/u;
+export const DESCRIPTION_REGEX =
+	/^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s.,;:()\-'"¿?¡!&%#@[\]/\\]+$/u;
 
 export const InternshipCentersSchema = z.object({
 	id: z.coerce.number().int().positive(),
@@ -45,6 +47,9 @@ export const InternshipCentersSchema = z.object({
 		.string()
 		.min(10, { message: 'description demasiado corto' })
 		.max(250)
+		.regex(DESCRIPTION_REGEX, {
+			message: 'description contiene caracteres inválidos',
+		})
 		.refine((v) => /[A-Za-zÀ-ÖØ-öø-ÿ]/.test(v), {
 			message: 'description debe contener texto legible',
 		}),

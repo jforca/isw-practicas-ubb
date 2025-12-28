@@ -9,6 +9,7 @@ import {
 	NAME_REGEX,
 	ADDRESS_REGEX,
 } from '@packages/schema/internship-centers.schema';
+import { DESCRIPTION_REGEX } from '@packages/schema/internship-centers.schema';
 
 import {
 	InternshipCenterCards,
@@ -175,6 +176,8 @@ export function InternshipCentersTemplate({
 				if (!value) return 'Descripción es requerida';
 				if (value.length < 10)
 					return 'Descripción demasiado corta';
+				if (!DESCRIPTION_REGEX.test(value))
+					return 'Descripción contiene caracteres inválidos';
 				if (!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(value))
 					return 'Descripción debe contener texto legible';
 				return null;
