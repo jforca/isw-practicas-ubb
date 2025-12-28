@@ -6,6 +6,7 @@ import {
 	EncargadoDashboardPage,
 } from '@modules';
 import { LogbookPage } from '@modules/logbook/components/pages/logbook-page';
+import { ReportsPage } from '@modules/reports/components/pages/reports-page';
 // import { Auth } from '@common/components/auth';
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
 				{/*Public Routes */}
 				<Route index element={<LoginPage />} />
 				<Route path="/logbook" element={<LogbookPage />} />
+				<Route path="/reports" element={<ReportsPage />} />
 
 				{/*Private Routes - Protegidas por autenticación */}
 				{/* /app/nombre-ruta */}

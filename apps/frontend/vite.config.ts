@@ -27,6 +27,10 @@ export default defineConfig(({ mode }) => {
 					changeOrigin: true,
 					rewrite: (path) => path.replace(/^\/api/, '/api'),
 				},
+				'/uploads': {
+					target: env.VITE_BACKEND_URL,
+					changeOrigin: true,
+				},
 			},
 		},
 	};
