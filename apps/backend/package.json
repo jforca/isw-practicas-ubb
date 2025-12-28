@@ -3,6 +3,8 @@
 	"version": "1.0.0",
 	"description": "Proyecto backend",
 	"scripts": {
+		"type-check": "tsc -p tsconfig.json --noEmit",
+		"prebuild": "tsc -p tsconfig.json --noEmit",
 		"build": "rspack build",
 		"start": "node --env-file=.env.production dist/main.js",
 		"dev": "tsx watch --tsconfig tsconfig.json --env-file=.env.development src/index.ts",
