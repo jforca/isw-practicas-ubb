@@ -90,8 +90,11 @@ export async function findMany(
 	const transformedData = data.map((offer) => ({
 		...offer,
 		offerTypes:
-			offer.offerOfferTypes?.map((oot) => oot.offerType) ||
-			[],
+			(
+				offer.offerOfferTypes as unknown as OfferOfferType[]
+			)?.map(
+				(oot) => oot.offerType as unknown as OffersType,
+			) || [],
 	}));
 
 	return {
@@ -122,8 +125,11 @@ export async function findOne(id: number) {
 	return {
 		...offer,
 		offerTypes:
-			offer.offerOfferTypes?.map((oot) => oot.offerType) ||
-			[],
+			(
+				offer.offerOfferTypes as unknown as OfferOfferType[]
+			)?.map(
+				(oot) => oot.offerType as unknown as OffersType,
+			) || [],
 	};
 }
 
@@ -167,8 +173,10 @@ export async function createOne(data: TCreateOfferData) {
 
 	for (const ex of existingOffers) {
 		const exTypeIds = normalizeIds(
-			ex.offerOfferTypes?.map((oot: OfferOfferType) => {
-				return oot.offerType?.id;
+			(
+				ex.offerOfferTypes as unknown as OfferOfferType[]
+			)?.map((oot: OfferOfferType) => {
+				return (oot.offerType as unknown as OffersType)?.id;
 			}) || [],
 		);
 
@@ -186,9 +194,9 @@ export async function createOne(data: TCreateOfferData) {
 		description: data.description,
 		deadline: data.deadline,
 		status: data.status ?? OfferStatus.Published,
-		internshipCenter: {
+		internshipCenter: Promise.resolve({
 			id: data.internshipCenterId,
-		} as InternshipCenter,
+		} as InternshipCenter),
 	});
 
 	const savedOffer = await offerRepo.save(newOffer);
@@ -197,8 +205,10 @@ export async function createOne(data: TCreateOfferData) {
 	const offerOfferTypes = data.offerTypeIds.map(
 		(typeId) => {
 			return offerOfferTypeRepo.create({
-				offer: savedOffer,
-				offerType: { id: typeId } as OffersType,
+				offer: Promise.resolve(savedOffer),
+				offerType: Promise.resolve({
+					id: typeId,
+				} as OffersType),
 			});
 		},
 	);
@@ -229,9 +239,9 @@ export async function updateOne(
 		offer.deadline = data.deadline;
 	if (data.status !== undefined) offer.status = data.status;
 	if (data.internshipCenterId !== undefined) {
-		offer.internshipCenter = {
+		offer.internshipCenter = Promise.resolve({
 			id: data.internshipCenterId,
-		} as InternshipCenter;
+		} as InternshipCenter);
 	}
 
 	await offerRepo.save(offer);
@@ -256,8 +266,10 @@ export async function updateOne(
 		const offerOfferTypes = data.offerTypeIds.map(
 			(typeId) => {
 				return offerOfferTypeRepo.create({
-					offer: { id } as Offer,
-					offerType: { id: typeId } as OffersType,
+					offer: Promise.resolve({ id } as Offer),
+					offerType: Promise.resolve({
+						id: typeId,
+					} as OffersType),
 				});
 			},
 		);

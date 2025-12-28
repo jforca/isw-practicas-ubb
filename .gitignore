@@ -83,3 +83,6 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 *.7z
 *.tar
 *.gz
+
+# Se permite cierto archivo pdf
+!convenio_practica_plantilla.pdf

@@ -913,20 +913,12 @@ function InternshipCenterCard({
 												<span>{deleteError}</span>
 											</div>
 										)}
-										<div className="bg-neutral/10 border-l-4 border-neutral rounded-lg p-4">
-											<p className="font-bold text-neutral mb-2">
-												Advertencia: Esta acción no se puede
-												deshacer
-											</p>
-											<p className="text-base-content/80 text-sm">
-												Se eliminará permanentemente:
-											</p>
-											<div className="mt-3 p-3 bg-base-100 rounded-lg">
-												<p className="font-semibold text-primary">
-													{c.legal_name}
-												</p>
-											</div>
-										</div>
+										<p className="text-base-content/80">
+											¿Estás seguro que deseas eliminar el
+											centro de prácticas{' '}
+											<strong>"{c.legal_name}"</strong>?
+											Esta acción no se puede deshacer.
+										</p>
 									</div>
 									<div className="modal-action">
 										<button

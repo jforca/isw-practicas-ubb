@@ -121,8 +121,8 @@ export async function seedOffers() {
 				title: s.title,
 				description: s.description,
 				deadline,
-				coordinator,
-				internshipCenter: center,
+				coordinator: Promise.resolve(coordinator),
+				internshipCenter: Promise.resolve(center),
 			} as Partial<Offer>;
 		},
 	);
@@ -146,8 +146,8 @@ export async function seedOffers() {
 
 		chosen.forEach((t) => {
 			ootRows.push({
-				offer,
-				offerType: t,
+				offer: Promise.resolve(offer),
+				offerType: Promise.resolve(t),
 			} as Partial<OfferOfferType>);
 		});
 	});
