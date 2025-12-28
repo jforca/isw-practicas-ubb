@@ -13,6 +13,7 @@ export function EncargadoDashboardTemplate() {
 		error,
 		handleFindMany,
 		updateFilters,
+		filters,
 	} = useFindManyStudents();
 
 	const [currentPage, setCurrentPage] = useState(1);
@@ -65,6 +66,8 @@ export function EncargadoDashboardTemplate() {
 					handleFindMany(currentPage, limit);
 				}}
 				onSearch={handleSearch}
+				currentFilters={filters}
+				onFiltersChange={updateFilters}
 			/>
 
 			<div className="my-2" />
