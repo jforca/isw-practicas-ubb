@@ -41,10 +41,29 @@ function mapInternshipStatus(status: InternshipStatus) {
 	}
 }
 
+import { Brackets } from 'typeorm';
+
+function mapStatusToEnum(
+	status: string,
+): InternshipStatus | undefined {
+	switch (status) {
+		case 'En Curso':
+			return InternshipStatus.InProgress;
+		case 'Evaluación Pendiente':
+			return InternshipStatus.PendingEvaluation;
+		case 'Finalizada':
+			return InternshipStatus.Finished;
+		default:
+			return undefined;
+	}
+}
+
 export async function findMany(
 	page: number,
 	limit: number,
 	search?: string,
+	internshipTypes?: string[],
+	statuses?: string[],
 ): Promise<[TStudentWhithInternshipInfo[], number]> {
 	const queryBuilder = userRepo
 		.createQueryBuilder('user')
@@ -59,6 +78,98 @@ export async function findMany(
 		queryBuilder.andWhere(
 			'(user.name ILIKE :search OR user.rut ILIKE :search OR user.email ILIKE :search)',
 			{ search: `%${search.trim()}%` },
+		);
+	}
+
+	if (internshipTypes && internshipTypes.length > 0) {
+		queryBuilder.andWhere(
+			new Brackets((qb) => {
+				qb.where(
+					'student.currentInternship IN (:...types)',
+					{
+						types: internshipTypes,
+					},
+				);
+				if (internshipTypes.includes('Práctica 1')) {
+					qb.orWhere('student.id IS NULL');
+				}
+			}),
+		);
+	}
+
+	if (statuses && statuses.length > 0) {
+		queryBuilder.leftJoin(
+			'Application',
+			'app',
+			'app.student_id = user.id',
+		);
+
+		queryBuilder.leftJoin(
+			'Internship',
+			'internship',
+			'internship.application_id = app.id',
+		);
+
+		const enumStatuses: InternshipStatus[] = [];
+		const derivedStatuses: string[] = [];
+
+		statuses.forEach((s) => {
+			const mapped = mapStatusToEnum(s);
+			if (mapped) {
+				enumStatuses.push(mapped);
+			} else {
+				derivedStatuses.push(s);
+			}
+		});
+
+		queryBuilder.andWhere(
+			new Brackets((qb) => {
+				let hasCondition = false;
+
+				if (enumStatuses.length > 0) {
+					qb.where(
+						'internship.status IN (:...enumStatuses)',
+						{
+							enumStatuses,
+						},
+					);
+					hasCondition = true;
+				}
+
+				if (derivedStatuses.includes('Aprobada')) {
+					const condition =
+						'app.status = :approved AND internship.id IS NULL';
+					if (hasCondition) {
+						qb.orWhere(condition, {
+							approved: ApplicationStatus.Approved,
+						});
+					} else {
+						qb.where(condition, {
+							approved: ApplicationStatus.Approved,
+						});
+						hasCondition = true;
+					}
+				}
+
+				if (derivedStatuses.includes('No aprobada')) {
+					const condition =
+						'(app.status != :approved OR app.id IS NULL)';
+					if (hasCondition) {
+						qb.orWhere(condition, {
+							approved: ApplicationStatus.Approved,
+						});
+					} else {
+						qb.where(condition, {
+							approved: ApplicationStatus.Approved,
+						});
+						hasCondition = true;
+					}
+				}
+
+				if (!hasCondition) {
+					qb.where('1 = 0');
+				}
+			}),
 		);
 	}
 
@@ -104,7 +215,7 @@ export async function findMany(
 							internship.status,
 						);
 					} else {
-						internshipStatus = 'Aprobada'; // Preguntar a mis compañeros si esta bien ¡No te olvides Diego! XD
+						internshipStatus = 'Aprobada';
 					}
 				} else {
 					internshipType =
@@ -248,7 +359,6 @@ export async function deleteStudent(id: string) {
 
 export async function getStudentDetails(id: string) {
 	try {
-		// 1. Obtener datos básicos del estudiante (User + Student)
 		const user = await userRepo.findOneBy({
 			id,
 			user_role: 'student',
@@ -259,7 +369,6 @@ export async function getStudentDetails(id: string) {
 			id,
 		});
 
-		// 2. Obtener Postulaciones (Applications)
 		const applications = await applicationRepo.find({
 			where: { student: { id } },
 			relations: [
@@ -270,7 +379,6 @@ export async function getStudentDetails(id: string) {
 			order: { created_at: 'DESC' },
 		});
 
-		// 3. Enriquecer cada postulación con datos de la práctica (si existe)
 		const applicationsWithDetails = await Promise.all(
 			applications.map(async (app) => {
 				const internship = await internshipRepo.findOne({
@@ -286,7 +394,6 @@ export async function getStudentDetails(id: string) {
 				let logbookEntries = null;
 
 				if (internship) {
-					// Obtener Evaluaciones
 					const evaluationRepo =
 						AppDataSource.getRepository(
 							'InternshipEvaluation',
@@ -295,7 +402,6 @@ export async function getStudentDetails(id: string) {
 						where: { internship: { id: internship.id } },
 					});
 
-					// Obtener Bitácora
 					const logbookRepo = AppDataSource.getRepository(
 						'LogbookEntries',
 					);

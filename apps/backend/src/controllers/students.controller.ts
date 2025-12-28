@@ -27,11 +27,23 @@ export async function listStudents(
 			: 10;
 
 		const search = req.query.search as string | undefined;
+		const internshipTypes = req.query.internshipTypes
+			? (req.query.internshipTypes as string)
+					.split(',')
+					.map((t) => t.trim())
+			: undefined;
+		const statuses = req.query.statuses
+			? (req.query.statuses as string)
+					.split(',')
+					.map((s) => s.trim())
+			: undefined;
 
 		const [students, total] = await findMany(
 			page,
 			limit,
 			search,
+			internshipTypes,
+			statuses,
 		);
 
 		const totalPages = Math.ceil(total / limit);

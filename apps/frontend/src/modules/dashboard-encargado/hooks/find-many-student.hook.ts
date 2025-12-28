@@ -10,10 +10,14 @@ export type TPagination = {
 
 export type TFilters = {
 	search: string;
+	internshipTypes: string[];
+	statuses: string[];
 };
 
 const initialFilters: TFilters = {
 	search: '',
+	internshipTypes: [],
+	statuses: [],
 };
 
 export function useFindManyStudents() {
@@ -54,6 +58,20 @@ export function useFindManyStudents() {
 					params.append(
 						'search',
 						activeFilters.search.trim(),
+					);
+				}
+
+				if (activeFilters.internshipTypes.length > 0) {
+					params.append(
+						'internshipTypes',
+						activeFilters.internshipTypes.join(','),
+					);
+				}
+
+				if (activeFilters.statuses.length > 0) {
+					params.append(
+						'statuses',
+						activeFilters.statuses.join(','),
 					);
 				}
 
