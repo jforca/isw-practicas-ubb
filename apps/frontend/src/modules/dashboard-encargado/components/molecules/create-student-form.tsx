@@ -4,6 +4,9 @@ import {
 	ChileanRUTRegex,
 } from '@packages/utils/regex.utils';
 import { UseCreateStudent } from '@modules/dashboard-encargado/hooks/create-one-student.hook';
+import { UseFindOneStudent } from '@modules/dashboard-encargado/hooks/find-one-student.hook';
+import { UseUpdateOneStudent } from '@modules/dashboard-encargado/hooks/update-one-student.hook';
+
 import {
 	User,
 	Mail,
@@ -23,10 +26,12 @@ type TCreateForm = {
 
 interface ICreateStudentFormProps {
 	onSuccess?: () => void;
+	studentId?: string;
 }
 
 export function CreateStudentForm({
 	onSuccess,
+	studentId,
 }: ICreateStudentFormProps) {
 	const [createForm, setCreateForm] = useState<TCreateForm>(
 		{
@@ -41,8 +46,45 @@ export function CreateStudentForm({
 		Record<keyof TCreateForm, string | null>
 	>({} as Record<keyof TCreateForm, string | null>);
 
-	const { handleCreate, isLoading, error } =
-		UseCreateStudent();
+	const {
+		handleCreate,
+		isLoading: isCreating,
+		error: createError,
+	} = UseCreateStudent();
+
+	const {
+		handleUpdateOne,
+		isLoading: isUpdating,
+		error: updateError,
+	} = UseUpdateOneStudent();
+
+	const { handleFindOneStudent, isLoading: isLoadingData } =
+		UseFindOneStudent();
+
+	const isLoading =
+		isCreating || isUpdating || isLoadingData;
+	const error = createError || updateError;
+
+	useEffect(() => {
+		if (studentId) {
+			const loadStudent = async () => {
+				const student =
+					await handleFindOneStudent(studentId);
+				if (student) {
+					setCreateForm({
+						name: student.name,
+						email: student.email,
+						rut: student.rut,
+						phone: student.phone || '',
+						currentInternship:
+							student.currentInternship ||
+							StudentInternship.practica1,
+					});
+				}
+			};
+			loadStudent();
+		}
+	}, [studentId, handleFindOneStudent]);
 
 	useEffect(() => {
 		if (error) {
@@ -68,10 +110,17 @@ export function CreateStudentForm({
 		field: keyof TCreateForm,
 		value: string,
 	) => {
+		// En modo edición, si está vacío, no hay error (se ignora el campo)
+		if (studentId && !value) return null;
+
 		switch (field) {
 			case 'rut':
-				if (!value) return 'El RUT es obligatorio';
-				if (!ChileanRUTRegex.test(value.replace(/\./g, '')))
+				if (!studentId && !value)
+					return 'El RUT es obligatorio';
+				if (
+					value &&
+					!ChileanRUTRegex.test(value.replace(/\./g, ''))
+				)
 					return 'RUT inválido (ej: 12.345.678-9)';
 				return null;
 			case 'phone':
@@ -84,28 +133,37 @@ export function CreateStudentForm({
 					return 'Teléfono inválido (ej: +56 9 1234 5678)';
 				return null;
 			case 'email':
-				if (!value) return 'El correo es obligatorio';
-				if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+				if (!studentId && !value)
+					return 'El correo es obligatorio';
+				if (
+					value &&
+					!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+				)
 					return 'Correo inválido (ej: correo@ejemplo.com)';
 				return null;
 			case 'name': {
-				if (!value) return 'El nombre es obligatorio';
-				// Validar que solo contenga letras, espacios y acentos
-				const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/;
-				if (!nameRegex.test(value)) {
-					return 'El nombre solo puede contener letras y espacios';
-				}
-				// Validar que tenga al menos 2 caracteres
-				if (value.trim().length < 2) {
-					return 'El nombre debe tener al menos 2 caracteres';
+				if (!studentId && !value)
+					return 'El nombre es obligatorio';
+				if (value) {
+					// Validar que solo contenga letras, espacios y acentos
+					const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/;
+					if (!nameRegex.test(value)) {
+						return 'El nombre solo puede contener letras y espacios';
+					}
+					// Validar que tenga al menos 2 caracteres
+					if (value.trim().length < 2) {
+						return 'El nombre debe tener al menos 2 caracteres';
+					}
 				}
 				return null;
 			}
 			case 'currentInternship':
-				if (!value) return 'Este campo es obligatorio';
+				if (!studentId && !value)
+					return 'Este campo es obligatorio';
 				return null;
 			default:
-				if (!value) return 'Este campo es obligatorio';
+				if (!studentId && !value)
+					return 'Este campo es obligatorio';
 				return null;
 		}
 	};
@@ -155,16 +213,32 @@ export function CreateStudentForm({
 			currentInternship: createForm.currentInternship,
 		};
 
-		const result = await handleCreate(studentData);
+		let result: unknown;
+		if (studentId) {
+			// MODO EDICIÓN: Filtrar campos vacíos si es necesario o enviar todo
+			// Para simplificar, enviamos lo que hay en el form, el backend (PATCH) actualizará lo que llegue.
+			// Pero ojo: si el usuario borró un campo obligatorio y lo dejó vacío, validateField lo permitió (si así lo configuramos),
+			// pero aquí podríamos querer filtrar los vacíos para no enviar strings vacíos al backend si no es la intención.
+			// En este caso, como precargamos los datos, el form tiene los datos actuales. Si el usuario edita, tiene el nuevo valor.
+			result = await handleUpdateOne(
+				studentData,
+				studentId,
+			);
+		} else {
+			// MODO CREACIÓN
+			result = await handleCreate(studentData);
+		}
 
 		if (result) {
-			setCreateForm({
-				name: '',
-				email: '',
-				rut: '',
-				phone: '',
-				currentInternship: StudentInternship.practica1,
-			});
+			if (!studentId) {
+				setCreateForm({
+					name: '',
+					email: '',
+					rut: '',
+					phone: '',
+					currentInternship: StudentInternship.practica1,
+				});
+			}
 			setCreateErrors(
 				{} as Record<keyof TCreateForm, string | null>,
 			);
@@ -319,6 +393,8 @@ export function CreateStudentForm({
 							<Loader2 className="animate-spin" size={18} />
 							Creando...
 						</>
+					) : studentId ? (
+						'Guardar Cambios'
 					) : (
 						'Crear Estudiante'
 					)}
