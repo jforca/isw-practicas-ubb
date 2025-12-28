@@ -139,6 +139,48 @@ export async function createOne(data: TCreateOfferData) {
 		);
 	}
 
+	// Comprobar si ya existe una oferta con la misma combinación
+	// de title + internshipCenter + offerTypeIds
+	const existingOffers = await offerRepo
+		.createQueryBuilder('offer')
+		.leftJoinAndSelect(
+			'offer.offerOfferTypes',
+			'offerOfferTypes',
+		)
+		.leftJoinAndSelect(
+			'offerOfferTypes.offerType',
+			'offerType',
+		)
+		.leftJoin('offer.internshipCenter', 'internshipCenter')
+		.where('offer.title = :title', { title: data.title })
+		.andWhere('internshipCenter.id = :internshipCenterId', {
+			internshipCenterId: data.internshipCenterId,
+		})
+		.getMany();
+
+	const normalizeIds = (arr: number[]) =>
+		Array.from(new Set(arr)).sort((a, b) => a - b);
+
+	const incomingTypes = normalizeIds(
+		data.offerTypeIds || [],
+	);
+
+	for (const ex of existingOffers) {
+		const exTypeIds = normalizeIds(
+			ex.offerOfferTypes?.map((oot: OfferOfferType) => {
+				return oot.offerType?.id;
+			}) || [],
+		);
+
+		if (
+			incomingTypes.length === exTypeIds.length &&
+			incomingTypes.every((v, i) => v === exTypeIds[i])
+		) {
+			// Indicar duplicado mediante excepción controlada
+			throw new Error('DUPLICATE_OFFER');
+		}
+	}
+
 	const newOffer = offerRepo.create({
 		title: data.title,
 		description: data.description,

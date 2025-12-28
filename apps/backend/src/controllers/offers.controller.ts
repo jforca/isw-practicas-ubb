@@ -119,6 +119,19 @@ async function createOne(req: Request, res: Response) {
 			response,
 		);
 	} catch (error) {
+		if (
+			error instanceof Error &&
+			error.message === 'DUPLICATE_OFFER'
+		) {
+			handleErrorClient(
+				res,
+				409,
+				'Oferta duplicada',
+				'Ya existe una oferta con el mismo título, centro de prácticas y tipos de oferta',
+			);
+			return;
+		}
+
 		handleErrorServer(
 			res,
 			500,
