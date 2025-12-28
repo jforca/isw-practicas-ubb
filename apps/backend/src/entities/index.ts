@@ -10,6 +10,7 @@ export { Document } from './documents.entity';
 export { Application } from './application.entity';
 export { ApplicationDocuments } from './application-documents.entity';
 export { Offer } from './offers.entity';
+export { OfferStatus } from './offers.entity';
 export { InternshipCenter } from './internship-centers.entity';
 export { Supervisor } from './supervisor.entity';
 export { Internship } from './internship.entity';

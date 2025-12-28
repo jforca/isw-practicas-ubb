@@ -9,6 +9,7 @@ import {
 	CreateOfferSchema,
 	UpdateOfferSchema,
 } from '@packages/schema/offers.schema';
+import { OfferStatus } from '@entities';
 
 async function findOne(req: Request, res: Response) {
 	try {
@@ -106,7 +107,7 @@ async function createOne(req: Request, res: Response) {
 			title,
 			description,
 			deadline: new Date(deadline),
-			status,
+			status: status as OfferStatus,
 			offerTypeIds,
 			internshipCenterId,
 		});
@@ -165,7 +166,9 @@ async function updateOne(req: Request, res: Response) {
 				title,
 				description,
 				deadline: deadline ? new Date(deadline) : undefined,
-				status,
+				status: status
+					? (status as OfferStatus)
+					: undefined,
 				offerTypeIds,
 				internshipCenterId,
 			},
