@@ -4,6 +4,7 @@ import {
 	OffersType,
 	Coordinator,
 	InternshipCenter,
+	OfferOfferType,
 } from '@entities';
 
 export async function seedOffers() {
@@ -22,17 +23,17 @@ export async function seedOffers() {
 	}
 
 	const type1 = await typeRepo.findOne({
-		where: { name: 'PRACTICA 1' },
+		where: { name: 'Práctica I' },
 	});
 	const type2 = await typeRepo.findOne({
-		where: { name: 'PRACTICA 2' },
+		where: { name: 'Práctica II' },
 	});
 	const coordinators = await coordRepo.find();
 	const centers = await centerRepo.find();
 
 	if (!type1 && !type2) {
 		console.log(
-			'No se encontraron tipos de oferta (PRACTICA 1/2).',
+			'No se encontraron tipos de oferta (Práctica I/II).',
 		);
 		return;
 	}
@@ -107,25 +108,55 @@ export async function seedOffers() {
 		},
 	];
 
-	const offers: Partial<Offer>[] = samples.map((s, i) => {
-		const deadline = new Date(baseDate.getTime());
-		deadline.setDate(deadline.getDate() + (i + 1) * 7);
-		const chosenType =
-			i % 2 === 0 ? (type1 ?? type2) : (type2 ?? type1);
-		const coordinator =
-			coordinators[i % coordinators.length];
-		const center = centers[i % centers.length];
+	const offersPayload: Partial<Offer>[] = samples.map(
+		(s, i) => {
+			const deadline = new Date(baseDate.getTime());
+			deadline.setDate(deadline.getDate() + (i + 1) * 7);
 
-		return {
-			title: s.title,
-			description: s.description,
-			deadline,
-			offerType: chosenType!,
-			coordinator,
-			internshipCenter: center,
-		} as Partial<Offer>;
+			const coordinator =
+				coordinators[i % coordinators.length];
+			const center = centers[i % centers.length];
+
+			return {
+				title: s.title,
+				description: s.description,
+				deadline,
+				coordinator,
+				internshipCenter: center,
+			} as Partial<Offer>;
+		},
+	);
+
+	// Guardar ofertas primero (sin relación many-to-many)
+	const created = await repo.save(offersPayload as Offer[]);
+
+	// Crear filas en tabla intermedia `offer_offer_type`
+	const ootRepo =
+		AppDataSource.getRepository(OfferOfferType);
+	const ootRows: Partial<OfferOfferType>[] = [];
+
+	created.forEach((offer, i) => {
+		// Decide asignación de tipos: algunos con ambos, otros alternando
+		const assignBoth = i % 5 === 0; // cada 5ª oferta tendrá ambos tipos
+		const chosen = assignBoth
+			? ([type1, type2].filter(Boolean) as OffersType[])
+			: ([i % 2 === 0 ? type1 : type2].filter(
+					Boolean,
+				) as OffersType[]);
+
+		chosen.forEach((t) => {
+			ootRows.push({
+				offer,
+				offerType: t,
+			} as Partial<OfferOfferType>);
+		});
 	});
 
-	await repo.save(offers as Offer[]);
-	console.log('Seed: offers creadas.');
+	if (ootRows.length) {
+		await ootRepo.save(ootRows as OfferOfferType[]);
+	}
+
+	console.log(
+		'Seed: offers creadas y vinculadas a offers-types.',
+	);
 }

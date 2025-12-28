@@ -19,6 +19,11 @@ import {
 	ChileanRUTRegex,
 } from '@packages/utils/regex.utils';
 import {
+	NAME_REGEX,
+	ADDRESS_REGEX,
+} from '@packages/schema/internship-centers.schema';
+import { DESCRIPTION_REGEX } from '@packages/schema/internship-centers.schema';
+import {
 	Loader,
 	EmptyState,
 	ErrorState,
@@ -146,6 +151,10 @@ function InternshipCenterCard({
 		Record<keyof TEditForm, string | null>
 	>({} as Record<keyof TEditForm, string | null>);
 
+	const [touched, setTouched] = useState<
+		Record<keyof TEditForm, boolean>
+	>({} as Record<keyof TEditForm, boolean>);
+
 	// Estado para el archivo de convenio
 	const [conventionFile, setConventionFile] =
 		useState<File | null>(null);
@@ -196,6 +205,7 @@ function InternshipCenterCard({
 			...prev,
 			[field]: validateField(field, value),
 		}));
+		setTouched((prev) => ({ ...prev, [field]: true }));
 	};
 
 	const validateField = (
@@ -206,7 +216,7 @@ function InternshipCenterCard({
 			case 'company_rut':
 				if (!value) return 'RUT es requerido';
 				if (!ChileanRUTRegex.test(value.replace(/\./g, '')))
-					return 'RUT inválido (ej: 12345678-9)';
+					return 'RUT inválido (ej: 12.345.678-9)';
 				return null;
 			case 'phone':
 				if (!value) return 'Teléfono es requerido';
@@ -222,8 +232,34 @@ function InternshipCenterCard({
 				if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
 					return 'Correo inválido';
 				return null;
+			case 'legal_name':
+				if (!value) return 'Nombre legal es requerido';
+				if (value.length < 2)
+					return 'Nombre demasiado corto';
+				if (!NAME_REGEX.test(value))
+					return 'Nombre contiene caracteres inválidos';
+				if (!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(value))
+					return 'Nombre debe contener letras';
+				return null;
+			case 'address':
+				if (!value) return 'Dirección es requerida';
+				if (value.length < 5)
+					return 'Dirección demasiado corta';
+				if (!ADDRESS_REGEX.test(value))
+					return 'Dirección contiene caracteres inválidos';
+				if (!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(value))
+					return 'Dirección debe contener letras';
+				return null;
+			case 'description':
+				if (!value) return 'Descripción es requerida';
+				if (value.length < 10)
+					return 'Descripción demasiado corta';
+				if (!DESCRIPTION_REGEX.test(value))
+					return 'Descripción contiene caracteres inválidos';
+				if (!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(value))
+					return 'Descripción debe contener texto legible';
+				return null;
 			default:
-				if (!value) return 'Este campo es requerido';
 				return null;
 		}
 	};
@@ -250,7 +286,9 @@ function InternshipCenterCard({
 		const base = 'input w-full rounded-lg';
 		const err = editErrors[field];
 		if (err) return `${base} input-error`;
-		if (editForm[field]) return `${base} input-success`;
+		const isTouched = touched[field];
+		if (isTouched && editForm[field])
+			return `${base} input-success`;
 		return base;
 	};
 
@@ -300,6 +338,10 @@ function InternshipCenterCard({
 			description: c.description,
 		});
 		setConventionFile(null);
+		setEditErrors(
+			{} as Record<keyof TEditForm, string | null>,
+		);
+		setTouched({} as Record<keyof TEditForm, boolean>);
 	};
 
 	// Handler para el archivo de convenio
@@ -528,7 +570,7 @@ function InternshipCenterCard({
 												/>
 												{editErrors.legal_name && (
 													<label className="label">
-														<span className="label-text-alt text-error">
+														<span className="label-text-alt text-error text-sm">
 															{editErrors.legal_name}
 														</span>
 													</label>
@@ -558,7 +600,7 @@ function InternshipCenterCard({
 												/>
 												{editErrors.company_rut && (
 													<label className="label">
-														<span className="label-text-alt text-error">
+														<span className="label-text-alt text-error text-sm">
 															{editErrors.company_rut}
 														</span>
 													</label>
@@ -588,7 +630,7 @@ function InternshipCenterCard({
 												/>
 												{editErrors.phone && (
 													<label className="label">
-														<span className="label-text-alt text-error">
+														<span className="label-text-alt text-error text-sm">
 															{editErrors.phone}
 														</span>
 													</label>
@@ -618,7 +660,7 @@ function InternshipCenterCard({
 												/>
 												{editErrors.email && (
 													<label className="label">
-														<span className="label-text-alt text-error">
+														<span className="label-text-alt text-error text-sm">
 															{editErrors.email}
 														</span>
 													</label>
@@ -649,7 +691,7 @@ function InternshipCenterCard({
 											/>
 											{editErrors.address && (
 												<label className="label">
-													<span className="label-text-alt text-error">
+													<span className="label-text-alt text-error text-sm">
 														{editErrors.address}
 													</span>
 												</label>
@@ -673,7 +715,7 @@ function InternshipCenterCard({
 											/>
 											{editErrors.description && (
 												<label className="label">
-													<span className="label-text-alt text-error">
+													<span className="label-text-alt text-error text-sm">
 														{editErrors.description}
 													</span>
 												</label>
@@ -721,6 +763,9 @@ function InternshipCenterCard({
 														isUpdating || isUploading
 													}
 												/>
+												<span className="text-sm text-base-content/60">
+													10mb como maximo
+												</span>
 												{conventionFile && (
 													<div className="flex items-center gap-2 p-2 bg-info/10 rounded-lg">
 														<FileText

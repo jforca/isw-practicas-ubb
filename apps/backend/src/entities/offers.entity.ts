@@ -6,10 +6,11 @@ import {
 	PrimaryGeneratedColumn,
 	ManyToOne,
 	JoinColumn,
+	OneToMany,
 } from 'typeorm';
-import { OffersType } from './offers-types.entity';
 import { Coordinator } from './coordinators.entity';
 import { InternshipCenter } from './internship-centers.entity';
+import { OfferOfferType } from './offer-offer-type.entity';
 
 export enum OfferStatus {
 	Published = 'published',
@@ -39,9 +40,14 @@ export class Offer {
 	})
 	status: OfferStatus;
 
-	@ManyToOne(() => OffersType)
-	@JoinColumn({ name: 'offer_type_id' })
-	offerType: OffersType;
+	@OneToMany(
+		() => OfferOfferType,
+		(oot) => oot.offer,
+		{
+			cascade: true,
+		},
+	)
+	offerOfferTypes: OfferOfferType[];
 
 	@ManyToOne(() => Coordinator)
 	@JoinColumn({ name: 'created_by' })

@@ -15,6 +15,7 @@ export {
 } from './application.entity';
 export { ApplicationDocuments } from './application-documents.entity';
 export { Offer } from './offers.entity';
+export { OfferStatus } from './offers.entity';
 export { InternshipCenter } from './internship-centers.entity';
 export { Supervisor } from './supervisor.entity';
 export {
@@ -22,3 +23,4 @@ export {
 	InternshipStatus,
 } from './internship.entity';
 export { OffersType } from './offers-types.entity';
+export { OfferOfferType } from './offer-offer-type.entity';

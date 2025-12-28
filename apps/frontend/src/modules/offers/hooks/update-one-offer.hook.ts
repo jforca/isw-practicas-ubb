@@ -6,7 +6,7 @@ type TUpdateOfferData = {
 	description?: string;
 	deadline?: string;
 	status?: 'published' | 'closed' | 'filled';
-	offerTypeId?: number;
+	offerTypeIds?: number[];
 	internshipCenterId?: number;
 };
 

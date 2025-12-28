@@ -4,22 +4,33 @@ import {
 	OfferStatus,
 } from '@entities/offers.entity';
 import { OffersType } from '@entities/offers-types.entity';
+import { OfferOfferType } from '@entities/offer-offer-type.entity';
 import { InternshipCenter } from '@entities/internship-centers.entity';
+import { In } from 'typeorm';
 
 const offerRepo = AppDataSource.getRepository(Offer);
 const offerTypeRepo =
 	AppDataSource.getRepository(OffersType);
+const offerOfferTypeRepo =
+	AppDataSource.getRepository(OfferOfferType);
 
 type TCreateOfferData = {
 	title: string;
 	description: string;
 	deadline: Date;
 	status?: OfferStatus;
-	offerTypeId: number;
+	offerTypeIds: number[];
 	internshipCenterId: number;
 };
 
-type TUpdateOfferData = Partial<TCreateOfferData>;
+type TUpdateOfferData = {
+	title?: string;
+	description?: string;
+	deadline?: Date;
+	status?: OfferStatus;
+	offerTypeIds?: number[];
+	internshipCenterId?: number;
+};
 
 export async function findMany(
 	offset: number,
@@ -32,7 +43,14 @@ export async function findMany(
 ) {
 	const queryBuilder = offerRepo
 		.createQueryBuilder('offer')
-		.leftJoinAndSelect('offer.offerType', 'offerType')
+		.leftJoinAndSelect(
+			'offer.offerOfferTypes',
+			'offerOfferTypes',
+		)
+		.leftJoinAndSelect(
+			'offerOfferTypes.offerType',
+			'offerType',
+		)
 		.leftJoinAndSelect(
 			'offer.internshipCenter',
 			'internshipCenter',
@@ -55,10 +73,10 @@ export async function findMany(
 		});
 	}
 
-	// Filtro por tipo de práctica
+	// Filtro por tipo de práctica (busca en la tabla intermedia)
 	if (filters?.offerTypeId) {
 		queryBuilder.andWhere(
-			'offer.offer_type_id = :offerTypeId',
+			'offerOfferTypes.offer_type_id = :offerTypeId',
 			{
 				offerTypeId: filters.offerTypeId,
 			},
@@ -68,8 +86,16 @@ export async function findMany(
 	const [data, total] =
 		await queryBuilder.getManyAndCount();
 
+	// Transformar los datos para incluir offerTypes como array
+	const transformedData = data.map((offer) => ({
+		...offer,
+		offerTypes:
+			offer.offerOfferTypes?.map((oot) => oot.offerType) ||
+			[],
+	}));
+
 	return {
-		data,
+		data: transformedData,
 		pagination: {
 			total,
 			offset,
@@ -83,22 +109,83 @@ export async function findOne(id: number) {
 	const offer = await offerRepo.findOne({
 		where: { id },
 		relations: [
-			'offerType',
+			'offerOfferTypes',
+			'offerOfferTypes.offerType',
 			'internshipCenter',
 			'coordinator',
 		],
 	});
 
-	return offer;
+	if (!offer) return null;
+
+	// Transformar para incluir offerTypes como array
+	return {
+		...offer,
+		offerTypes:
+			offer.offerOfferTypes?.map((oot) => oot.offerType) ||
+			[],
+	};
 }
 
 export async function createOne(data: TCreateOfferData) {
+	// Verificar que los tipos de oferta existan
+	const offerTypes = await offerTypeRepo.find({
+		where: { id: In(data.offerTypeIds), is_active: true },
+	});
+
+	if (offerTypes.length !== data.offerTypeIds.length) {
+		throw new Error(
+			'Uno o más tipos de oferta no son válidos',
+		);
+	}
+
+	// Comprobar si ya existe una oferta con la misma combinación
+	// de title + internshipCenter + offerTypeIds
+	const existingOffers = await offerRepo
+		.createQueryBuilder('offer')
+		.leftJoinAndSelect(
+			'offer.offerOfferTypes',
+			'offerOfferTypes',
+		)
+		.leftJoinAndSelect(
+			'offerOfferTypes.offerType',
+			'offerType',
+		)
+		.leftJoin('offer.internshipCenter', 'internshipCenter')
+		.where('offer.title = :title', { title: data.title })
+		.andWhere('internshipCenter.id = :internshipCenterId', {
+			internshipCenterId: data.internshipCenterId,
+		})
+		.getMany();
+
+	const normalizeIds = (arr: number[]) =>
+		Array.from(new Set(arr)).sort((a, b) => a - b);
+
+	const incomingTypes = normalizeIds(
+		data.offerTypeIds || [],
+	);
+
+	for (const ex of existingOffers) {
+		const exTypeIds = normalizeIds(
+			ex.offerOfferTypes?.map((oot: OfferOfferType) => {
+				return oot.offerType?.id;
+			}) || [],
+		);
+
+		if (
+			incomingTypes.length === exTypeIds.length &&
+			incomingTypes.every((v, i) => v === exTypeIds[i])
+		) {
+			// Indicar duplicado mediante excepción controlada
+			throw new Error('DUPLICATE_OFFER');
+		}
+	}
+
 	const newOffer = offerRepo.create({
 		title: data.title,
 		description: data.description,
 		deadline: data.deadline,
 		status: data.status ?? OfferStatus.Published,
-		offerType: { id: data.offerTypeId } as OffersType,
 		internshipCenter: {
 			id: data.internshipCenterId,
 		} as InternshipCenter,
@@ -106,11 +193,20 @@ export async function createOne(data: TCreateOfferData) {
 
 	const savedOffer = await offerRepo.save(newOffer);
 
+	// Crear las relaciones en la tabla intermedia
+	const offerOfferTypes = data.offerTypeIds.map(
+		(typeId) => {
+			return offerOfferTypeRepo.create({
+				offer: savedOffer,
+				offerType: { id: typeId } as OffersType,
+			});
+		},
+	);
+
+	await offerOfferTypeRepo.save(offerOfferTypes);
+
 	// Recargar con relaciones
-	return offerRepo.findOne({
-		where: { id: savedOffer.id },
-		relations: ['offerType', 'internshipCenter'],
-	});
+	return findOne(savedOffer.id);
 }
 
 export async function updateOne(
@@ -119,7 +215,7 @@ export async function updateOne(
 ) {
 	const offer = await offerRepo.findOne({
 		where: { id },
-		relations: ['offerType', 'internshipCenter'],
+		relations: ['offerOfferTypes', 'internshipCenter'],
 	});
 
 	if (!offer) {
@@ -132,23 +228,44 @@ export async function updateOne(
 	if (data.deadline !== undefined)
 		offer.deadline = data.deadline;
 	if (data.status !== undefined) offer.status = data.status;
-	if (data.offerTypeId !== undefined) {
-		offer.offerType = {
-			id: data.offerTypeId,
-		} as OffersType;
-	}
 	if (data.internshipCenterId !== undefined) {
 		offer.internshipCenter = {
 			id: data.internshipCenterId,
 		} as InternshipCenter;
 	}
 
-	const updatedOffer = await offerRepo.save(offer);
+	await offerRepo.save(offer);
 
-	return offerRepo.findOne({
-		where: { id: updatedOffer.id },
-		relations: ['offerType', 'internshipCenter'],
-	});
+	// Actualizar tipos de oferta si se proporcionaron
+	if (data.offerTypeIds !== undefined) {
+		// Verificar que los tipos de oferta existan
+		const offerTypes = await offerTypeRepo.find({
+			where: { id: In(data.offerTypeIds), is_active: true },
+		});
+
+		if (offerTypes.length !== data.offerTypeIds.length) {
+			throw new Error(
+				'Uno o más tipos de oferta no son válidos',
+			);
+		}
+
+		// Eliminar relaciones existentes
+		await offerOfferTypeRepo.delete({ offer: { id } });
+
+		// Crear nuevas relaciones
+		const offerOfferTypes = data.offerTypeIds.map(
+			(typeId) => {
+				return offerOfferTypeRepo.create({
+					offer: { id } as Offer,
+					offerType: { id: typeId } as OffersType,
+				});
+			},
+		);
+
+		await offerOfferTypeRepo.save(offerOfferTypes);
+	}
+
+	return findOne(id);
 }
 
 export async function deleteOne(id: number) {
