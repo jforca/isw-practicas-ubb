@@ -7,10 +7,8 @@ import {
 } from 'typeorm';
 import { User } from './user.entity';
 
-export enum StudentInternship {
-	Practica1 = 'Práctica 1',
-	Practica2 = 'Práctica 2',
-}
+import { StudentInternship } from '@packages/schema/student.schema';
+import type { TStudentInternship } from '@packages/schema/student.schema';
 
 @Entity()
 export class Student {
@@ -24,7 +22,7 @@ export class Student {
 	@Column({
 		type: 'enum',
 		enum: StudentInternship,
-		default: StudentInternship.Practica1,
+		default: StudentInternship.practica1,
 	})
-	currentInternship: StudentInternship;
+	currentInternship: TStudentInternship;
 }

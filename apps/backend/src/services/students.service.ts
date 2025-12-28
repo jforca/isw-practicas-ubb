@@ -11,6 +11,7 @@ import {
 	InternshipStatus,
 } from '@entities/internship.entity';
 import { StudentInternship } from '@packages/schema/student.schema';
+
 import type { TStudentInternship } from '@packages/schema/student.schema';
 
 export type TStudentUser = User;
@@ -281,7 +282,7 @@ export async function createStudent(
 		const newStudent = studentRepo.create({
 			id: savedUser.id,
 			currentInternship:
-				(studentData.currentInternship as TStudentInternship) ||
+				(studentData.currentInternship as unknown as TStudentInternship) ||
 				StudentInternship.practica1,
 		});
 
@@ -326,7 +327,7 @@ export async function updateStudent(
 			}
 
 			studentEntity.currentInternship =
-				studentData.currentInternship as TStudentInternship;
+				studentData.currentInternship as unknown as TStudentInternship;
 			await studentRepo.save(studentEntity);
 		}
 
