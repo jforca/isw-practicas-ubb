@@ -763,6 +763,9 @@ function InternshipCenterCard({
 														isUpdating || isUploading
 													}
 												/>
+												<span className="text-sm text-base-content/60">
+													10mb como maximo
+												</span>
 												{conventionFile && (
 													<div className="flex items-center gap-2 p-2 bg-info/10 rounded-lg">
 														<FileText

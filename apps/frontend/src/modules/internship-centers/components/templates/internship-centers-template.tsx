@@ -529,6 +529,9 @@ export function InternshipCentersTemplate({
 										className="file-input file-input-bordered w-full"
 										disabled={isCreating || isUploading}
 									/>
+									<span className="text-sm text-base-content/60">
+										10mb como maximo
+									</span>
 									{conventionFile && (
 										<div className="flex items-center gap-2 p-2 bg-success/10 rounded-lg">
 											<FileText
