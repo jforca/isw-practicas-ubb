@@ -38,6 +38,34 @@ export function EvaluationsTable() {
 
 	const hasData = useMemo(() => data.length > 0, [data]);
 
+	const handleUploadSignature = async (
+		evaluationId: number,
+		file: File,
+	) => {
+		const fd = new FormData();
+		fd.append('file', file);
+		const res = await fetch(
+			`/api/internship-evaluations/upload-signature/${evaluationId}`,
+			{ method: 'POST', body: fd },
+		);
+		if (!res.ok) {
+			window.alert('No se pudo adjuntar la firma');
+			return;
+		}
+		handleFindMany(pagination.offset, pagination.limit);
+	};
+
+	const triggerUpload = (evaluationId: number) => {
+		const input = document.createElement('input');
+		input.type = 'file';
+		input.accept = 'application/pdf';
+		input.onchange = () => {
+			const file = input.files?.[0];
+			if (file) handleUploadSignature(evaluationId, file);
+		};
+		input.click();
+	};
+
 	return (
 		<div className="space-y-4">
 			<div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -169,29 +197,31 @@ export function EvaluationsTable() {
 										</div>
 									</td>
 									<td className="text-center">
-										{item.signatureDocument ? (
-											<button
-												type="button"
+										{(() => {
+											const sigDoc =
+												item.signature_document ??
+												item.signatureDocument;
+											return sigDoc;
+										})() ? (
+											<a
+												href={`/api/internship-evaluations/view-signature/${item.id}`}
+												target="_blank"
+												rel="noopener noreferrer"
 												className="btn btn-circle btn-ghost btn-sm"
 												title="Ver firma"
-												onClick={() =>
-													window.open(
-														item.signatureDocument
-															?.fileNpath,
-														'_blank',
-													)
-												}
 											>
 												📄
-											</button>
+											</a>
 										) : (
 											<button
 												type="button"
 												className="btn btn-circle btn-ghost btn-sm"
-												title="Sin firma"
-												disabled
+												title="Adjuntar firma"
+												onClick={() =>
+													triggerUpload(item.id)
+												}
 											>
-												—
+												⬆️
 											</button>
 										)}
 									</td>

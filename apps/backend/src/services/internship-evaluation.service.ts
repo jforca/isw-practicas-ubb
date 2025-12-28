@@ -310,8 +310,8 @@ export async function submitEvaluationResponses(
 		// Solo report tiene nota
 		freshEval.finalGrade = reportGrade;
 	} else {
-		// Ninguna tiene nota
-		freshEval.finalGrade = 0;
+		// Ninguna tiene nota: mantener nulo para mostrar '—' en frontend
+		freshEval.finalGrade = null;
 	}
 
 	freshEval.completedAt =
@@ -425,10 +425,19 @@ export async function createEvaluation(data: {
 }) {
 	try {
 		const ev = new InternshipEvaluation();
-		ev.supervisorGrade = Number(data.supervisorGrade ?? 0);
-		ev.reportGrade = Number(data.reportGrade ?? 0);
-		ev.finalGrade = Number(data.finalGrade ?? 0);
-		ev.completedAt = data.completedAt ?? new Date();
+		ev.supervisorGrade =
+			typeof data.supervisorGrade === 'number'
+				? Number(data.supervisorGrade)
+				: null;
+		ev.reportGrade =
+			typeof data.reportGrade === 'number'
+				? Number(data.reportGrade)
+				: null;
+		ev.finalGrade =
+			typeof data.finalGrade === 'number'
+				? Number(data.finalGrade)
+				: null;
+		ev.completedAt = data.completedAt ?? null;
 
 		if (typeof data.internshipId !== 'number') {
 			return null;
@@ -502,4 +511,51 @@ export async function updateEvaluation(
 	}
 
 	return evaluation;
+}
+
+export async function autoCreateEvaluationForInternship(
+	internshipId: number,
+) {
+	try {
+		const internship = await internshipRepo.findOne({
+			where: { id: internshipId },
+			relations: [
+				'supervisor',
+				'coordinator',
+				'application',
+				'application.student',
+			],
+		});
+		if (!internship) return null;
+		if (
+			!internship.supervisor ||
+			!internship.coordinator ||
+			!internship.application?.student
+		) {
+			return null;
+		}
+
+		const existing = await internshipEvaluationRepo.findOne(
+			{
+				where: { internship: { id: internshipId } },
+			},
+		);
+		if (existing) return existing;
+
+		const ev = new InternshipEvaluation();
+		ev.internship = internship;
+		ev.supervisorGrade = null;
+		ev.reportGrade = null;
+		ev.finalGrade = null;
+		ev.completedAt = null;
+		ev.signature_document = null;
+		const saved = await internshipEvaluationRepo.save(ev);
+		return saved;
+	} catch (error) {
+		console.error(
+			'Error auto-creando evaluación para internship:',
+			error,
+		);
+		return null;
+	}
 }

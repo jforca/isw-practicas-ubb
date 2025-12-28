@@ -22,8 +22,26 @@ export type TInternshipEvaluation =
 		};
 		signatureDocument?: {
 			id: number;
-			fileNname: string;
-			fileNpath: string;
+			fileNname?: string;
+			fileNpath?: string;
+			// biome-ignore lint/style/useNamingConvention: backend retorna snake_case
+			file_name?: string;
+			// biome-ignore lint/style/useNamingConvention: backend retorna snake_case
+			file_path?: string;
+			// biome-ignore lint/style/useNamingConvention: backend retorna snake_case
+			mime_type?: string;
+		};
+		// biome-ignore lint/style/useNamingConvention: backend retorna snake_case
+		signature_document?: {
+			id: number;
+			fileNname?: string;
+			fileNpath?: string;
+			// biome-ignore lint/style/useNamingConvention: backend retorna snake_case
+			file_name?: string;
+			// biome-ignore lint/style/useNamingConvention: backend retorna snake_case
+			file_path?: string;
+			// biome-ignore lint/style/useNamingConvention: backend retorna snake_case
+			mime_type?: string;
 		};
 	};
 

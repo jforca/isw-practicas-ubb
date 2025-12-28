@@ -16,17 +16,32 @@ export class InternshipEvaluation {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@Column({ type: 'numeric', precision: 3, scale: 2 })
-	supervisorGrade: number;
+	@Column({
+		type: 'numeric',
+		precision: 3,
+		scale: 2,
+		nullable: true,
+	})
+	supervisorGrade: number | null;
 
-	@Column({ type: 'numeric', precision: 3, scale: 2 })
-	reportGrade: number;
+	@Column({
+		type: 'numeric',
+		precision: 3,
+		scale: 2,
+		nullable: true,
+	})
+	reportGrade: number | null;
 
-	@Column({ type: 'numeric', precision: 3, scale: 2 })
-	finalGrade: number;
+	@Column({
+		type: 'numeric',
+		precision: 3,
+		scale: 2,
+		nullable: true,
+	})
+	finalGrade: number | null;
 
-	@Column({ type: 'timestamp' })
-	completedAt: Date;
+	@Column({ type: 'timestamp', nullable: true })
+	completedAt: Date | null;
 
 	@Column({
 		type: 'varchar',

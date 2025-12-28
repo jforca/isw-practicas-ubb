@@ -9,7 +9,10 @@ import {
 	getResponsesController,
 	submitResponsesController,
 	attachSignatureController,
+	uploadSignatureController,
+	viewSignatureController,
 } from '@controllers/internship-evaluation.controller';
+import { uploadSignature } from '@config/multer.config';
 
 const router = Router();
 
@@ -26,6 +29,12 @@ router.post(
 	'/attach-signature/:id/:documentId',
 	attachSignatureController,
 );
+router.post(
+	'/upload-signature/:id',
+	uploadSignature.single('file'),
+	uploadSignatureController,
+);
+router.get('/view-signature/:id', viewSignatureController);
 router.patch('/update/:id', updateController);
 router.delete('/delete/:id', deleteController);
 

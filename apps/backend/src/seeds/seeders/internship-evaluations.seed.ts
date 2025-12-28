@@ -40,10 +40,10 @@ export async function seedInternshipEvaluations() {
 
 	const ev = new InternshipEvaluation();
 	ev.internship = internship;
-	ev.supervisorGrade = 0;
-	ev.reportGrade = 0;
-	ev.finalGrade = 0;
-	ev.completedAt = new Date();
+	ev.supervisorGrade = null;
+	ev.reportGrade = null;
+	ev.finalGrade = null;
+	ev.completedAt = null;
 	ev.signature_document = null;
 	const savedEv = await evalRepo.save(ev);
 
@@ -118,8 +118,11 @@ export async function seedInternshipEvaluations() {
 		ev.reportGrade = reportAvgGrade;
 	}
 
-	// Calcular nota final
-	if (ev.supervisorGrade && ev.reportGrade) {
+	// Calcular nota final si hay ambas notas
+	if (
+		ev.supervisorGrade != null &&
+		ev.reportGrade != null
+	) {
 		ev.finalGrade =
 			Math.round(
 				((ev.supervisorGrade + ev.reportGrade) / 2) * 100,
