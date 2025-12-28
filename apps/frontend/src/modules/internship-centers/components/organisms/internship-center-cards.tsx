@@ -19,6 +19,10 @@ import {
 	ChileanRUTRegex,
 } from '@packages/utils/regex.utils';
 import {
+	NAME_REGEX,
+	ADDRESS_REGEX,
+} from '@packages/schema/internship-centers.schema';
+import {
 	Loader,
 	EmptyState,
 	ErrorState,
@@ -206,7 +210,7 @@ function InternshipCenterCard({
 			case 'company_rut':
 				if (!value) return 'RUT es requerido';
 				if (!ChileanRUTRegex.test(value.replace(/\./g, '')))
-					return 'RUT inválido (ej: 12345678-9)';
+					return 'RUT inválido (ej: 12.345.678-9)';
 				return null;
 			case 'phone':
 				if (!value) return 'Teléfono es requerido';
@@ -222,8 +226,32 @@ function InternshipCenterCard({
 				if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
 					return 'Correo inválido';
 				return null;
+			case 'legal_name':
+				if (!value) return 'Nombre legal es requerido';
+				if (value.length < 2)
+					return 'Nombre demasiado corto';
+				if (!NAME_REGEX.test(value))
+					return 'Nombre contiene caracteres inválidos';
+				if (!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(value))
+					return 'Nombre debe contener letras';
+				return null;
+			case 'address':
+				if (!value) return 'Dirección es requerida';
+				if (value.length < 5)
+					return 'Dirección demasiado corta';
+				if (!ADDRESS_REGEX.test(value))
+					return 'Dirección contiene caracteres inválidos';
+				if (!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(value))
+					return 'Dirección debe contener letras';
+				return null;
+			case 'description':
+				if (!value) return 'Descripción es requerida';
+				if (value.length < 10)
+					return 'Descripción demasiado corta';
+				if (!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(value))
+					return 'Descripción debe contener texto legible';
+				return null;
 			default:
-				if (!value) return 'Este campo es requerido';
 				return null;
 		}
 	};
@@ -528,7 +556,7 @@ function InternshipCenterCard({
 												/>
 												{editErrors.legal_name && (
 													<label className="label">
-														<span className="label-text-alt text-error">
+														<span className="label-text-alt text-error text-sm">
 															{editErrors.legal_name}
 														</span>
 													</label>
@@ -558,7 +586,7 @@ function InternshipCenterCard({
 												/>
 												{editErrors.company_rut && (
 													<label className="label">
-														<span className="label-text-alt text-error">
+														<span className="label-text-alt text-error text-sm">
 															{editErrors.company_rut}
 														</span>
 													</label>
@@ -588,7 +616,7 @@ function InternshipCenterCard({
 												/>
 												{editErrors.phone && (
 													<label className="label">
-														<span className="label-text-alt text-error">
+														<span className="label-text-alt text-error text-sm">
 															{editErrors.phone}
 														</span>
 													</label>
@@ -618,7 +646,7 @@ function InternshipCenterCard({
 												/>
 												{editErrors.email && (
 													<label className="label">
-														<span className="label-text-alt text-error">
+														<span className="label-text-alt text-error text-sm">
 															{editErrors.email}
 														</span>
 													</label>
@@ -649,7 +677,7 @@ function InternshipCenterCard({
 											/>
 											{editErrors.address && (
 												<label className="label">
-													<span className="label-text-alt text-error">
+													<span className="label-text-alt text-error text-sm">
 														{editErrors.address}
 													</span>
 												</label>
@@ -673,7 +701,7 @@ function InternshipCenterCard({
 											/>
 											{editErrors.description && (
 												<label className="label">
-													<span className="label-text-alt text-error">
+													<span className="label-text-alt text-error text-sm">
 														{editErrors.description}
 													</span>
 												</label>
