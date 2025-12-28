@@ -22,11 +22,11 @@ export class Coordinator {
 		() => Internship,
 		(internship) => internship.coordinator,
 	)
-	internships: Internship[];
+	internships: Promise<Internship[]>;
 
 	@OneToMany(
 		() => Offer,
 		(offer) => offer.coordinator,
 	)
-	offers: Offer[];
+	offers: Promise<Offer[]>;
 }

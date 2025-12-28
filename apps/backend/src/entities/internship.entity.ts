@@ -36,7 +36,7 @@ export class Internship {
 
 	@ManyToOne(() => Coordinator)
 	@JoinColumn({ name: 'coordinator_id' })
-	coordinator: Coordinator;
+	coordinator: Promise<Coordinator>;
 
 	@ManyToOne(() => Supervisor)
 	@JoinColumn({ name: 'supervisor_id' })
