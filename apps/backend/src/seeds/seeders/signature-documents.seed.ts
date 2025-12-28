@@ -81,11 +81,18 @@ export async function seedSignatureDocuments() {
 		console.log(
 			`✓ Documento de firma creado (ID: ${savedDoc.id}, ${pdfBuffer.length} bytes)`,
 		);
-	} catch (error) {
-		console.error(
-			'Error al seedear documentos de firma:',
-			error,
-		);
-		throw error;
+	} catch (err) {
+		if (err instanceof Error) {
+			console.error(
+				'Error al seedear documentos de firma:',
+				err,
+			);
+		} else {
+			console.error(
+				'Error al seedear documentos de firma:',
+				String(err),
+			);
+		}
+		throw err;
 	}
 }

@@ -77,13 +77,15 @@ export async function seedInternshipEvaluations() {
 
 	await responseRepo.save(responses);
 
-	// Recalcular nota promedio para supervisor
-	const totalScore = responses.reduce(
-		(sum, r) => sum + r.score,
-		0,
-	);
-	const avgGrade =
-		Math.round((totalScore / responses.length) * 100) / 100;
+	// Recalcular nota promedio para supervisor (coerce a número para evitar NaN)
+	const totalScore = responses.reduce((sum, r) => {
+		const sc = Number(r.score);
+		return sum + (Number.isFinite(sc) ? sc : 0);
+	}, 0);
+	const avgGrade = responses.length
+		? Math.round((totalScore / responses.length) * 100) /
+			100
+		: null;
 	ev.supervisorGrade = avgGrade;
 
 	// Crear respuestas de REPORT también
@@ -108,13 +110,17 @@ export async function seedInternshipEvaluations() {
 		await responseRepo.save(reportResponses);
 
 		const reportTotalScore = reportResponses.reduce(
-			(sum, r) => sum + r.score,
+			(sum, r) => {
+				const sc = Number(r.score);
+				return sum + (Number.isFinite(sc) ? sc : 0);
+			},
 			0,
 		);
-		const reportAvgGrade =
-			Math.round(
-				(reportTotalScore / reportResponses.length) * 100,
-			) / 100;
+		const reportAvgGrade = reportResponses.length
+			? Math.round(
+					(reportTotalScore / reportResponses.length) * 100,
+				) / 100
+			: null;
 		ev.reportGrade = reportAvgGrade;
 	}
 
