@@ -2,7 +2,7 @@ import '@lib/env';
 import express, { Request, Response } from 'express';
 import morgan from 'morgan';
 import { connectDB } from './config/db.config';
-import { routerApi } from './routes/index.routes';
+import { routerApi } from './routes/index.route';
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from '@lib/auth';
 

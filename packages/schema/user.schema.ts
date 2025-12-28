@@ -7,7 +7,11 @@ import {
 export const UserSchema = z.object({
 	id: z.string(),
 	phone: z.string().regex(ChileanNumberRegex).nullable(),
-	name: z.string(),
+	name: z
+		.string()
+		.min(2)
+		.max(50)
+		.regex(/^[a-zA-ZÀ-ÿ\u00f1\u00d1\s]+$/),
 	email: z.email(),
 	emailverified: z.boolean().default(false),
 	image: z.url().nullable(),

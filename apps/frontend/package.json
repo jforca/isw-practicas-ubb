@@ -6,10 +6,12 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "tsc -b && vite build",
-		"start": "vite preview --host"
+		"start": "vite preview --host",
+		"dev:frontend": "vite"
 	},
 	"dependencies": {
 		"@packages/schema": "workspace:*",
+		"@packages/utils": "workspace:*",
 		"@t3-oss/env-core": "catalog:base",
 		"@tailwindcss/vite": "^4.1.16",
 		"better-auth": "catalog:base",

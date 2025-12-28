@@ -4,6 +4,9 @@
 	"description": "",
 	"scripts": {
 		"dev": "turbo run dev",
+		"dev:backend": "turbo run dev:backend",
+		"dev:frontend": "turbo run dev:frontend",
+		"seed": "turbo run seed",
 		"build": "turbo run build",
 		"start": "turbo run start",
 		"check": "pnpm biome check --write .",
@@ -22,8 +25,10 @@
 		"pnpm": ">=10"
 	},
 	"repository": {
-		"url": "https://github.com/jforca/isw-practicas-ubb"
+		"url": "https://github.com/jforca/isw-practicas-ubb",
+		"type": "git"
 	},
+	"docs": "https://drive.google.com/file/d/17zW4tSWYHjMNTM7M86QqbQsP-4Xpekx5/view?usp=drive_link",
 	"keywords": [],
 	"author": "",
 	"license": "ISC",

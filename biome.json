@@ -79,6 +79,9 @@
 				"noForEach": "off",
 				"noUselessFragments": "error"
 			},
+			"a11y": {
+				"noLabelWithoutControl": "off"
+			},
 			"style": {
 				"useNodejsImportProtocol": "off",
 				"noNonNullAssertion": "off",

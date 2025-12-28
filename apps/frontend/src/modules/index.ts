@@ -1,4 +1,9 @@
 export { LoginPage } from './login/components/pages/login-page';
 export { InternshipCentersPage } from './internship-centers/components/pages/internship-centers-page';
 export { NotFoundPage } from './not-found/components/pages/not-found-page';
-export { EncargadoDashboardPage } from './dashboard-Encargado/components/pages/encargado-dashboard-page';
+export { EncargadoDashboardPage } from './dashboard-encargado/components/pages/encargado-dashboard-page';
+export { OffersPage } from './offers/components/pages/offers-page';
+export { LogbookPage } from './logbook/components/pages/logbook-page';
+export { ReportPage } from './internship-evaluation/components/pages/report-page';
+export { SupervisorPage } from './internship-evaluation/components/pages/supervisor-page';
+export { EvaluationsPage } from './internship-evaluation/components/pages/evaluations-page';

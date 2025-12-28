@@ -1,0 +1,119 @@
+interface ICardProps {
+	children?: React.ReactNode;
+	className?: string;
+}
+
+export function Card({ children, className }: ICardProps) {
+	return (
+		<div
+			className={`card bg-base-100 shadow-sm${className ? ` ${className}` : ''}`}
+		>
+			{children}
+		</div>
+	);
+}
+
+const Body = ({ children, className }: ICardProps) => {
+	return (
+		<div
+			className={`card-body${className ? ` ${className}` : ''}`}
+		>
+			{children}
+		</div>
+	);
+};
+
+const P = ({ children, className }: ICardProps) => {
+	return <p className={className}>{children}</p>;
+};
+
+const Title = ({ children, className }: ICardProps) => {
+	return (
+		<h2
+			className={`card-title${className ? ` ${className}` : ''}`}
+		>
+			{children}
+		</h2>
+	);
+};
+
+const Actions = ({ children, className }: ICardProps) => {
+	return (
+		<div
+			className={`card-actions${className ? ` ${className}` : ''}`}
+		>
+			{children}
+		</div>
+	);
+};
+
+const Button = ({ children, className }: ICardProps) => {
+	return (
+		<button
+			type="button"
+			className={`btn${className ? ` ${className}` : ''}`}
+		>
+			{children}
+		</button>
+	);
+};
+
+const Figure = ({ children, className }: ICardProps) => {
+	return (
+		<figure className={`${className || ''}`}>
+			{children}
+		</figure>
+	);
+};
+
+const Container = ({ children, className }: ICardProps) => {
+	return (
+		<div className={`${className || ''}`}>{children}</div>
+	);
+};
+
+const Badge = ({ children, className }: ICardProps) => {
+	return (
+		<div className={`badge ${className || ''}`}>
+			{children}
+		</div>
+	);
+};
+
+const Divider = ({ className }: { className?: string }) => {
+	return (
+		<div
+			className={`h-px border-solid bg-black/10 my-2 ${className || ''}`}
+		/>
+	);
+};
+
+const ToolTip = ({
+	children,
+	className,
+	dataTip,
+}: {
+	children?: React.ReactNode;
+	className?: string;
+	dataTip?: string;
+}) => {
+	return (
+		<div
+			className={`tooltip ${className || ''}`}
+			data-tip={dataTip}
+		>
+			{children}
+		</div>
+	);
+};
+
+Card.Container = Container;
+Card.Figure = Figure;
+Card.Body = Body;
+Card.Title = Title;
+Card.P = P;
+Card.Actions = Actions;
+Card.Button = Button;
+Card.Badge = Badge;
+Card.Divider = Divider;
+Card.ToolTip = ToolTip;

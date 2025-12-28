@@ -35,15 +35,18 @@ export class Internship {
 
 	@ManyToOne(() => Coordinator)
 	@JoinColumn({ name: 'coordinator_id' })
-	coordinator: Coordinator;
+	coordinator: Promise<Coordinator>;
 
 	@ManyToOne(() => Supervisor)
 	@JoinColumn({ name: 'supervisor_id' })
 	supervisor: Supervisor;
 
-	@OneToOne(() => Application)
+	@OneToOne(() => Application, {
+		nullable: true,
+		onDelete: 'CASCADE',
+	})
 	@JoinColumn({ name: 'application_id' })
-	application: Application;
+	application: Application | null;
 
 	@Column({
 		type: 'enum',

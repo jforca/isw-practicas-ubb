@@ -9,6 +9,8 @@ import {
 	Student,
 	Coordinator,
 	InternshipEvaluation,
+	EvaluationItem,
+	EvaluationResponse,
 	Application,
 	ApplicationDocuments,
 	LogbookEntries,
@@ -16,7 +18,8 @@ import {
 	InternshipCenter,
 	Supervisor,
 	Internship,
-	InternshipType,
+	OffersType,
+	OfferOfferType,
 } from '@entities';
 
 export const AppDataSource = new DataSource({
@@ -28,6 +31,8 @@ export const AppDataSource = new DataSource({
 		Session,
 		Verification,
 		InternshipEvaluation,
+		EvaluationItem,
+		EvaluationResponse,
 		Student,
 		Coordinator,
 		Document,
@@ -38,7 +43,8 @@ export const AppDataSource = new DataSource({
 		InternshipCenter,
 		Supervisor,
 		Internship,
-		InternshipType,
+		OffersType,
+		OfferOfferType,
 	],
 	synchronize: true,
 	logging: false,
@@ -47,6 +53,24 @@ export const AppDataSource = new DataSource({
 export async function connectDB() {
 	try {
 		await AppDataSource.initialize();
+		// Registrar suscriptor después de inicializar para evitar inicialización circular
+		try {
+			// require en tiempo de ejecución para posponer la evaluación del módulo
+			// hasta después de que TypeORM haya procesado las entidades
+			// eslint-disable-next-line @typescript-eslint/no-var-requires
+			const {
+				InternshipSubscriber,
+			} = require('../subscribers/internship.subscriber');
+			AppDataSource.subscribers.push(
+				new InternshipSubscriber(),
+			);
+		} catch (subErr) {
+			console.warn(
+				'No se pudo registrar InternshipSubscriber:',
+				subErr,
+			);
+		}
+
 		console.log(
 			'✅ Conexión exitosa a la base de datos PostgreSQL!',
 		);

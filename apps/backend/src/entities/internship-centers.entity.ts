@@ -4,7 +4,12 @@ import {
 	CreateDateColumn,
 	UpdateDateColumn,
 	PrimaryGeneratedColumn,
+	OneToOne,
+	JoinColumn,
+	RelationId,
 } from 'typeorm';
+
+import { Document } from './documents.entity';
 
 @Entity()
 export class InternshipCenter {
@@ -22,6 +27,21 @@ export class InternshipCenter {
 
 	@Column({ type: 'varchar', length: 20 })
 	phone: string;
+
+	@Column({ type: 'varchar', length: 50 })
+	address: string;
+
+	@Column({ type: 'varchar', length: 70 })
+	description: string;
+
+	@OneToOne(() => Document, { nullable: true })
+	@JoinColumn({ name: 'convention_document_id' })
+	convention_document: Document | null;
+
+	@RelationId(
+		(it: InternshipCenter) => it.convention_document,
+	)
+	convention_document_id: number | null;
 
 	@CreateDateColumn()
 	createdAt: Date;
