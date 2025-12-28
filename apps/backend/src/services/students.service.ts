@@ -74,7 +74,11 @@ export async function findMany(
 				where: {
 					student: { id: user.id },
 				},
-				relations: ['offer', 'offer.offerType'],
+				relations: [
+					'offer',
+					'offer.offerOfferTypes',
+					'offer.offerOfferTypes.offerType',
+				],
 				order: { created_at: 'DESC' },
 			});
 
@@ -86,8 +90,8 @@ export async function findMany(
 					application.status === ApplicationStatus.Approved
 				) {
 					internshipType =
-						application.offer?.offerType.name ||
-						'No inscrito';
+						application.offer?.offerOfferTypes?.[0]
+							?.offerType?.name || 'No inscrito';
 
 					const internship = await internshipRepo.findOne({
 						where: {
@@ -104,8 +108,8 @@ export async function findMany(
 					}
 				} else {
 					internshipType =
-						application.offer?.offerType?.name ||
-						'No inscrito';
+						application.offer?.offerOfferTypes?.[0]
+							?.offerType?.name || 'No inscrito';
 					internshipStatus = 'No aprobada';
 				}
 			}
@@ -258,7 +262,11 @@ export async function getStudentDetails(id: string) {
 		// 2. Obtener Postulaciones (Applications)
 		const applications = await applicationRepo.find({
 			where: { student: { id } },
-			relations: ['offer', 'offer.offerType'],
+			relations: [
+				'offer',
+				'offer.offerOfferTypes',
+				'offer.offerOfferTypes.offerType',
+			],
 			order: { created_at: 'DESC' },
 		});
 

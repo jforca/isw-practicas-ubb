@@ -8,6 +8,8 @@ import {
 import { z } from 'zod/v4';
 import { InternshipCentersSchema } from '@packages/schema/internship-centers.schema';
 
+import { Document } from '@entities/documents.entity';
+
 async function createOne(req: Request, res: Response) {
 	const { data, error } = InternshipCentersSchema.omit({
 		id: true,
@@ -26,9 +28,26 @@ async function createOne(req: Request, res: Response) {
 	}
 
 	try {
+		const {
+			convention_document_id,
+			convention_document_name,
+			...restData
+		} = data;
+
+		const serviceData = {
+			...restData,
+			convention_document: convention_document_id
+				? ({
+						id: convention_document_id,
+						file_name:
+							convention_document_name ?? undefined,
+					} as Document)
+				: null,
+		};
+
 		const response =
 			await InternshipCenterServices.createOne(
-				data as Parameters<
+				serviceData as Parameters<
 					typeof InternshipCenterServices.createOne
 				>[0],
 			);
