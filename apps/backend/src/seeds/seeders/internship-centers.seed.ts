@@ -1,5 +1,10 @@
 import { AppDataSource } from '../../config/db.config';
-import { InternshipCenter } from '@entities';
+import {
+	InternshipCenter,
+	Document,
+	User,
+} from '@entities';
+import path from 'path';
 
 export async function seedInternshipCenters() {
 	const repo = AppDataSource.getRepository(
@@ -124,6 +129,49 @@ export async function seedInternshipCenters() {
 		},
 	];
 
-	await repo.save(centers as InternshipCenter[]);
+	const savedCenters = await repo.save(
+		centers as InternshipCenter[],
+	);
+
+	// Añadir convenios (documentos) a algunos centros
+	try {
+		const docRepo = AppDataSource.getRepository(Document);
+		const userRepo = AppDataSource.getRepository(User);
+		let systemUser = await userRepo.findOne({
+			where: { email: 'system@example.com' },
+		});
+		if (!systemUser) {
+			// fallback: usar primer usuario existente
+			systemUser = (await userRepo.find({ take: 1 }))[0];
+		}
+
+		const templatePath = path.join(
+			process.cwd(),
+			'apps/backend/src/archives/convention/convenio_practica_plantilla.pdf',
+		);
+
+		// Asociar documento de convenio a algunos centros (cada 3º centro)
+		for (let i = 0; i < savedCenters.length; i++) {
+			if (i % 3 !== 0) continue;
+			const center = savedCenters[i];
+			const doc = new Document();
+			doc.file_name = 'convenio_practica_plantilla.pdf';
+			doc.file_path = templatePath;
+			doc.mime_type = 'application/pdf';
+			doc.uploaded_at = new Date();
+			doc.uploader = systemUser as User;
+			const savedDoc = await docRepo.save(doc);
+			center.convention_document = savedDoc;
+			await repo.save(center);
+		}
+	} catch (err) {
+		const msg =
+			err instanceof Error ? err.message : String(err);
+		console.warn(
+			'No se pudo crear/adjuntar documentos de convenio:',
+			msg,
+		);
+	}
+
 	console.log('Seed: internship centers creados.');
 }

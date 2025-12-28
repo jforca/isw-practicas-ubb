@@ -6,6 +6,8 @@ import { seedInternshipCenters } from './seeders/internship-centers.seed';
 import { seedOffers } from './seeders/offers.seed';
 import { seedEvaluationItems } from './seeders/evaluation-items.seed';
 import { seedSignatureDocuments } from './seeders/signature-documents.seed';
+import { seedSupervisors } from './seeders/supervisors.seed';
+import { seedInternships } from './seeders/internships.seed';
 import { seedInternshipEvaluations } from './seeders/internship-evaluations.seed';
 
 async function run() {
@@ -20,11 +22,17 @@ async function run() {
 		await seedOffers();
 		await seedEvaluationItems();
 		await seedSignatureDocuments();
+		await seedSupervisors();
+		await seedInternships();
 		await seedInternshipEvaluations();
 
 		console.log('Seeds ejecutados correctamente.');
-	} catch (error) {
-		console.error('Error ejecutando seeds:', error);
+	} catch (err) {
+		if (err instanceof Error) {
+			console.error('Error ejecutando seeds:', err);
+		} else {
+			console.error('Error ejecutando seeds:', String(err));
+		}
 		process.exit(1);
 	} finally {
 		await AppDataSource.destroy();

@@ -4,7 +4,7 @@ import {
 	OffersType,
 	Coordinator,
 	InternshipCenter,
-	OfferOfferType,
+	OfferStatus,
 } from '@entities';
 
 export async function seedOffers() {
@@ -117,10 +117,18 @@ export async function seedOffers() {
 				coordinators[i % coordinators.length];
 			const center = centers[i % centers.length];
 
+			const status =
+				i % 3 === 0
+					? OfferStatus.Published
+					: i % 3 === 1
+						? OfferStatus.Closed
+						: OfferStatus.Filled;
+
 			return {
 				title: s.title,
 				description: s.description,
 				deadline,
+				status,
 				coordinator: Promise.resolve(coordinator),
 				internshipCenter: Promise.resolve(center),
 			} as Partial<Offer>;
@@ -130,30 +138,31 @@ export async function seedOffers() {
 	// Guardar ofertas primero (sin relación many-to-many)
 	const created = await repo.save(offersPayload as Offer[]);
 
-	// Crear filas en tabla intermedia `offer_offer_type`
-	const ootRepo =
-		AppDataSource.getRepository(OfferOfferType);
-	const ootRows: Partial<OfferOfferType>[] = [];
-
-	created.forEach((offer, i) => {
-		// Decide asignación de tipos: algunos con ambos, otros alternando
-		const assignBoth = i % 5 === 0; // cada 5ª oferta tendrá ambos tipos
+	// Insertar filas en la tabla intermedia `offer_offer_type` usando SQL directo
+	for (let i = 0; i < created.length; i++) {
+		const offer = created[i];
+		const assignBoth = i % 5 === 0;
 		const chosen = assignBoth
 			? ([type1, type2].filter(Boolean) as OffersType[])
 			: ([i % 2 === 0 ? type1 : type2].filter(
 					Boolean,
 				) as OffersType[]);
 
-		chosen.forEach((t) => {
-			ootRows.push({
-				offer: Promise.resolve(offer),
-				offerType: Promise.resolve(t),
-			} as Partial<OfferOfferType>);
-		});
-	});
-
-	if (ootRows.length) {
-		await ootRepo.save(ootRows as OfferOfferType[]);
+		for (const t of chosen) {
+			if (!t) continue;
+			try {
+				await AppDataSource.manager.query(
+					'INSERT INTO offer_offer_type (offer_id, offer_type_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+					[offer.id, t.id],
+				);
+			} catch (err) {
+				const e = err as Error;
+				console.warn(
+					'No se pudo insertar offer_offer_type:',
+					e.message,
+				);
+			}
+		}
 	}
 
 	console.log(
