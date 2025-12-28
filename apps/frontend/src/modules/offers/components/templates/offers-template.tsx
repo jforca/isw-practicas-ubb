@@ -267,7 +267,7 @@ export function OffersTemplate() {
 
 				{/* Filtro de estado */}
 				<select
-					className="select select-bordered"
+					className="select select-bordered w-full sm:w-auto"
 					value={filters.status}
 					onChange={(e) =>
 						handleStatusChange(
@@ -283,7 +283,7 @@ export function OffersTemplate() {
 
 				{/* Filtro de tipo de práctica */}
 				<select
-					className="select select-bordered"
+					className="select select-bordered w-full sm:w-auto"
 					value={filters.offerTypeId}
 					onChange={(e) => handleTypeChange(e.target.value)}
 				>
