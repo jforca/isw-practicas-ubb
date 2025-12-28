@@ -158,6 +158,8 @@ export function InternshipCentersTemplate({
 				if (!value) return 'Nombre legal es requerido';
 				if (value.length < 2)
 					return 'Nombre demasiado corto';
+				if (value.length > 255)
+					return 'Nombre demasiado largo (máx 255 caracteres)';
 				if (!NAME_REGEX.test(value))
 					return 'Nombre contiene caracteres inválidos';
 				if (!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(value))
@@ -167,6 +169,8 @@ export function InternshipCentersTemplate({
 				if (!value) return 'Dirección es requerida';
 				if (value.length < 5)
 					return 'Dirección demasiado corta';
+				if (value.length > 100)
+					return 'Dirección demasiado larga (máx 100 caracteres)';
 				if (!ADDRESS_REGEX.test(value))
 					return 'Dirección contiene caracteres inválidos';
 				if (!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(value))
@@ -176,6 +180,8 @@ export function InternshipCentersTemplate({
 				if (!value) return 'Descripción es requerida';
 				if (value.length < 10)
 					return 'Descripción demasiado corta';
+				if (value.length > 250)
+					return 'Descripción demasiado larga (máx 250 caracteres)';
 				if (!DESCRIPTION_REGEX.test(value))
 					return 'Descripción contiene caracteres inválidos';
 				if (!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(value))
