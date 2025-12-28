@@ -349,7 +349,7 @@ export function OffersTemplate() {
 									/>
 									{createErrors.title && (
 										<label className="label">
-											<span className="label-text-alt text-error">
+											<span className="label-text-alt text-error text-sm">
 												{createErrors.title}
 											</span>
 										</label>
@@ -448,7 +448,7 @@ export function OffersTemplate() {
 									</div>
 									{createErrors.offerTypeIds && (
 										<label className="label">
-											<span className="label-text-alt text-error">
+											<span className="label-text-alt text-error text-sm">
 												{createErrors.offerTypeIds}
 											</span>
 										</label>
@@ -489,7 +489,7 @@ export function OffersTemplate() {
 									</select>
 									{createErrors.internshipCenterId && (
 										<label className="label">
-											<span className="label-text-alt text-error">
+											<span className="label-text-alt text-error text-sm">
 												{createErrors.internshipCenterId}
 											</span>
 										</label>
@@ -517,7 +517,7 @@ export function OffersTemplate() {
 									/>
 									{createErrors.deadline && (
 										<label className="label">
-											<span className="label-text-alt text-error">
+											<span className="label-text-alt text-error text-sm">
 												{createErrors.deadline}
 											</span>
 										</label>
@@ -543,7 +543,7 @@ export function OffersTemplate() {
 								/>
 								{createErrors.description && (
 									<label className="label">
-										<span className="label-text-alt text-error">
+										<span className="label-text-alt text-error text-sm">
 											{createErrors.description}
 										</span>
 									</label>

@@ -578,7 +578,7 @@ function OfferCard({
 												/>
 												{editErrors.title && (
 													<label className="label">
-														<span className="label-text-alt text-error">
+														<span className="label-text-alt text-error text-sm">
 															{editErrors.title}
 														</span>
 													</label>
@@ -677,7 +677,7 @@ function OfferCard({
 												})()}
 												{editErrors.offerTypeIds && (
 													<label className="label">
-														<span className="label-text-alt text-error">
+														<span className="label-text-alt text-error text-sm">
 															{editErrors.offerTypeIds}
 														</span>
 													</label>
@@ -717,7 +717,7 @@ function OfferCard({
 												</select>
 												{editErrors.internshipCenterId && (
 													<label className="label">
-														<span className="label-text-alt text-error">
+														<span className="label-text-alt text-error text-sm">
 															{
 																editErrors.internshipCenterId
 															}
@@ -749,7 +749,7 @@ function OfferCard({
 												/>
 												{editErrors.deadline && (
 													<label className="label">
-														<span className="label-text-alt text-error">
+														<span className="label-text-alt text-error text-sm">
 															{editErrors.deadline}
 														</span>
 													</label>
@@ -799,7 +799,7 @@ function OfferCard({
 											/>
 											{editErrors.description && (
 												<label className="label">
-													<span className="label-text-alt text-error">
+													<span className="label-text-alt text-error text-sm">
 														{editErrors.description}
 													</span>
 												</label>
