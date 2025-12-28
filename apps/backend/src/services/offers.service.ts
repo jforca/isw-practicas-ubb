@@ -87,15 +87,32 @@ export async function findMany(
 		await queryBuilder.getManyAndCount();
 
 	// Transformar los datos para incluir offerTypes como array
-	const transformedData = data.map((offer) => ({
-		...offer,
-		offerTypes:
-			(
-				offer.offerOfferTypes as unknown as OfferOfferType[]
-			)?.map(
-				(oot) => oot.offerType as unknown as OffersType,
-			) || [],
-	}));
+	const transformedData = await Promise.all(
+		data.map(async (offer) => {
+			const ootArr =
+				await (offer.offerOfferTypes as Promise<
+					OfferOfferType[]
+				>);
+			const offerTypesArr = await Promise.all(
+				(ootArr ?? []).map(async (oot: OfferOfferType) => {
+					return (await (oot.offerType as Promise<OffersType>)) as OffersType;
+				}),
+			);
+			const internshipCenterObj =
+				await (offer.internshipCenter as Promise<InternshipCenter | null>);
+			return {
+				...offer,
+				internshipCenter:
+					internshipCenterObj ??
+					({
+						id: null,
+						legal_name: '',
+						company_rut: '',
+					} as unknown as InternshipCenter),
+				offerTypes: offerTypesArr || [],
+			};
+		}),
+	);
 
 	return {
 		data: transformedData,
@@ -122,14 +139,26 @@ export async function findOne(id: number) {
 	if (!offer) return null;
 
 	// Transformar para incluir offerTypes como array
+	const ootArr = await (offer.offerOfferTypes as Promise<
+		OfferOfferType[]
+	>);
+	const internshipCenterObj =
+		await (offer.internshipCenter as Promise<InternshipCenter | null>);
+	const offerTypes = await Promise.all(
+		(ootArr ?? []).map(async (oot: OfferOfferType) => {
+			return (await (oot.offerType as Promise<OffersType>)) as OffersType;
+		}),
+	);
 	return {
 		...offer,
-		offerTypes:
-			(
-				offer.offerOfferTypes as unknown as OfferOfferType[]
-			)?.map(
-				(oot) => oot.offerType as unknown as OffersType,
-			) || [],
+		internshipCenter:
+			internshipCenterObj ??
+			({
+				id: null,
+				legal_name: '',
+				company_rut: '',
+			} as unknown as InternshipCenter),
+		offerTypes: offerTypes || [],
 	};
 }
 
@@ -172,12 +201,19 @@ export async function createOne(data: TCreateOfferData) {
 	);
 
 	for (const ex of existingOffers) {
+		const exOotArr = await (ex.offerOfferTypes as Promise<
+			OfferOfferType[]
+		>);
 		const exTypeIds = normalizeIds(
-			(
-				ex.offerOfferTypes as unknown as OfferOfferType[]
-			)?.map((oot: OfferOfferType) => {
-				return (oot.offerType as unknown as OffersType)?.id;
-			}) || [],
+			(await Promise.all(
+				(exOotArr ?? []).map(
+					async (oot: OfferOfferType) => {
+						const ot =
+							await (oot.offerType as Promise<OffersType>);
+						return ot?.id;
+					},
+				),
+			)) || [],
 		);
 
 		if (
