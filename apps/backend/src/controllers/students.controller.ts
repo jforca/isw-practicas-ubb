@@ -5,6 +5,7 @@ import {
 	createStudent,
 	updateStudent,
 	deleteStudent,
+	getStudentDetails,
 } from '@services/students.service';
 import {
 	handleSuccess,
@@ -25,7 +26,13 @@ export async function listStudents(
 			? parseInt(req.query.limit as string, 10)
 			: 10;
 
-		const [students, total] = await findMany(page, limit);
+		const search = req.query.search as string | undefined;
+
+		const [students, total] = await findMany(
+			page,
+			limit,
+			search,
+		);
 
 		const totalPages = Math.ceil(total / limit);
 
@@ -172,6 +179,39 @@ export async function deleteStudentData(
 			res,
 			500,
 			'Error al eliminar estudiante',
+			err,
+		);
+	}
+}
+
+export async function getStudentDetailsData(
+	req: Request,
+	res: Response,
+) {
+	try {
+		const { id } = req.params;
+		const data = await getStudentDetails(id);
+
+		if (!data) {
+			return handleErrorClient(
+				res,
+				404,
+				'Estudiante no encontrado',
+				null,
+			);
+		}
+
+		return handleSuccess(
+			res,
+			200,
+			'Detalles del estudiante obtenidos con éxito',
+			data,
+		);
+	} catch (err) {
+		return handleErrorServer(
+			res,
+			500,
+			'Error al obtener detalles del estudiante',
 			err,
 		);
 	}

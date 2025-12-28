@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import type { TStudent } from '@packages/schema/student.schema';
 
 export type TPagination = {
@@ -8,23 +8,57 @@ export type TPagination = {
 	totalPages: number;
 };
 
+export type TFilters = {
+	search: string;
+};
+
+const initialFilters: TFilters = {
+	search: '',
+};
+
 export function useFindManyStudents() {
 	const [data, setData] = useState<TStudent[]>([]);
 	const [pagination, setPagination] =
 		useState<TPagination | null>(null);
+	const [filters, setFilters] =
+		useState<TFilters>(initialFilters);
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [isSuccess, setIsSuccess] = useState(false);
 
+	const filtersRef = useRef<TFilters>(initialFilters);
+
 	const handleFindMany = useCallback(
-		async (page = 1, limit = 5) => {
+		async (
+			page = 1,
+			limit = 5,
+			currentFilters?: TFilters,
+		) => {
 			setIsLoading(true);
 			setError(null);
 			setIsSuccess(false);
 
+			const activeFilters =
+				currentFilters ?? filtersRef.current;
+
 			try {
+				const params = new URLSearchParams({
+					page: page.toString(),
+					limit: limit.toString(),
+				});
+
+				if (
+					activeFilters.search &&
+					activeFilters.search.trim() !== ''
+				) {
+					params.append(
+						'search',
+						activeFilters.search.trim(),
+					);
+				}
+
 				const response = await fetch(
-					`/api/students/find-many?page=${page}&limit=${limit}`,
+					`/api/students/find-many?${params.toString()}`,
 				);
 
 				const result = await response.json();
@@ -55,12 +89,27 @@ export function useFindManyStudents() {
 		[],
 	);
 
+	const updateFilters = useCallback(
+		(newFilters: Partial<TFilters>) => {
+			const updated = {
+				...filtersRef.current,
+				...newFilters,
+			};
+			filtersRef.current = updated;
+			setFilters(updated);
+			handleFindMany(1, pagination?.limit ?? 5, updated);
+		},
+		[handleFindMany, pagination?.limit],
+	);
+
 	return {
 		data,
 		pagination,
+		filters,
 		isLoading,
 		error,
 		isSuccess,
 		handleFindMany,
+		updateFilters,
 	};
 }
