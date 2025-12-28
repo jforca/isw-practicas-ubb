@@ -8,7 +8,7 @@ import {
 	RelationId,
 } from 'typeorm';
 import { Internship } from './internship.entity';
-import { EvaluationResponse } from './evaluation-response.entity';
+import type { EvaluationResponse } from './evaluation-response.entity';
 import { Document } from './documents.entity';
 
 @Entity()
@@ -62,8 +62,10 @@ export class InternshipEvaluation {
 	internship: Internship;
 
 	@OneToMany(
-		() => EvaluationResponse,
-		(res) => res.evaluation,
+		() =>
+			require('./evaluation-response.entity')
+				.EvaluationResponse,
+		(res: EvaluationResponse) => res.evaluation,
 		{
 			cascade: true,
 		},
