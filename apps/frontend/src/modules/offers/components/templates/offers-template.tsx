@@ -19,6 +19,12 @@ import {
 	type TFilters,
 } from '@modules/offers/hooks';
 
+// Reproducir reglas de validación del backend (mantener en sync con packages/schema/offers.schema.ts)
+const OFFER_TITLE_REGEX =
+	/^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s.,\-()]+$/u;
+const OFFER_DESCRIPTION_REGEX =
+	/^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s.,;:!?¿¡\-()/'"%]+$/u;
+
 export function OffersTemplate() {
 	// Hooks de datos
 	const {
@@ -121,12 +127,40 @@ export function OffersTemplate() {
 		switch (field) {
 			case 'title':
 				if (!value) return 'El título es requerido';
+				if (typeof value === 'string') {
+					if (value.length < 5)
+						return 'El título debe tener al menos 5 caracteres';
+					if (value.length > 155)
+						return 'El título no puede exceder 155 caracteres';
+					if (!OFFER_TITLE_REGEX.test(value))
+						return 'El título contiene caracteres no permitidos';
+					if (!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(value))
+						return 'El título debe contener letras';
+				}
 				return null;
 			case 'description':
 				if (!value) return 'La descripción es requerida';
+				if (typeof value === 'string') {
+					if (value.length < 10)
+						return 'La descripción debe tener al menos 10 caracteres';
+					if (value.length > 255)
+						return 'La descripción no puede exceder 255 caracteres';
+					if (!OFFER_DESCRIPTION_REGEX.test(value))
+						return 'La descripción contiene caracteres no permitidos';
+					if (!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(value))
+						return 'La descripción debe contener texto legible';
+				}
 				return null;
 			case 'deadline':
 				if (!value) return 'La fecha límite es requerida';
+				if (typeof value === 'string') {
+					const d = new Date(value);
+					if (Number.isNaN(d.getTime()))
+						return 'Formato de fecha inválido';
+					const now = new Date();
+					if (!(d > now))
+						return 'La fecha límite debe ser en el futuro';
+				}
 				return null;
 			case 'offerTypeIds':
 				if (
@@ -166,7 +200,23 @@ export function OffersTemplate() {
 		const base = 'input w-full rounded-lg';
 		const err = createErrors[field];
 		if (err) return `${base} input-error`;
-		if (createForm[field]) return `${base} input-success`;
+		// sólo marcar éxito si hay valor y no hay error
+		const val = createForm[field];
+		if (
+			val &&
+			(typeof val === 'string' ? val.trim() !== '' : true)
+		)
+			return `${base} input-success`;
+		return base;
+	};
+
+	const getTextareaClass = (field: keyof TCreateForm) => {
+		const base = 'textarea textarea-bordered w-full';
+		const err = createErrors[field];
+		if (err) return `${base} textarea-error`;
+		const val = createForm[field];
+		if (val && typeof val === 'string' && val.trim() !== '')
+			return `${base} textarea-success`;
 		return base;
 	};
 
@@ -484,11 +534,9 @@ export function OffersTemplate() {
 											e.target.value,
 										)
 									}
-									className={`textarea textarea-bordered w-full ${
-										createErrors.description
-											? 'textarea-error'
-											: ''
-									}`}
+									className={getTextareaClass(
+										'description',
+									)}
 									rows={4}
 									disabled={isCreating}
 									placeholder="Describe las responsabilidades, requisitos y beneficios de la práctica..."
