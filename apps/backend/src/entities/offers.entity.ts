@@ -47,15 +47,15 @@ export class Offer {
 			cascade: true,
 		},
 	)
-	offerOfferTypes: OfferOfferType[];
+	offerOfferTypes: Promise<OfferOfferType[]>;
 
 	@ManyToOne(() => Coordinator)
 	@JoinColumn({ name: 'created_by' })
-	coordinator: Coordinator;
+	coordinator: Promise<Coordinator>;
 
 	@ManyToOne(() => InternshipCenter)
 	@JoinColumn({ name: 'internship_center_id' })
-	internshipCenter: InternshipCenter;
+	internshipCenter: Promise<InternshipCenter>;
 
 	@CreateDateColumn()
 	createdAt: Date;
