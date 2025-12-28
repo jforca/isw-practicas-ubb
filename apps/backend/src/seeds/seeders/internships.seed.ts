@@ -9,6 +9,7 @@ import {
 	User,
 } from '@entities';
 import path from 'path';
+import fs from 'fs';
 
 export async function seedInternships() {
 	const internshipRepo =
@@ -52,19 +53,83 @@ export async function seedInternships() {
 		return;
 	}
 
-	// crear documento final report (puede reutilizar la plantilla)
-	const templatePath = path.join(
-		process.cwd(),
-		'apps/backend/src/archives/convention/convenio_practica_plantilla.pdf',
+	// Guardar ruta relativa en el mismo formato que el upload flow:
+	// 'archives/convention/<filename>' para que el servidor la resuelva con
+	// path.join(__dirname, '..', file_path).
+	const relativePath = path.join(
+		'archives',
+		'convention',
+		'convenio_practica_plantilla.pdf',
 	);
 
 	const doc = new Document();
 	doc.file_name = 'final_report_dummy.pdf';
-	doc.file_path = templatePath;
+	doc.file_path = relativePath;
 	doc.mime_type = 'application/pdf';
 	doc.uploaded_at = new Date();
 	doc.uploader = systemUser;
 	const savedDoc = await docRepo.save(doc);
+
+	// Asegurar que el archivo físico exista en la carpeta de runtime
+	try {
+		const destDir = path.join(
+			process.cwd(),
+			'apps',
+			'backend',
+			'archives',
+			'convention',
+		);
+		const destPath = path.join(
+			destDir,
+			'convenio_practica_plantilla.pdf',
+		);
+
+		if (!fs.existsSync(destPath)) {
+			// posibles rutas donde puede estar la plantilla en el repo
+			const candidates = [
+				path.join(
+					process.cwd(),
+					'apps',
+					'backend',
+					'src',
+					'archives',
+					'convention',
+					'convenio_practica_plantilla.pdf',
+				),
+				path.join(
+					process.cwd(),
+					'apps',
+					'backend',
+					'archives',
+					'convention',
+					'convenio_practica_plantilla.pdf',
+				),
+			];
+
+			let found = null as string | null;
+			for (const c of candidates) {
+				if (fs.existsSync(c)) {
+					found = c;
+					break;
+				}
+			}
+
+			if (found) {
+				fs.mkdirSync(destDir, { recursive: true });
+				fs.copyFileSync(found, destPath);
+				console.log('✓ Plantilla copiada a:', destPath);
+			} else {
+				console.warn(
+					'Plantilla no encontrada en candidatos, no se copió.',
+				);
+			}
+		}
+	} catch (err) {
+		console.warn(
+			'Error asegurando plantilla en archives:',
+			err instanceof Error ? err.message : String(err),
+		);
+	}
 
 	// crear aplicación
 	const application = new Application();

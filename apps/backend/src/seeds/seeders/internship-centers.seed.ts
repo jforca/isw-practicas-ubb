@@ -5,6 +5,7 @@ import {
 	User,
 } from '@entities';
 import path from 'path';
+import fs from 'fs';
 
 export async function seedInternshipCenters() {
 	const repo = AppDataSource.getRepository(
@@ -145,9 +146,12 @@ export async function seedInternshipCenters() {
 			systemUser = (await userRepo.find({ take: 1 }))[0];
 		}
 
-		const templatePath = path.join(
-			process.cwd(),
-			'apps/backend/src/archives/convention/convenio_practica_plantilla.pdf',
+		// Guardar ruta relativa en el mismo formato que el upload flow:
+		// 'archives/convention/<filename>' (el servidor usa path.join(__dirname,'..', file_path)).
+		const relativePath = path.join(
+			'archives',
+			'convention',
+			'convenio_practica_plantilla.pdf',
 		);
 
 		// Asociar documento de convenio a algunos centros (cada 3º centro)
@@ -156,13 +160,73 @@ export async function seedInternshipCenters() {
 			const center = savedCenters[i];
 			const doc = new Document();
 			doc.file_name = 'convenio_practica_plantilla.pdf';
-			doc.file_path = templatePath;
+			doc.file_path = relativePath;
 			doc.mime_type = 'application/pdf';
 			doc.uploaded_at = new Date();
 			doc.uploader = systemUser as User;
 			const savedDoc = await docRepo.save(doc);
 			center.convention_document = savedDoc;
 			await repo.save(center);
+
+			// Copiar la plantilla al directorio de runtime si no existe
+			try {
+				const destDir = path.join(
+					process.cwd(),
+					'apps',
+					'backend',
+					'archives',
+					'convention',
+				);
+				const destPath = path.join(
+					destDir,
+					'convenio_practica_plantilla.pdf',
+				);
+
+				if (!fs.existsSync(destPath)) {
+					const candidates = [
+						path.join(
+							process.cwd(),
+							'apps',
+							'backend',
+							'src',
+							'archives',
+							'convention',
+							'convenio_practica_plantilla.pdf',
+						),
+						path.join(
+							process.cwd(),
+							'apps',
+							'backend',
+							'archives',
+							'convention',
+							'convenio_practica_plantilla.pdf',
+						),
+					];
+
+					let found = null as string | null;
+					for (const c of candidates) {
+						if (fs.existsSync(c)) {
+							found = c;
+							break;
+						}
+					}
+
+					if (found) {
+						fs.mkdirSync(destDir, { recursive: true });
+						fs.copyFileSync(found, destPath);
+						console.log('✓ Plantilla copiada a:', destPath);
+					} else {
+						console.warn(
+							'Plantilla no encontrada en candidatos, no se copió.',
+						);
+					}
+				}
+			} catch (err) {
+				console.warn(
+					'Error copiando plantilla al archives:',
+					err instanceof Error ? err.message : String(err),
+				);
+			}
 		}
 	} catch (err) {
 		const msg =
