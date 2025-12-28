@@ -12,6 +12,7 @@ import {
 } from '../organism/create-logbook-modal';
 import { ViewLogbookModal } from '../organism/view-logbook-modal';
 import { DeleteConfirmationModal } from '../organism/delete-confirmation-modal';
+import { FeedbackModal } from '../organism/fedback-modal';
 import { LogbookManagementTemplate } from '../templates/logbook-template';
 import { Button } from '../atoms/button';
 import { UseFindManyLogbookEntries } from '../../Hooks/use-find-many-logbook-entries.hook';
@@ -28,10 +29,15 @@ export const LogbookPage: React.FC = () => {
 		useState<ILogbookFormData | null>(null);
 	const [selectedEntry, setSelectedEntry] =
 		useState<ILogbookEntry | null>(null);
-
 	const [idToDelete, setIdToDelete] = useState<
 		number | null
 	>(null);
+	const [feedback, setFeedback] = useState({
+		isOpen: false,
+		type: 'success' as 'success' | 'error',
+		title: '',
+		message: '',
+	});
 
 	const {
 		data,
@@ -49,7 +55,6 @@ export const LogbookPage: React.FC = () => {
 		UseCreateLogbookEntry();
 	const { updateEntry, isLoading: isUpdating } =
 		UseUpdateLogbookEntry();
-
 	const { deleteEntry, isLoading: isDeleting } =
 		UseDeleteLogbookEntry();
 
@@ -64,7 +69,6 @@ export const LogbookPage: React.FC = () => {
 			content: item.body,
 			createdAt: item.created_at,
 			updatedAt: item.updated_at,
-
 			internshipId:
 				item.internshipId || item.internship?.id || 0,
 		}));
@@ -90,20 +94,25 @@ export const LogbookPage: React.FC = () => {
 		[entries],
 	);
 
+	const handleCloseFeedback = () => {
+		setFeedback((prev) => ({ ...prev, isOpen: false }));
+	};
+
 	const handleFormSubmit = async (
 		title: string,
-		body: string,
+		content: string,
 	) => {
 		let success = false;
+
 		if (editingData?.id) {
 			success = await updateEntry(editingData.id, {
 				title,
-				body,
+				content,
 			});
 		} else {
 			success = await createEntry({
 				title,
-				body,
+				content,
 				internshipId: CURRENT_INTERNSHIP_ID,
 			});
 		}
@@ -112,8 +121,25 @@ export const LogbookPage: React.FC = () => {
 			setIsFormModalOpen(false);
 			setEditingData(null);
 			handleFindMany(pagination.offset, pagination.limit);
+
+			setFeedback({
+				isOpen: true,
+				type: 'success',
+				title: editingData?.id
+					? '¡Actualización Exitosa!'
+					: '¡Registro Exitoso!',
+				message: editingData?.id
+					? 'La bitácora ha sido modificada correctamente.'
+					: 'La nueva bitácora se ha creado correctamente.',
+			});
 		} else {
-			alert('Ocurrió un error al guardar.');
+			setFeedback({
+				isOpen: true,
+				type: 'error',
+				title: 'Error al procesar',
+				message:
+					'No se pudo guardar la bitácora. Verifique los datos e intente nuevamente.',
+			});
 		}
 	};
 
@@ -129,8 +155,21 @@ export const LogbookPage: React.FC = () => {
 		if (success) {
 			setIdToDelete(null);
 			handleFindMany(pagination.offset, pagination.limit);
+
+			setFeedback({
+				isOpen: true,
+				type: 'success',
+				title: 'Eliminado',
+				message:
+					'El registro ha sido eliminado correctamente.',
+			});
 		} else {
-			alert('No se pudo eliminar el registro.');
+			setFeedback({
+				isOpen: true,
+				type: 'error',
+				title: 'Error',
+				message: 'No se pudo eliminar el registro.',
+			});
 		}
 	};
 
@@ -230,6 +269,14 @@ export const LogbookPage: React.FC = () => {
 				onClose={() => setIdToDelete(null)}
 				onConfirm={handleConfirmDelete}
 				isLoading={isDeleting}
+			/>
+
+			<FeedbackModal
+				isOpen={feedback.isOpen}
+				onClose={handleCloseFeedback}
+				type={feedback.type}
+				title={feedback.title}
+				message={feedback.message}
 			/>
 		</>
 	);

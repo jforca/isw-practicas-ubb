@@ -12,14 +12,17 @@ export interface ILogbookFormData {
 interface ICreateLogbookModalProps {
 	isOpen: boolean;
 	onClose: () => void;
-	onSubmit: (title: string, body: string) => Promise<void>;
+	onSubmit: (
+		title: string,
+		content: string,
+	) => Promise<void>;
 	isLoading: boolean;
 	initialData?: ILogbookFormData | null;
 }
 
 interface IFormErrors {
 	title?: string;
-	body?: string;
+	content?: string;
 }
 
 export const CreateLogbookModal: React.FC<
@@ -32,7 +35,7 @@ export const CreateLogbookModal: React.FC<
 	initialData,
 }) => {
 	const [title, setTitle] = useState('');
-	const [body, setBody] = useState('');
+	const [content, setContent] = useState('');
 
 	const [errors, setErrors] = useState<IFormErrors>({});
 
@@ -41,10 +44,10 @@ export const CreateLogbookModal: React.FC<
 
 		if (isOpen && initialData) {
 			setTitle(initialData.title);
-			setBody(initialData.content);
+			setContent(initialData.content);
 		} else if (isOpen && !initialData) {
 			setTitle('');
-			setBody('');
+			setContent('');
 		}
 	}, [isOpen, initialData]);
 
@@ -66,14 +69,14 @@ export const CreateLogbookModal: React.FC<
 			isValid = false;
 		}
 
-		if (!body.trim()) {
-			newErrors.body = 'El contenido es obligatorio.';
+		if (!content.trim()) {
+			newErrors.content = 'El contenido es obligatorio.';
 			isValid = false;
-		} else if (body.length < 50) {
-			newErrors.body = `Mínimo 50 caracteres (tienes ${body.length}).`;
+		} else if (content.length < 50) {
+			newErrors.content = `Mínimo 50 caracteres (tienes ${content.length}).`;
 			isValid = false;
-		} else if (!hasLetters.test(body)) {
-			newErrors.body =
+		} else if (!hasLetters.test(content)) {
+			newErrors.content =
 				'El contenido debe tener una redacción válida (no solo números o símbolos).';
 			isValid = false;
 		}
@@ -91,7 +94,7 @@ export const CreateLogbookModal: React.FC<
 			return;
 		}
 
-		await onSubmit(title, body);
+		await onSubmit(title, content);
 	};
 
 	const handleTitleChange = (
@@ -102,12 +105,12 @@ export const CreateLogbookModal: React.FC<
 			setErrors({ ...errors, title: undefined });
 	};
 
-	const handleBodyChange = (
+	const handleContentChange = (
 		e: React.ChangeEvent<HTMLTextAreaElement>,
 	) => {
-		setBody(e.target.value);
-		if (errors.body)
-			setErrors({ ...errors, body: undefined });
+		setContent(e.target.value);
+		if (errors.content)
+			setErrors({ ...errors, content: undefined });
 	};
 
 	if (!isOpen) return null;
@@ -158,22 +161,22 @@ export const CreateLogbookModal: React.FC<
 						<TextArea
 							label="Contenido"
 							placeholder="Describe los avances y tareas realizadas..."
-							value={body}
-							onChange={handleBodyChange}
+							value={content}
+							onChange={handleContentChange}
 							disabled={isLoading}
 							className={
-								errors.body ? 'textarea-error' : ''
+								errors.content ? 'textarea-error' : ''
 							}
 						/>
 
-						{errors.body && (
+						{errors.content && (
 							<span className="text-error text-xs mt-1 block">
-								{errors.body}
+								{errors.content}
 							</span>
 						)}
 
 						<div className="text-right text-xs text-gray-400 mt-1">
-							{body.length}
+							{content.length}
 						</div>
 					</div>
 

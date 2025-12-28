@@ -5,6 +5,7 @@ import {
 	handleErrorServer,
 	handleErrorClient,
 } from '@handlers/response.handler';
+import { CreateLogbookSchema } from '@packages/schema/logbook.schema';
 
 async function findOne(req: Request, res: Response) {
 	try {
@@ -18,7 +19,7 @@ async function findOne(req: Request, res: Response) {
 			return handleErrorServer(
 				res,
 				404,
-				'No se encontro la bitacora solicitada',
+				'No se encontró la bitácora solicitada',
 				null,
 			);
 		}
@@ -26,14 +27,14 @@ async function findOne(req: Request, res: Response) {
 		return handleSuccess(
 			res,
 			200,
-			'Bitacora obtenida con exito',
+			'Bitácora obtenida con éxito',
 			data,
 		);
 	} catch (err) {
 		return handleErrorServer(
 			res,
 			500,
-			'Error al buscar la bitacora',
+			'Error al buscar la bitácora',
 			err,
 		);
 	}
@@ -46,6 +47,8 @@ async function findMany(req: Request, res: Response) {
 		const internshipId = req.query.internshipId
 			? Number(req.query.internshipId)
 			: undefined;
+
+		// Si tu servicio soporta búsqueda por texto, aquí deberías extraer req.query.search
 
 		const result = await LogbookEntriesServices.findMany(
 			offset,
@@ -75,14 +78,14 @@ async function findMany(req: Request, res: Response) {
 		return handleSuccess(
 			res,
 			200,
-			'Bitacoras obtenidas con éxito',
+			'Bitácoras obtenidas con éxito',
 			responseData,
 		);
 	} catch (err) {
 		return handleErrorServer(
 			res,
 			500,
-			'Error interno al obtener las bitacoras',
+			'Error interno al obtener las bitácoras',
 			err,
 		);
 	}
@@ -90,43 +93,52 @@ async function findMany(req: Request, res: Response) {
 
 async function createOne(req: Request, res: Response) {
 	try {
-		const { title, body, internshipId } = req.body;
+		// 1. VALIDACIÓN MANUAL CON ZOD
+		const validation = CreateLogbookSchema.safeParse(
+			req.body,
+		);
 
-		if (!title || !body || !internshipId) {
+		if (!validation.success) {
+			// Formateamos los errores para que el frontend los entienda
+			const errors = validation.error.issues.map(
+				(issue) => ({
+					field: issue.path[0],
+					message: issue.message,
+				}),
+			);
+
 			return handleErrorClient(
 				res,
 				400,
-				'Faltan datos requeridos: title, body o internshipId',
-				null,
+				'Error de validación',
+				errors, // Enviamos los detalles del error
 			);
 		}
+
+		// 2. Si pasa la validación, usamos los datos LIMPIOS (validation.data)
+		const { title, content, internshipId } =
+			validation.data;
 
 		const data = await LogbookEntriesServices.createOne({
 			title,
-			body,
+			content,
 			internshipId,
 		});
 
-		if (!data) {
+		if (!data)
 			return handleErrorServer(
 				res,
 				500,
-				'No se pudo crear la bitacora',
+				'No se pudo crear',
 				null,
 			);
-		}
 
-		return handleSuccess(
-			res,
-			201,
-			'Bitacora creada bien',
-			data,
-		);
+		return handleSuccess(res, 201, 'Bitácora creada', data);
 	} catch (err) {
 		return handleErrorServer(
 			res,
 			500,
-			'Error interno al crear la bitacora',
+			'Error interno',
 			err,
 		);
 	}
@@ -136,33 +148,56 @@ async function updateOne(req: Request, res: Response) {
 	try {
 		const { id } = req.params;
 
-		const updateData = req.body;
+		// 1. VALIDACIÓN MANUAL (PARCIAL)
+		// Usamos .partial() porque al editar quizás solo envían el título o solo el contenido
+		const validation =
+			CreateLogbookSchema.partial().safeParse(req.body);
+
+		if (!validation.success) {
+			const errors = validation.error.issues.map(
+				(issue) => ({
+					field: issue.path[0],
+					message: issue.message,
+				}),
+			);
+			return handleErrorClient(
+				res,
+				400,
+				'Error de validación',
+				errors,
+			);
+		}
+
+		// 2. Usamos los datos validados
+		const { title, content } = validation.data;
 
 		const data = await LogbookEntriesServices.updateOne(
 			Number(id),
-			updateData,
+			{
+				title,
+				content,
+			},
 		);
 
-		if (!data) {
+		if (!data)
 			return handleErrorServer(
 				res,
 				404,
-				'No se encontró la bitacora',
+				'No se encontró para actualizar',
 				null,
 			);
-		}
 
 		return handleSuccess(
 			res,
 			200,
-			'Bitacora actualizada bien',
+			'Bitácora actualizada',
 			data,
 		);
 	} catch (err) {
 		return handleErrorServer(
 			res,
 			500,
-			'Error al actualizar la bitacora',
+			'Error al actualizar',
 			err,
 		);
 	}
@@ -179,7 +214,7 @@ async function deleteOne(req: Request, res: Response) {
 			return handleErrorServer(
 				res,
 				404,
-				'No se encontró la bitacora a eliminar',
+				'No se encontró la bitácora a eliminar',
 				null,
 			);
 		}
@@ -187,14 +222,14 @@ async function deleteOne(req: Request, res: Response) {
 		return handleSuccess(
 			res,
 			200,
-			'Bitacora eliminada con exito',
+			'Bitácora eliminada con éxito',
 			{ id },
 		);
 	} catch (err) {
 		return handleErrorServer(
 			res,
 			500,
-			'Error al eliminar la bitacora',
+			'Error al eliminar la bitácora',
 			err,
 		);
 	}

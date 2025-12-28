@@ -1,25 +1,18 @@
 import React from 'react';
-import type { ILogbookEntry } from '../../components/types';
+import type { ILogbookEntry } from '../types';
 import { TableData } from '../atoms/table-data';
 import { Button } from '../atoms/button';
 
-// 1. DEFINICIÓN DE LA INTERFAZ (El contrato)
 interface ILogbookEntryRowProps {
 	entry: ILogbookEntry;
 	onEdit: (id: number) => void;
 	onDelete: (id: number) => void;
-	onView: (entry: ILogbookEntry) => void; // <--- ¡ESTA LÍNEA ES OBLIGATORIA!
+	onView: (entry: ILogbookEntry) => void;
 }
 
-// 2. EL COMPONENTE
 export const LogbookEntryRow: React.FC<
 	ILogbookEntryRowProps
-> = ({
-	entry,
-	onEdit,
-	onDelete,
-	onView, // <--- Recibir la función aquí
-}) => {
+> = ({ entry, onEdit, onDelete, onView }) => {
 	const formatDate = (date: Date | string) => {
 		if (!date) return '-';
 		if (typeof date === 'string') {

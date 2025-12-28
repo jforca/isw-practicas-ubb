@@ -5,7 +5,7 @@ import {
 	NotFoundPage,
 	EncargadoDashboardPage,
 } from '@modules';
-import { LogbookPage } from '@modules/Logbook/components/pages/logbook-page';
+import { LogbookPage } from '@modules/logbook/components/pages/logbook-page';
 // import { Auth } from '@common/components/auth';
 
 function App() {

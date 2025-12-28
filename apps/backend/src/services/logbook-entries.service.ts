@@ -3,13 +3,13 @@ import { LogbookEntries } from '@entities';
 
 export interface ICreateLogbookDto {
 	title: string;
-	body: string;
+	content: string;
 	internshipId: number;
 }
 
 export interface IUpdateLogbookDto {
 	title?: string;
-	body?: string;
+	content?: string;
 	internshipId?: number;
 }
 
@@ -63,7 +63,7 @@ async function createOne(data: ICreateLogbookDto) {
 
 		const newEntry = logbookEntriesRepo.create({
 			title: data.title,
-			body: data.body,
+			body: data.content, // Mapeo content -> body
 			internship: { id: data.internshipId },
 		});
 
@@ -85,16 +85,30 @@ async function updateOne(
 		const entry = await logbookEntriesRepo.findOneBy({
 			id,
 		});
+
 		if (!entry) return null;
 
-		const updateData = {
-			...data,
+		// ✅ SOLUCIÓN AL ERROR DE 'ANY':
+		// Construimos el objeto dinámicamente usando spread syntax conditional.
+		// TypeScript inferirá automáticamente el tipo correcto.
+		const updatePayload = {
+			// Si data.title existe, agrega { title: data.title } al objeto
+			...(data.title && { title: data.title }),
+
+			// Si data.content existe, agrega { body: data.content } (MAPEO CLAVE)
+			...(data.content && { body: data.content }),
+
+			// Si data.internshipId existe, agrega la relación
 			...(data.internshipId && {
 				internship: { id: data.internshipId },
 			}),
+
+			// Siempre actualizamos la fecha
+			updated_at: new Date(),
 		};
 
-		logbookEntriesRepo.merge(entry, updateData);
+		// Ahora 'updatePayload' tiene un tipo seguro y merge lo aceptará
+		logbookEntriesRepo.merge(entry, updatePayload);
 
 		const updatedEntry =
 			await logbookEntriesRepo.save(entry);

@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 interface IUpdateLogbookDto {
 	title: string;
-	body: string;
+	content: string;
 }
 
 export function UseUpdateLogbookEntry() {
