@@ -5,6 +5,7 @@ import {
 	createStudent,
 	updateStudent,
 	deleteStudent,
+	getStudentDetails,
 } from '@services/students.service';
 import {
 	handleSuccess,
@@ -178,6 +179,39 @@ export async function deleteStudentData(
 			res,
 			500,
 			'Error al eliminar estudiante',
+			err,
+		);
+	}
+}
+
+export async function getStudentDetailsData(
+	req: Request,
+	res: Response,
+) {
+	try {
+		const { id } = req.params;
+		const data = await getStudentDetails(id);
+
+		if (!data) {
+			return handleErrorClient(
+				res,
+				404,
+				'Estudiante no encontrado',
+				null,
+			);
+		}
+
+		return handleSuccess(
+			res,
+			200,
+			'Detalles del estudiante obtenidos con éxito',
+			data,
+		);
+	} catch (err) {
+		return handleErrorServer(
+			res,
+			500,
+			'Error al obtener detalles del estudiante',
 			err,
 		);
 	}
