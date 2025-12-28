@@ -8,6 +8,7 @@ import {
 	Calendar,
 	Loader2,
 } from 'lucide-react';
+
 import { OffersHeader } from '@modules/offers/components/organisms/offers-header';
 import { OfferCards } from '@modules/offers/components/organisms/offer-cards';
 import {
@@ -17,6 +18,12 @@ import {
 	UseFindInternshipCenters,
 	type TFilters,
 } from '@modules/offers/hooks';
+
+// Reproducir reglas de validación del backend (mantener en sync con packages/schema/offers.schema.ts)
+const OFFER_TITLE_REGEX =
+	/^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s.,\-()]+$/u;
+const OFFER_DESCRIPTION_REGEX =
+	/^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s.,;:!?¿¡\-()/'"%]+$/u;
 
 export function OffersTemplate() {
 	// Hooks de datos
@@ -51,12 +58,12 @@ export function OffersTemplate() {
 		handleFindMany(0, pagination.limit);
 	}, [handleFindMany, pagination.limit]);
 
-	// Estado del formulario de creación
+	// Estado del formulario de creación (soporta uno o dos tipos)
 	type TCreateForm = {
 		title: string;
 		description: string;
 		deadline: string;
-		offerTypeId: number | '';
+		offerTypeIds: number[];
 		internshipCenterId: number | '';
 	};
 
@@ -65,7 +72,7 @@ export function OffersTemplate() {
 			title: '',
 			description: '',
 			deadline: '',
-			offerTypeId: '',
+			offerTypeIds: [],
 			internshipCenterId: '',
 		},
 	);
@@ -95,32 +102,72 @@ export function OffersTemplate() {
 	// Handlers del formulario de creación
 	const handleInputChange = (
 		field: keyof TCreateForm,
-		value: string | number,
+		value: string | number | number[],
 	) => {
-		setCreateForm((prev) => ({ ...prev, [field]: value }));
+		setCreateForm(
+			(prev) =>
+				({
+					...prev,
+					[field]: value,
+				}) as unknown as TCreateForm,
+		);
 		setCreateErrors((prev) => ({
 			...prev,
-			[field]: validateField(field, value),
+			[field]: validateField(
+				field,
+				value as string | number | number[],
+			),
 		}));
 	};
 
 	const validateField = (
 		field: keyof TCreateForm,
-		value: string | number,
+		value: string | number | number[] | undefined,
 	) => {
 		switch (field) {
 			case 'title':
 				if (!value) return 'El título es requerido';
+				if (typeof value === 'string') {
+					if (value.length < 5)
+						return 'El título debe tener al menos 5 caracteres';
+					if (value.length > 155)
+						return 'El título no puede exceder 155 caracteres';
+					if (!OFFER_TITLE_REGEX.test(value))
+						return 'El título contiene caracteres no permitidos';
+					if (!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(value))
+						return 'El título debe contener letras';
+				}
 				return null;
 			case 'description':
 				if (!value) return 'La descripción es requerida';
+				if (typeof value === 'string') {
+					if (value.length < 10)
+						return 'La descripción debe tener al menos 10 caracteres';
+					if (value.length > 255)
+						return 'La descripción no puede exceder 255 caracteres';
+					if (!OFFER_DESCRIPTION_REGEX.test(value))
+						return 'La descripción contiene caracteres no permitidos';
+					if (!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(value))
+						return 'La descripción debe contener texto legible';
+				}
 				return null;
 			case 'deadline':
 				if (!value) return 'La fecha límite es requerida';
+				if (typeof value === 'string') {
+					const d = new Date(value);
+					if (Number.isNaN(d.getTime()))
+						return 'Formato de fecha inválido';
+					const now = new Date();
+					if (!(d > now))
+						return 'La fecha límite debe ser en el futuro';
+				}
 				return null;
-			case 'offerTypeId':
-				if (!value)
-					return 'El tipo de práctica es requerido';
+			case 'offerTypeIds':
+				if (
+					!value ||
+					(Array.isArray(value) && value.length === 0)
+				)
+					return 'Debe seleccionar al menos un tipo de práctica';
 				return null;
 			case 'internshipCenterId':
 				if (!value)
@@ -153,7 +200,23 @@ export function OffersTemplate() {
 		const base = 'input w-full rounded-lg';
 		const err = createErrors[field];
 		if (err) return `${base} input-error`;
-		if (createForm[field]) return `${base} input-success`;
+		// sólo marcar éxito si hay valor y no hay error
+		const val = createForm[field];
+		if (
+			val &&
+			(typeof val === 'string' ? val.trim() !== '' : true)
+		)
+			return `${base} input-success`;
+		return base;
+	};
+
+	const getTextareaClass = (field: keyof TCreateForm) => {
+		const base = 'textarea textarea-bordered w-full';
+		const err = createErrors[field];
+		if (err) return `${base} textarea-error`;
+		const val = createForm[field];
+		if (val && typeof val === 'string' && val.trim() !== '')
+			return `${base} textarea-success`;
 		return base;
 	};
 
@@ -162,7 +225,7 @@ export function OffersTemplate() {
 			title: '',
 			description: '',
 			deadline: '',
-			offerTypeId: '',
+			offerTypeIds: [],
 			internshipCenterId: '',
 		});
 		setCreateErrors(
@@ -178,7 +241,7 @@ export function OffersTemplate() {
 			title: createForm.title,
 			description: createForm.description,
 			deadline: createForm.deadline,
-			offerTypeId: createForm.offerTypeId as number,
+			offerTypeIds: createForm.offerTypeIds,
 			internshipCenterId:
 				createForm.internshipCenterId as number,
 		});
@@ -286,7 +349,7 @@ export function OffersTemplate() {
 									/>
 									{createErrors.title && (
 										<label className="label">
-											<span className="label-text-alt text-error">
+											<span className="label-text-alt text-error text-sm">
 												{createErrors.title}
 											</span>
 										</label>
@@ -300,32 +363,93 @@ export function OffersTemplate() {
 										/>
 										Tipo de Práctica *
 									</h4>
-									<select
-										value={createForm.offerTypeId}
-										onChange={(e) =>
-											handleInputChange(
-												'offerTypeId',
-												e.target.value
-													? Number(e.target.value)
-													: '',
-											)
-										}
-										className="select select-bordered w-full"
-										disabled={isCreating}
-									>
-										<option value="">
-											Seleccionar tipo...
-										</option>
-										{offerTypes.map((type) => (
-											<option key={type.id} value={type.id}>
-												{type.name}
-											</option>
-										))}
-									</select>
-									{createErrors.offerTypeId && (
+									<div className="flex flex-col gap-2 text-base-content/80">
+										{/* Mostrar dos checkboxes: Práctica 1 y Práctica 2 (vertical) */}
+										{(() => {
+											const t1 = offerTypes[0];
+											const t2 = offerTypes[1];
+											return (
+												<div className="flex flex-row gap-4 items-center">
+													<label className="label cursor-pointer inline-flex items-center">
+														<input
+															type="checkbox"
+															className="checkbox mr-2"
+															checked={
+																!!t1 &&
+																createForm.offerTypeIds.includes(
+																	t1.id,
+																)
+															}
+															onChange={(e) => {
+																if (!t1) return;
+																if (e.target.checked) {
+																	handleInputChange(
+																		'offerTypeIds',
+																		Array.from(
+																			new Set([
+																				...createForm.offerTypeIds,
+																				t1.id,
+																			]),
+																		),
+																	);
+																} else {
+																	handleInputChange(
+																		'offerTypeIds',
+																		createForm.offerTypeIds.filter(
+																			(id) => id !== t1.id,
+																		),
+																	);
+																}
+															}}
+														/>
+														<span className="label-text">
+															Práctica 1
+														</span>
+													</label>
+													<label className="label cursor-pointer inline-flex items-center">
+														<input
+															type="checkbox"
+															className="checkbox mr-2"
+															checked={
+																!!t2 &&
+																createForm.offerTypeIds.includes(
+																	t2.id,
+																)
+															}
+															onChange={(e) => {
+																if (!t2) return;
+																if (e.target.checked) {
+																	handleInputChange(
+																		'offerTypeIds',
+																		Array.from(
+																			new Set([
+																				...createForm.offerTypeIds,
+																				t2.id,
+																			]),
+																		),
+																	);
+																} else {
+																	handleInputChange(
+																		'offerTypeIds',
+																		createForm.offerTypeIds.filter(
+																			(id) => id !== t2.id,
+																		),
+																	);
+																}
+															}}
+														/>
+														<span className="label-text">
+															Práctica 2
+														</span>
+													</label>
+												</div>
+											);
+										})()}
+									</div>
+									{createErrors.offerTypeIds && (
 										<label className="label">
-											<span className="label-text-alt text-error">
-												{createErrors.offerTypeId}
+											<span className="label-text-alt text-error text-sm">
+												{createErrors.offerTypeIds}
 											</span>
 										</label>
 									)}
@@ -365,7 +489,7 @@ export function OffersTemplate() {
 									</select>
 									{createErrors.internshipCenterId && (
 										<label className="label">
-											<span className="label-text-alt text-error">
+											<span className="label-text-alt text-error text-sm">
 												{createErrors.internshipCenterId}
 											</span>
 										</label>
@@ -393,7 +517,7 @@ export function OffersTemplate() {
 									/>
 									{createErrors.deadline && (
 										<label className="label">
-											<span className="label-text-alt text-error">
+											<span className="label-text-alt text-error text-sm">
 												{createErrors.deadline}
 											</span>
 										</label>
@@ -410,18 +534,16 @@ export function OffersTemplate() {
 											e.target.value,
 										)
 									}
-									className={`textarea textarea-bordered w-full ${
-										createErrors.description
-											? 'textarea-error'
-											: ''
-									}`}
+									className={getTextareaClass(
+										'description',
+									)}
 									rows={4}
 									disabled={isCreating}
 									placeholder="Describe las responsabilidades, requisitos y beneficios de la práctica..."
 								/>
 								{createErrors.description && (
 									<label className="label">
-										<span className="label-text-alt text-error">
+										<span className="label-text-alt text-error text-sm">
 											{createErrors.description}
 										</span>
 									</label>

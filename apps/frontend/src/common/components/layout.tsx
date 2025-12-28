@@ -64,7 +64,7 @@ export function Layout() {
 								</li>
 								<li>
 									<NavLink
-										to="/app/internship/report"
+										to="/app/internship/evaluations"
 										className={({ isActive }) =>
 											`flex flex-col items-center gap-1${isActive ? ' text-primary' : ''}`
 										}
@@ -192,7 +192,7 @@ export function Layout() {
 						</li>
 						<li>
 							<NavLink
-								to="/app/internship/report"
+								to="/app/internship/evaluations"
 								className={({ isActive }) =>
 									`flex gap-1${isActive ? ' text-primary' : ''}`
 								}
@@ -200,19 +200,6 @@ export function Layout() {
 								<BookCheck size={28} />
 								<span className="paragraph-1">
 									Evaluaciones
-								</span>
-							</NavLink>
-						</li>
-						<li>
-							<NavLink
-								to="/app/internship/supervisor"
-								className={({ isActive }) =>
-									`flex items-center gap-1${isActive ? ' text-primary' : ''}`
-								}
-							>
-								<School size={28} />
-								<span className="paragraph-1">
-									Supervisor
 								</span>
 							</NavLink>
 						</li>

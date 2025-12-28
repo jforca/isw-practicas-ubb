@@ -7,10 +7,20 @@ export { Coordinator } from './coordinators.entity';
 export { LogbookEntries } from './logbook-entries.entity';
 export { InternshipEvaluation } from './internship-evaluation.entity';
 export { Document } from './documents.entity';
-export { Application } from './application.entity';
+export { EvaluationItem } from './evaluation-item.entity';
+export { EvaluationResponse } from './evaluation-response.entity';
+export {
+	Application,
+	ApplicationStatus,
+} from './application.entity';
 export { ApplicationDocuments } from './application-documents.entity';
 export { Offer } from './offers.entity';
+export { OfferStatus } from './offers.entity';
 export { InternshipCenter } from './internship-centers.entity';
 export { Supervisor } from './supervisor.entity';
-export { Internship } from './internship.entity';
+export {
+	Internship,
+	InternshipStatus,
+} from './internship.entity';
 export { OffersType } from './offers-types.entity';
+export { OfferOfferType } from './offer-offer-type.entity';

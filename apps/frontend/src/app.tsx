@@ -7,6 +7,7 @@ import {
 	OffersPage,
 	LogbookPage,
 	ReportPage,
+	EvaluationsPage,
 	SupervisorPage,
 } from '@modules';
 // import { Auth } from '@common/components';
@@ -24,6 +25,10 @@ function App() {
 				<Route>
 					<Route path="app" element={<Layout />}>
 						<Route path="internship">
+							<Route
+								path="evaluations"
+								element={<EvaluationsPage />}
+							/>
 							<Route
 								path="report"
 								element={<ReportPage />}

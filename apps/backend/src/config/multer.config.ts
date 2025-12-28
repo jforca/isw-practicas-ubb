@@ -15,9 +15,19 @@ const CONVENTION_PATH = path.join(
 	'convention',
 );
 
+// Directorio específico para firmas
+const SIGNATURE_PATH = path.join(
+	ARCHIVES_BASE_PATH,
+	'signature',
+);
+
 // Asegurar que el directorio existe
 if (!fs.existsSync(CONVENTION_PATH)) {
 	fs.mkdirSync(CONVENTION_PATH, { recursive: true });
+}
+
+if (!fs.existsSync(SIGNATURE_PATH)) {
+	fs.mkdirSync(SIGNATURE_PATH, { recursive: true });
 }
 
 // Configuración de almacenamiento para convenios
@@ -29,6 +39,18 @@ const conventionStorage = multer.diskStorage({
 		const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
 		const ext = path.extname(file.originalname);
 		cb(null, `convention-${uniqueSuffix}${ext}`);
+	},
+});
+
+// Configuración de almacenamiento para firmas
+const signatureStorage = multer.diskStorage({
+	destination: (_req, _file, cb) => {
+		cb(null, SIGNATURE_PATH);
+	},
+	filename: (_req, file, cb) => {
+		const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+		const ext = path.extname(file.originalname);
+		cb(null, `signature-${uniqueSuffix}${ext}`);
 	},
 });
 
@@ -54,4 +76,16 @@ export const uploadConvention = multer({
 	},
 });
 
-export { CONVENTION_PATH, ARCHIVES_BASE_PATH };
+export const uploadSignature = multer({
+	storage: signatureStorage,
+	fileFilter: pdfFilter,
+	limits: {
+		fileSize: 10 * 1024 * 1024,
+	},
+});
+
+export {
+	CONVENTION_PATH,
+	SIGNATURE_PATH,
+	ARCHIVES_BASE_PATH,
+};

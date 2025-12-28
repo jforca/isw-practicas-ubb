@@ -9,6 +9,8 @@ import {
 	Student,
 	Coordinator,
 	InternshipEvaluation,
+	EvaluationItem,
+	EvaluationResponse,
 	Application,
 	ApplicationDocuments,
 	LogbookEntries,
@@ -17,6 +19,7 @@ import {
 	Supervisor,
 	Internship,
 	OffersType,
+	OfferOfferType,
 } from '@entities';
 
 export const AppDataSource = new DataSource({
@@ -28,6 +31,8 @@ export const AppDataSource = new DataSource({
 		Session,
 		Verification,
 		InternshipEvaluation,
+		EvaluationItem,
+		EvaluationResponse,
 		Student,
 		Coordinator,
 		Document,
@@ -39,6 +44,7 @@ export const AppDataSource = new DataSource({
 		Supervisor,
 		Internship,
 		OffersType,
+		OfferOfferType,
 	],
 	synchronize: true,
 	logging: false,

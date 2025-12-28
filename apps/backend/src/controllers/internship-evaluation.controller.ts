@@ -5,7 +5,13 @@ import {
 	deleteEvaluation,
 	createEvaluation,
 	updateEvaluation,
+	listRubricItems,
+	getEvaluationResponses,
+	submitEvaluationResponses,
+	attachSignatureDocument,
 } from '@services/internship-evaluation.service';
+import { DocumentServices } from '@services/documents.service';
+import path from 'node:path';
 
 export async function findOneController(
 	req: Request,
@@ -30,11 +36,51 @@ export async function findOneController(
 }
 
 export async function findManyController(
-	_req: Request,
+	req: Request,
 	res: Response,
 ) {
+	const offset = Number(req.query.offset) || 0;
+	const limit = Number(req.query.limit) || 10;
+	const search = req.query.search as string | undefined;
+
 	const list = await listEvaluations();
-	res.status(200).json({ data: list || [], error: null });
+
+	// Filtrar por búsqueda si se proporciona
+	let filtered = list || [];
+	if (search) {
+		const searchLower = search.toLowerCase();
+		filtered = filtered.filter(
+			(item) =>
+				item.id.toString().includes(searchLower) ||
+				item.internship?.supervisor?.user?.name
+					?.toLowerCase()
+					.includes(searchLower) ||
+				item.internship?.coordinator?.user?.name
+					?.toLowerCase()
+					.includes(searchLower) ||
+				item.internship?.application?.student?.name
+					?.toLowerCase()
+					.includes(searchLower),
+		);
+	}
+
+	// Aplicar paginación
+	const total = filtered.length;
+	const paginated = filtered.slice(offset, offset + limit);
+	const hasMore = offset + limit < total;
+
+	res.status(200).json({
+		data: {
+			data: paginated,
+			pagination: {
+				total,
+				offset,
+				limit,
+				hasMore,
+			},
+		},
+		error: null,
+	});
 }
 
 export async function deleteController(
@@ -105,6 +151,244 @@ export async function updateController(
 		res.status(200).json({ data: updated, error: null });
 	} catch (error) {
 		console.error('Error updating evaluation:', error);
+		res
+			.status(500)
+			.json({ data: null, error: 'Error interno' });
+	}
+}
+
+export async function rubricController(
+	req: Request,
+	res: Response,
+) {
+	const { type } = req.params as {
+		type: 'SUPERVISOR' | 'REPORT';
+	};
+	if (type !== 'SUPERVISOR' && type !== 'REPORT') {
+		res.status(400).json({
+			data: null,
+			error: 'Tipo de pauta inválido',
+		});
+		return;
+	}
+	try {
+		const items = await listRubricItems(type);
+		res.status(200).json({ data: items, error: null });
+	} catch (error) {
+		console.error('Error al obtener pauta:', error);
+		res
+			.status(500)
+			.json({ data: null, error: 'Error interno' });
+	}
+}
+
+export async function getResponsesController(
+	req: Request,
+	res: Response,
+) {
+	const { id } = req.params;
+	try {
+		const responses = await getEvaluationResponses(
+			Number(id),
+		);
+		res.status(200).json({ data: responses, error: null });
+	} catch (error) {
+		console.error('Error al obtener respuestas:', error);
+		res
+			.status(500)
+			.json({ data: null, error: 'Error interno' });
+	}
+}
+
+export async function submitResponsesController(
+	req: Request,
+	res: Response,
+) {
+	const { id, type } = req.params as {
+		id: string;
+		type: 'SUPERVISOR' | 'REPORT';
+	};
+	const { answers } = (req.body || {}) as {
+		answers: Array<{
+			itemId: number;
+			value: string | number;
+			comment?: string;
+		}>;
+	};
+	if (!Array.isArray(answers)) {
+		res.status(400).json({
+			data: null,
+			error: 'Cuerpo inválido: falta answers[]',
+		});
+		return;
+	}
+	if (type !== 'SUPERVISOR' && type !== 'REPORT') {
+		res.status(400).json({
+			data: null,
+			error: 'Tipo de evaluación inválido',
+		});
+		return;
+	}
+	try {
+		const result = await submitEvaluationResponses(
+			Number(id),
+			type,
+			answers,
+		);
+		if (!result.ok) {
+			const missingItemIds =
+				'missingItemIds' in result &&
+				Array.isArray(result.missingItemIds)
+					? result.missingItemIds
+					: [];
+			res.status(400).json({
+				data: null,
+				error: result.error,
+				missingItemIds,
+			});
+			return;
+		}
+		res
+			.status(200)
+			.json({ data: result.evaluation, error: null });
+	} catch (error) {
+		console.error('Error al enviar respuestas:', error);
+		res
+			.status(500)
+			.json({ data: null, error: 'Error interno' });
+	}
+}
+
+export async function attachSignatureController(
+	req: Request,
+	res: Response,
+) {
+	const { id, documentId } = req.params as {
+		id: string;
+		documentId: string;
+	};
+	try {
+		const updated = await attachSignatureDocument(
+			Number(id),
+			Number(documentId),
+		);
+		if (!updated) {
+			res.status(404).json({
+				data: null,
+				error: 'Evaluación o documento no encontrado',
+			});
+			return;
+		}
+		res.status(200).json({ data: updated, error: null });
+	} catch (error) {
+		console.error(
+			'Error al adjuntar documento de firma:',
+			error,
+		);
+		res
+			.status(500)
+			.json({ data: null, error: 'Error interno' });
+	}
+}
+
+// Upload a signature PDF and attach to an evaluation
+export async function uploadSignatureController(
+	req: Request,
+	res: Response,
+) {
+	const { id } = req.params;
+	const evaluationId = Number(id);
+	if (!req.file) {
+		res
+			.status(400)
+			.json({ data: null, error: 'Archivo PDF requerido' });
+		return;
+	}
+	if (Number.isNaN(evaluationId) || evaluationId <= 0) {
+		res.status(400).json({
+			data: null,
+			error: 'Id de evaluación inválido',
+		});
+		return;
+	}
+	try {
+		const relativePath = path.join(
+			'archives',
+			'signature',
+			path.basename(req.file.path),
+		);
+		const doc = await DocumentServices.createOne({
+			fileName: req.file.originalname,
+			filePath: relativePath,
+			mimeType: req.file.mimetype,
+		});
+		const updated = await attachSignatureDocument(
+			evaluationId,
+			doc.id,
+		);
+		if (!updated) {
+			res.status(404).json({
+				data: null,
+				error: 'Evaluación no encontrada',
+			});
+			return;
+		}
+		res.status(200).json({ data: updated, error: null });
+	} catch (error) {
+		console.error(
+			'Error al subir y adjuntar firma:',
+			error,
+		);
+		res
+			.status(500)
+			.json({ data: null, error: 'Error interno' });
+	}
+}
+
+export async function viewSignatureController(
+	req: Request,
+	res: Response,
+) {
+	const { id } = req.params;
+	const evaluationId = Number(id);
+	if (Number.isNaN(evaluationId) || evaluationId <= 0) {
+		res.status(400).json({
+			data: null,
+			error: 'Id de evaluación inválido',
+		});
+		return;
+	}
+	try {
+		const evaluation = await getEvaluation(evaluationId);
+		if (!evaluation || !evaluation.signature_document) {
+			res
+				.status(404)
+				.json({ data: null, error: 'Firma no encontrada' });
+			return;
+		}
+		const doc = evaluation.signature_document;
+		const filePath = path.join(
+			__dirname,
+			'..',
+			doc.file_path,
+		);
+		const fs = await import('fs');
+		if (!fs.existsSync(filePath)) {
+			res.status(404).json({
+				data: null,
+				error: 'Archivo físico no encontrado',
+			});
+			return;
+		}
+		res.setHeader('Content-Type', doc.mime_type);
+		res.setHeader(
+			'Content-Disposition',
+			`inline; filename="${doc.file_name}"`,
+		);
+		const fileStream = fs.createReadStream(filePath);
+		fileStream.pipe(res);
+	} catch (error) {
+		console.error('Error al visualizar firma:', error);
 		res
 			.status(500)
 			.json({ data: null, error: 'Error interno' });

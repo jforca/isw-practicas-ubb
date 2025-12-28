@@ -1,197 +1,484 @@
 import {
+	useEffect,
 	useId,
-	useMemo,
 	useState,
 	type FormEvent,
 } from 'react';
-import { TextareaAtom, LabelAtom } from '../atoms';
+import {
+	LabelAtom,
+	TextareaAtom,
+	AfRadioGroup,
+} from '../atoms';
+import { type TEvalLetter } from '../../lib/grade-converter';
+import { UseUpdateOneInternshipEvaluation } from '../../hooks/update-one-internship-evaluation.hook';
+import { UseFindOneInternshipEvaluation } from '../../hooks/find-one-internship-evaluation.hook';
+import { UseFindEvaluationResponses } from '../../hooks/find-evaluation-responses.hook';
 
 interface IReportEvaluationFormProps {
-	supervisorGrade?: number;
-	supervisorComments?: string;
+	evaluationId?: number;
+	onSuccess?: () => void;
 	onSubmit?: (data: {
-		reportGrade: number;
-		finalGrade: number;
+		evaluations: {
+			id: string;
+			value: TEvalLetter | null;
+		}[];
 		reportComments: string;
 	}) => void;
 }
 
+const COMPETENCIES: {
+	code: string;
+	description: string;
+	aspects: { id: string; text: string }[];
+}[] = [
+	{
+		code: 'CG1',
+		description:
+			'Manifiesta una actitud permanente de búsqueda y actualización de sus aprendizajes, incorporando los cambios sociales, científicos y tecnológicos en el ejercicio y desarrollo de su profesión.',
+		aspects: [
+			{
+				id: 'CG1-1',
+				text: 'Se evidencian los conocimientos y habilidades adquiridas por el estudiante, por la participación en el proyecto.',
+			},
+			{
+				id: 'CG1-2',
+				text: 'Se evidencia la realización de una adecuada revisión bibliográfica, la que se ajusta al formato exigido.',
+			},
+			{
+				id: 'CG1-3',
+				text: 'Se evidencia la aplicación de conocimientos por parte del estudiante, en el proyecto en el cual participó durante su práctica',
+			},
+			{
+				id: 'CG1-4',
+				text: 'Se evidencia el conocimiento de alternativas tecnológicas para resolver un problema planteado',
+			},
+			{
+				id: 'CG1-5',
+				text: 'Propone soluciones que consideran aspectos de impacto social',
+			},
+		],
+	},
+	{
+		code: 'CG3',
+		description:
+			'Establecer relaciones dialogantes para el intercambio de aportes constructivos con otras disciplinas y actúa éticamente en su profesión, trabajando de manera asociativa en la consecución de objetivos.',
+		aspects: [
+			{
+				id: 'CG3-1',
+				text: 'Se presentan evidencias de trabajo colaborativo con personas de otras disciplinas o profesiones y trabaja con ellos de manera asociativa y ética para la consecución de objetivos comunes',
+			},
+		],
+	},
+	{
+		code: 'CG5',
+		description:
+			'Comunicar ideas y sentimientos en forma oral y escrita para interactuar efectivamente en el entorno social y profesional en su lengua materna y en un nivel inicial en un segundo idioma.',
+		aspects: [
+			{
+				id: 'CG5-1',
+				text: 'Las conclusiones reflejan la importancia de los resultados obtenidos, la postura personal frente al tema contiene opiniones personales en relación a lo aprendido.',
+			},
+			{
+				id: 'CG5-2',
+				text: 'En el informe se destacan los aspectos importantes y se describen claramente las actividades desarrolladas por el estudiante, en el proyecto en el cual participó durante su práctica.',
+			},
+			{
+				id: 'CG5-3',
+				text: 'El informe se ajusta al formato y estructura exigido para la Práctica profesional II.',
+			},
+			{
+				id: 'CG5-4',
+				text: 'Las ideas del informe están claramente redactadas con buena ortografía, permitiendo comprender las actividades desarrolladas y los problemas resueltos.',
+			},
+			{
+				id: 'CG5-5',
+				text: 'El informe contiene la bitácora que considera el detalle de las actividades desarrolladas diariamente.',
+			},
+			{
+				id: 'CG5-6',
+				text: 'El informe refleja la utilización de nivel básico del idioma inglés, durante la práctica.',
+			},
+		],
+	},
+];
+
+const normalizeText = (value: string) =>
+	value
+		.toLowerCase()
+		.replace(/^[a-z]{2}\d+-\d+:\s*/i, '')
+		.replace(/[^a-z0-9áéíóúüñ\s]/gi, ' ')
+		.replace(/\s+/g, ' ')
+		.trim();
+
+const getCompetencyBadgeColor = (code: string): string => {
+	if (code.startsWith('CG')) return 'badge-info';
+	return 'badge-neutral';
+};
+
 export function ReportEvaluationForm({
-	supervisorGrade = 0,
-	supervisorComments = '',
-	onSubmit,
+	evaluationId,
+	onSuccess,
+	onSubmit: _onSubmit,
 }: IReportEvaluationFormProps) {
-	const id = useId();
-	// keep a string for the input to avoid aggressive rounding while typing
-	const initialReport = (
-		Math.round((Number(supervisorGrade) || 1) * 100) /
-			100 || 1
-	).toFixed(2);
-	const [reportGradeStr, setReportGradeStr] =
-		useState<string>(initialReport);
+	const { handleUpdateOne, isLoading, error, isSuccess } =
+		UseUpdateOneInternshipEvaluation();
+	const { handleFindOne } =
+		UseFindOneInternshipEvaluation();
+	const { handleFindResponses } =
+		UseFindEvaluationResponses();
+
+	const [rubricMap, setRubricMap] = useState<
+		Map<string, number>
+	>(new Map());
+
+	const formId = useId();
+	const commentsId = useId();
+
+	const [selections, setSelections] = useState<
+		Record<string, TEvalLetter | null>
+	>(() =>
+		Object.fromEntries(
+			COMPETENCIES.flatMap((competency) =>
+				competency.aspects.map((aspect) => [
+					aspect.id,
+					null,
+				]),
+			),
+		),
+	);
 	const [reportComments, setReportComments] = useState('');
+	const [existingReportGrade, setExistingReportGrade] =
+		useState<number | null>(null);
+	const [localSuccess, setLocalSuccess] = useState(false);
 
-	const reportGrade = useMemo(() => {
-		const n = parseFloat(reportGradeStr);
-		if (Number.isNaN(n)) return 1;
-		return (
-			Math.round(Math.max(1, Math.min(7, n)) * 100) / 100
-		);
-	}, [reportGradeStr]);
+	// biome-ignore lint(correctness/useExhaustiveDependencies): Las dependencias se controlan manualmente
+	useEffect(() => {
+		const load = async () => {
+			if (!evaluationId) return;
+			try {
+				const rubricRes = await fetch(
+					'/api/internship-evaluations/rubric/REPORT',
+				);
+				if (rubricRes.ok) {
+					const rubricJson = await rubricRes.json();
+					const list: Array<{
+						id: number;
+						label: string;
+					}> = Array.isArray(rubricJson?.data)
+						? rubricJson.data
+						: [];
+					const map = new Map<string, number>();
+					for (const item of list) {
+						if (!item?.label || !item?.id) continue;
+						const normalized = normalizeText(item.label);
+						if (!normalized) continue;
+						map.set(normalized, Number(item.id));
+					}
+					if (map.size > 0) setRubricMap(map);
+				}
+			} catch (err) {
+				console.error(
+					'No se pudo cargar la pauta de informe',
+					err,
+				);
+			}
+			const ev = await handleFindOne(evaluationId);
+			if (ev?.reportGrade != null) {
+				const num = Number(ev.reportGrade);
+				if (!Number.isNaN(num)) setExistingReportGrade(num);
+			}
+			if (ev?.reportComments) {
+				setReportComments(ev.reportComments);
+			}
 
-	const finalGrade = useMemo(() => {
-		const s = Number(supervisorGrade) || 0;
-		const r = Number(reportGrade) || 0;
-		const avg = (s + r) / (s > 0 ? 2 : 1);
-		return Math.round(avg * 100) / 100;
-	}, [supervisorGrade, reportGrade]);
+			const responses =
+				await handleFindResponses(evaluationId);
+			if (Array.isArray(responses) && responses.length) {
+				const labelToId = new Map(
+					COMPETENCIES.flatMap((c) =>
+						c.aspects.map((a) => [
+							normalizeText(a.text),
+							a.id,
+						]),
+					),
+				);
+				setSelections((prev) => {
+					const next = { ...prev };
+					for (const res of responses) {
+						if (res.item.evaluationType !== 'REPORT')
+							continue;
+						const key = labelToId.get(
+							normalizeText(res.item.label),
+						);
+						if (!key) continue;
+						const val = res.selectedValue?.toUpperCase();
+						if (
+							val === 'A' ||
+							val === 'B' ||
+							val === 'C' ||
+							val === 'D' ||
+							val === 'E' ||
+							val === 'F'
+						) {
+							next[key] = val as TEvalLetter;
+						}
+					}
+					return next;
+				});
+			}
+		};
+		load();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [evaluationId]);
 
-	const isValid = useMemo(() => {
-		if (reportGradeStr === '') return false;
-		const n = parseFloat(reportGradeStr);
-		if (Number.isNaN(n)) return false;
-		return n >= 1 && n <= 7;
-	}, [reportGradeStr]);
+	const handleSelectionChange = (
+		id: string,
+		value: TEvalLetter | null,
+	) => {
+		setSelections((prev) => ({ ...prev, [id]: value }));
+	};
 
-	const handleSubmit = (e: FormEvent) => {
+	const handleSubmit = async (
+		e: FormEvent<HTMLFormElement>,
+	) => {
 		e.preventDefault();
-		if (!isValid) return;
-		onSubmit?.({ reportGrade, finalGrade, reportComments });
+		setLocalSuccess(false);
+
+		const answered = Object.values(selections).some(
+			(v) => v !== null,
+		);
+		if (!answered) {
+			window.alert(
+				'Ingresa al menos una respuesta antes de guardar el informe.',
+			);
+			return;
+		}
+
+		if (!evaluationId) return;
+		if (rubricMap.size === 0) {
+			window.alert(
+				'No se pudo cargar la pauta de informe. Intenta recargar.',
+			);
+			return;
+		}
+
+		const answers = COMPETENCIES.flatMap((comp) =>
+			comp.aspects.map((asp) => {
+				const itemId = rubricMap.get(
+					normalizeText(asp.text),
+				);
+				const val = selections[asp.id];
+				return typeof itemId === 'number' && val
+					? {
+							itemId,
+							value: val,
+						}
+					: null;
+			}),
+		).filter(
+			(a): a is { itemId: number; value: TEvalLetter } =>
+				a !== null,
+		);
+
+		try {
+			const submitRes = await fetch(
+				`/api/internship-evaluations/submit/${evaluationId}/REPORT`,
+				{
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ answers }),
+				},
+			);
+			if (!submitRes.ok) {
+				const errJson = await submitRes.json();
+				throw new Error(
+					errJson?.error ||
+						'No se pudieron guardar las respuestas del informe',
+				);
+			}
+			const submitJson = await submitRes.json();
+			const newGrade = submitJson?.data?.reportGrade;
+			if (typeof newGrade === 'number') {
+				setExistingReportGrade(Number(newGrade));
+			}
+		} catch (err) {
+			const msg =
+				err instanceof Error
+					? err.message
+					: 'Error al guardar las respuestas del informe';
+			window.alert(msg);
+			return;
+		}
+
+		// Guardar comentarios (la nota se actualiza en submit)
+		const updateResult = await handleUpdateOne(
+			evaluationId,
+			{
+				reportComments,
+			},
+		);
+		if (updateResult === null) {
+			window.alert(
+				'No se pudieron guardar los comentarios del informe',
+			);
+			return;
+		}
+		setLocalSuccess(true);
+		setTimeout(() => setLocalSuccess(false), 3500);
+		onSuccess?.();
 	};
 
 	return (
 		<form
+			id={formId}
 			onSubmit={handleSubmit}
-			className="w-full max-w-2xl"
+			className="w-full space-y-6"
 		>
-			<fieldset className="fieldset rounded-box p-4 gap-4">
-				<h3 className="text-2xl font-semibold">
-					Evaluación del informe
+			<div className="bg-base-100 rounded-box p-6 shadow">
+				<h3 className="text-2xl font-semibold mb-4">
+					Aspectos a evaluar{' '}
+					<span className="text-base-content/60">
+						(Informe)
+					</span>
 				</h3>
-
-				<div>
-					<div className="text-sm">Nota del supervisor</div>
-					<div className="font-medium">
-						{supervisorGrade} / 7
+				{existingReportGrade != null && (
+					<div className="alert alert-info mb-4 text-sm">
+						<div>
+							Nota previa del encargado:{' '}
+							{existingReportGrade.toFixed(2)} / 7
+						</div>
 					</div>
-					<div className="text-sm text-base-content/60 mt-1">
-						Comentario del supervisor:
-					</div>
-					<div className="p-2 bg-base-200 rounded">
-						{supervisorComments || '—'}
-					</div>
-				</div>
-
-				<div className="form-control">
-					<LabelAtom htmlFor={`report-grade-${id}`}>
-						Asignar nota al informe (1-7)
-					</LabelAtom>
-					<input
-						id={`report-grade-${id}`}
-						type="text"
-						inputMode="numeric"
-						pattern="[0-9]*"
-						value={reportGradeStr}
-						onChange={(e) => {
-							const raw = e.target.value;
-							// allow empty while typing
-							if (raw === '') {
-								setReportGradeStr('');
-								return;
-							}
-							// allow only digits and dot
-							if (!/^[0-9]*\.?[0-9]*$/.test(raw)) return;
-
-							// if user typed first digit (1-7) and didn't type dot yet, auto-insert dot so next two are decimals
-							if (/^[1-7]$/.test(raw)) {
-								setReportGradeStr(`${raw}.`);
-								return;
-							}
-
-							// split integer and decimals
-							const [intPart, decPart] = raw.split('.');
-
-							// integer part must be 1..7 (or empty if starting with dot)
-							if (intPart && !/^[0-9]+$/.test(intPart))
-								return;
-							if (
-								intPart &&
-								(intPart.length > 1 ||
-									Number(intPart) < 1 ||
-									Number(intPart) > 7)
-							) {
-								// ignore invalid integer part
-								return;
-							}
-
-							// decimals limited to 2 digits
-							if (typeof decPart !== 'undefined') {
-								const dec = decPart.slice(0, 2);
-								setReportGradeStr(`${intPart}.${dec}`);
-								return;
-							}
-
-							// otherwise accept the integer (could be '0' which will be normalized on blur)
-							setReportGradeStr(intPart);
-						}}
-						onBlur={(e) => {
-							const raw = e.target.value;
-							if (raw === '') {
-								setReportGradeStr('1.00');
-								return;
-							}
-							const n = parseFloat(raw);
-							if (Number.isNaN(n)) {
-								setReportGradeStr('1.00');
-								return;
-							}
-							const clamped = Math.max(1, Math.min(7, n));
-							const rounded =
-								Math.round(clamped * 100) / 100;
-							setReportGradeStr(rounded.toFixed(2));
-						}}
-						className="input input-bordered w-36 mt-2"
-					/>
-				</div>
-
-				<div className="form-control">
-					<LabelAtom htmlFor={`report-comments-${id}`}>
-						Comentario del informe
-					</LabelAtom>
-					<TextareaAtom
-						id={`report-comments-${id}`}
-						value={reportComments}
-						onChange={(e) =>
-							setReportComments(e.target.value)
-						}
-						placeholder="Comentarios sobre el informe y el desempeño del practicante"
-					/>
-				</div>
-
-				<div className="divider" />
-
-				<div className="p-4 border rounded">
-					<div className="text-sm">
-						Nota report: {reportGrade.toFixed(2)} / 7
-					</div>
-					<div className="text-sm">
-						Nota final (promedio):{' '}
-						<span className="font-medium">
-							{finalGrade.toFixed(2)} / 7
+				)}
+				<div className="bg-info/10 border-l-4 border-info p-4 rounded-r-lg mb-6">
+					<p className="text-sm text-base-content/80">
+						<span className="font-semibold">
+							Instrucciones:
+						</span>{' '}
+						En el espacio de evaluación marque con una "X"
+						la letra que corresponda a lo observado.
+					</p>
+					<div className="flex flex-wrap gap-3 mt-2 text-xs">
+						<span className="badge badge-lg badge-outline">
+							<span className="font-bold mr-1">A</span>{' '}
+							Sobresaliente
+						</span>
+						<span className="badge badge-lg badge-outline">
+							<span className="font-bold mr-1">B</span>{' '}
+							Bueno
+						</span>
+						<span className="badge badge-lg badge-outline">
+							<span className="font-bold mr-1">C</span>{' '}
+							Moderado
+						</span>
+						<span className="badge badge-lg badge-outline">
+							<span className="font-bold mr-1">D</span>{' '}
+							Suficiente
+						</span>
+						<span className="badge badge-lg badge-outline">
+							<span className="font-bold mr-1">E</span>{' '}
+							Insuficiente
+						</span>
+						<span className="badge badge-lg badge-outline">
+							<span className="font-bold mr-1">F</span> No
+							aplica
 						</span>
 					</div>
 				</div>
 
-				<div className="flex justify-end">
-					<button
-						className="btn btn-neutral mt-4"
-						type="submit"
-						disabled={!isValid}
-					>
-						Guardar informe
-					</button>
+				<div className="space-y-4">
+					{COMPETENCIES.map((competency) => (
+						<div
+							key={competency.code}
+							className="bg-base-200/50 rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow"
+						>
+							<div className="flex items-start gap-4 mb-4">
+								<span
+									className={`badge ${getCompetencyBadgeColor(competency.code)} badge-lg font-semibold`}
+								>
+									{competency.code}
+								</span>
+								<p className="text-sm text-base-content/80 flex-1">
+									{competency.description}
+								</p>
+							</div>
+
+							<div className="divider my-3"></div>
+
+							<div className="space-y-4">
+								{competency.aspects.map((aspect) => (
+									<div
+										key={aspect.id}
+										className="bg-base-100 rounded-lg p-4 flex items-center gap-4 hover:bg-base-100/80 transition-colors"
+									>
+										<div className="flex-1">
+											<p className="text-sm">
+												{aspect.text}
+											</p>
+										</div>
+										<div className="shrink-0">
+											<AfRadioGroup
+												name={`report-${aspect.id}`}
+												value={selections[aspect.id]}
+												onChange={(value) =>
+													handleSelectionChange(
+														aspect.id,
+														value,
+													)
+												}
+												size="sm"
+											/>
+										</div>
+									</div>
+								))}
+							</div>
+						</div>
+					))}
 				</div>
-			</fieldset>
+			</div>
+
+			<div className="bg-base-100 rounded-box p-6 shadow">
+				<div className="form-control w-full">
+					<LabelAtom htmlFor={commentsId}>
+						<span className="text-lg font-semibold">
+							V.- Observaciones del informe
+						</span>
+					</LabelAtom>
+					<div className="mt-3">
+						<TextareaAtom
+							id={commentsId}
+							value={reportComments}
+							onChange={(e) =>
+								setReportComments(e.target.value)
+							}
+							placeholder="Ingrese sus observaciones sobre el informe..."
+						/>
+					</div>
+				</div>
+			</div>
+
+			<div className="flex justify-end bg-base-100 rounded-box p-4 shadow">
+				<button
+					type="submit"
+					className="btn btn-primary btn-lg"
+					disabled={isLoading}
+				>
+					{isLoading
+						? 'Guardando...'
+						: 'Guardar evaluación'}
+				</button>
+			</div>
+
+			{error && (
+				<div className="alert alert-error">
+					<span>{error}</span>
+				</div>
+			)}
+
+			{(isSuccess || localSuccess) && (
+				<div className="alert alert-success">
+					<span>Evaluación guardada correctamente</span>
+				</div>
+			)}
 		</form>
 	);
 }
