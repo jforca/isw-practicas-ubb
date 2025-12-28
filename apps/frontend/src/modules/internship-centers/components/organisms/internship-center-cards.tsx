@@ -158,6 +158,12 @@ function InternshipCenterCard({
 	// Estado para el archivo de convenio
 	const [conventionFile, setConventionFile] =
 		useState<File | null>(null);
+
+	const [editFileError, setEditFileError] = useState<
+		string | null
+	>(null);
+
+	const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 	const hasConvention = c.convention_document_id !== null;
 
 	// URL para ver el convenio en nueva pestaña
@@ -355,12 +361,26 @@ function InternshipCenterCard({
 		e: React.ChangeEvent<HTMLInputElement>,
 	) => {
 		const file = e.target.files?.[0];
-		if (file && file.type === 'application/pdf') {
-			setConventionFile(file);
-		} else if (file) {
+		if (!file) return;
+		if (file.type !== 'application/pdf') {
 			alert('Solo se permiten archivos PDF');
 			e.target.value = '';
+			setEditFileError(
+				'Tipo de archivo inválido. Solo PDF',
+			);
+			setConventionFile(null);
+			return;
 		}
+		if (file.size > MAX_FILE_SIZE_BYTES) {
+			setEditFileError(
+				'Archivo demasiado grande (máx 10 MB)',
+			);
+			setConventionFile(null);
+			e.target.value = '';
+			return;
+		}
+		setEditFileError(null);
+		setConventionFile(file);
 	};
 
 	return (
@@ -769,6 +789,13 @@ function InternshipCenterCard({
 														isUpdating || isUploading
 													}
 												/>
+												{editFileError && (
+													<label className="label">
+														<span className="label-text-alt text-error text-sm">
+															{editFileError}
+														</span>
+													</label>
+												)}
 												<span className="text-sm text-base-content/60">
 													10mb como maximo
 												</span>

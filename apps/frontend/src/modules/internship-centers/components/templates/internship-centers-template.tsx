@@ -100,6 +100,12 @@ export function InternshipCentersTemplate({
 	const [conventionFile, setConventionFile] =
 		useState<File | null>(null);
 
+	const [createFileError, setCreateFileError] = useState<
+		string | null
+	>(null);
+
+	const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+
 	// Referencia al modal de crear
 	const createModalRef = useRef<HTMLDialogElement>(null);
 
@@ -231,12 +237,26 @@ export function InternshipCentersTemplate({
 		e: React.ChangeEvent<HTMLInputElement>,
 	) => {
 		const file = e.target.files?.[0];
-		if (file && file.type === 'application/pdf') {
-			setConventionFile(file);
-		} else if (file) {
+		if (!file) return;
+		if (file.type !== 'application/pdf') {
 			alert('Solo se permiten archivos PDF');
 			e.target.value = '';
+			setCreateFileError(
+				'Tipo de archivo inválido. Solo PDF',
+			);
+			setConventionFile(null);
+			return;
 		}
+		if (file.size > MAX_FILE_SIZE_BYTES) {
+			setCreateFileError(
+				'Archivo demasiado grande (máx 10 MB)',
+			);
+			setConventionFile(null);
+			e.target.value = '';
+			return;
+		}
+		setCreateFileError(null);
+		setConventionFile(file);
 	};
 
 	const handleOpenCreateModal = () => {
@@ -535,6 +555,13 @@ export function InternshipCentersTemplate({
 										className="file-input file-input-bordered w-full"
 										disabled={isCreating || isUploading}
 									/>
+									{createFileError && (
+										<label className="label">
+											<span className="label-text-alt text-error text-sm">
+												{createFileError}
+											</span>
+										</label>
+									)}
 									<span className="text-sm text-base-content/60">
 										10mb como maximo
 									</span>
