@@ -151,6 +151,10 @@ function InternshipCenterCard({
 		Record<keyof TEditForm, string | null>
 	>({} as Record<keyof TEditForm, string | null>);
 
+	const [touched, setTouched] = useState<
+		Record<keyof TEditForm, boolean>
+	>({} as Record<keyof TEditForm, boolean>);
+
 	// Estado para el archivo de convenio
 	const [conventionFile, setConventionFile] =
 		useState<File | null>(null);
@@ -201,6 +205,7 @@ function InternshipCenterCard({
 			...prev,
 			[field]: validateField(field, value),
 		}));
+		setTouched((prev) => ({ ...prev, [field]: true }));
 	};
 
 	const validateField = (
@@ -281,7 +286,9 @@ function InternshipCenterCard({
 		const base = 'input w-full rounded-lg';
 		const err = editErrors[field];
 		if (err) return `${base} input-error`;
-		if (editForm[field]) return `${base} input-success`;
+		const isTouched = touched[field];
+		if (isTouched && editForm[field])
+			return `${base} input-success`;
 		return base;
 	};
 
@@ -331,6 +338,10 @@ function InternshipCenterCard({
 			description: c.description,
 		});
 		setConventionFile(null);
+		setEditErrors(
+			{} as Record<keyof TEditForm, string | null>,
+		);
+		setTouched({} as Record<keyof TEditForm, boolean>);
 	};
 
 	// Handler para el archivo de convenio

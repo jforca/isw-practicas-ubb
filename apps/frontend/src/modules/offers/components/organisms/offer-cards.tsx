@@ -154,6 +154,10 @@ function OfferCard({
 		Record<keyof TEditForm, string | null>
 	>({} as Record<keyof TEditForm, string | null>);
 
+	const [touched, setTouched] = useState<
+		Record<keyof TEditForm, boolean>
+	>({} as Record<keyof TEditForm, boolean>);
+
 	const editModalRef = useRef<HTMLDialogElement>(null);
 	const deleteModalRef = useRef<HTMLDialogElement>(null);
 
@@ -236,6 +240,7 @@ function OfferCard({
 			...prev,
 			[field]: validateField(field, value),
 		}));
+		setTouched((prev) => ({ ...prev, [field]: true }));
 	};
 
 	const isEditFormValid = () => {
@@ -260,8 +265,10 @@ function OfferCard({
 		const base = 'input w-full rounded-lg';
 		const err = editErrors[field];
 		if (err) return `${base} input-error`;
+		const isTouched = touched[field];
 		const val = editForm[field];
 		if (
+			isTouched &&
 			val &&
 			(typeof val === 'string' ? val.trim() !== '' : true)
 		)
@@ -273,8 +280,14 @@ function OfferCard({
 		const base = 'textarea textarea-bordered w-full';
 		const err = editErrors[field];
 		if (err) return `${base} textarea-error`;
+		const isTouched = touched[field];
 		const val = editForm[field];
-		if (val && typeof val === 'string' && val.trim() !== '')
+		if (
+			isTouched &&
+			val &&
+			typeof val === 'string' &&
+			val.trim() !== ''
+		)
 			return `${base} textarea-success`;
 		return base;
 	};
@@ -318,6 +331,10 @@ function OfferCard({
 					: [],
 			internshipCenterId: o.internshipCenter.id,
 		});
+		setEditErrors(
+			{} as Record<keyof TEditForm, string | null>,
+		);
+		setTouched({} as Record<keyof TEditForm, boolean>);
 	};
 
 	const formattedDeadline = new Date(
