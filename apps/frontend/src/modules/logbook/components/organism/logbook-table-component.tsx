@@ -39,7 +39,7 @@ export const LogbookTable: React.FC<ILogbookTableProps> = ({
 					{entries.map((entry) => (
 						<tr key={entry.id} className="hover">
 							<td className="font-bold text-base-content">
-								{entry.title}
+								{truncateText(entry.title, 80)}
 							</td>
 
 							<td className="text-sm text-gray-500">

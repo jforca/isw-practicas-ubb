@@ -28,14 +28,17 @@ export function UseFindReports() {
 	const [error, setError] = useState<string | null>(null);
 
 	const findReports = useCallback(
-		async (internshipId: number) => {
+		async (internshipId: number, search?: string) => {
 			setIsLoading(true);
 			setError(null);
 
 			try {
-				const response = await fetch(
-					`/api/reports?internshipId=${internshipId}`,
-				);
+				let url = `/api/reports?internshipId=${internshipId}`;
+				if (search) {
+					url += `&title=${encodeURIComponent(search)}`;
+				}
+
+				const response = await fetch(url);
 
 				if (!response.ok) {
 					throw new Error('Error al obtener los informes');

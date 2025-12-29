@@ -61,6 +61,7 @@ export const LogbookPage: React.FC = () => {
 		currentPage,
 		totalPages,
 		pagination,
+		updateFilters,
 	} = UseFindManyLogbookEntries(internshipId || 0);
 
 	const { createEntry, isLoading: isCreating } =
@@ -222,9 +223,23 @@ export const LogbookPage: React.FC = () => {
 			<h1 className="text-2xl font-bold text-base-content">
 				Gestión de Registros del Logbook
 			</h1>
-			<Button onClick={handleOpenCreate} variant="primary">
-				+ Nuevo Registro
-			</Button>
+			<div className="flex gap-4">
+				<input
+					type="text"
+					placeholder="Buscar por título..."
+					className="input input-bordered w-full max-w-xs"
+					maxLength={155}
+					onChange={(e) =>
+						updateFilters({ search: e.target.value })
+					}
+				/>
+				<Button
+					onClick={handleOpenCreate}
+					variant="primary"
+				>
+					+ Nuevo Registro
+				</Button>
+			</div>
 		</div>
 	);
 

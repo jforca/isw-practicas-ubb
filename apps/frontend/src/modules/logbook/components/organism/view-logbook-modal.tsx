@@ -28,7 +28,7 @@ export const ViewLogbookModal: React.FC<
 
 	return (
 		<div className="modal modal-open">
-			<div className="modal-box w-11/12 max-w-3xl relative">
+			<div className="modal-box w-11/12 max-w-5xl relative">
 				<button
 					onClick={onClose}
 					className="btn btn-sm btn-circle absolute right-2 top-2"
@@ -37,7 +37,7 @@ export const ViewLogbookModal: React.FC<
 					✕
 				</button>
 
-				<h3 className="text-2xl font-bold mb-2 text-primary">
+				<h3 className="text-2xl font-bold mb-2 text-primary break-words">
 					{entry.title}
 				</h3>
 
@@ -49,7 +49,7 @@ export const ViewLogbookModal: React.FC<
 				</div>
 
 				<div className="bg-base-200 p-4 rounded-lg min-h-[200px]">
-					<p className="whitespace-pre-wrap text-base leading-relaxed">
+					<p className="whitespace-pre-wrap text-base leading-relaxed break-words">
 						{entry.content}
 					</p>
 				</div>

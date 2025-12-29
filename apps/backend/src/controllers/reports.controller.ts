@@ -70,7 +70,7 @@ async function uploadReport(req: Request, res: Response) {
 
 async function getReports(req: Request, res: Response) {
 	try {
-		const { internshipId } = req.query;
+		const { internshipId, title } = req.query;
 		if (!internshipId) {
 			return handleErrorClient(
 				res,
@@ -82,6 +82,7 @@ async function getReports(req: Request, res: Response) {
 
 		const reports = await ReportsService.findMany(
 			Number(internshipId),
+			title as string | undefined,
 		);
 
 		if (!reports) {
