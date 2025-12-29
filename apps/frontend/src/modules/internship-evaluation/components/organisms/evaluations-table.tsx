@@ -135,7 +135,7 @@ export function EvaluationsTable() {
 						onChange={(e) =>
 							updateFilters({ search: e.target.value })
 						}
-						placeholder="Buscar por id o término..."
+						placeholder="Buscar por nombre..."
 					/>
 				</div>
 				<div className="flex items-center gap-3 text-sm text-base-content/70">
