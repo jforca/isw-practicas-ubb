@@ -4,6 +4,7 @@ import {
 	ApplicationDocuments,
 	Internship,
 } from '@entities';
+import { Like, FindOptionsWhere } from 'typeorm';
 
 interface ICreateReportDto {
 	title?: string;
@@ -69,7 +70,10 @@ async function createOne(data: ICreateReportDto) {
 	}
 }
 
-async function findMany(internshipId: number) {
+async function findMany(
+	internshipId: number,
+	title?: string,
+) {
 	try {
 		const internshipRepo =
 			AppDataSource.getRepository(Internship);
@@ -85,10 +89,17 @@ async function findMany(internshipId: number) {
 		const appDocRepo = AppDataSource.getRepository(
 			ApplicationDocuments,
 		);
+
+		const where: FindOptionsWhere<ApplicationDocuments> = {
+			application: { id: internship.application.id },
+		};
+
+		if (title) {
+			where.document = { file_name: Like(`%${title}%`) };
+		}
+
 		const appDocs = await appDocRepo.find({
-			where: {
-				application: { id: internship.application.id },
-			},
+			where,
 			relations: ['document'],
 			order: { id: 'DESC' },
 		});

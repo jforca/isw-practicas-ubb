@@ -7,8 +7,9 @@ import fs from 'fs';
 const router = Router();
 
 const uploadDir = path.join(
-	process.cwd(),
-	'uploads',
+	__dirname,
+	'..',
+	'archives',
 	'reports',
 );
 if (!fs.existsSync(uploadDir)) {

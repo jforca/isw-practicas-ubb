@@ -19,7 +19,7 @@ export const FeedbackModal: React.FC<
 	const isSuccess = type === 'success';
 
 	return (
-		<div className="modal modal-open z-50">
+		<div className="modal modal-open z-[1000]">
 			<div className="modal-box text-center relative">
 				<button
 					onClick={onClose}

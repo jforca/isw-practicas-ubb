@@ -60,8 +60,10 @@ export const CreateLogbookModal: React.FC<
 		if (!title.trim()) {
 			newErrors.title = 'El título es obligatorio.';
 			isValid = false;
-		} else if (title.length < 10) {
 			newErrors.title = `Mínimo 10 caracteres (tienes ${title.length}).`;
+			isValid = false;
+		} else if (title.length > 150) {
+			newErrors.title = `Máximo 150 caracteres (tienes ${title.length}).`;
 			isValid = false;
 		} else if (!hasLetters.test(title)) {
 			newErrors.title =
@@ -72,8 +74,10 @@ export const CreateLogbookModal: React.FC<
 		if (!content.trim()) {
 			newErrors.content = 'El contenido es obligatorio.';
 			isValid = false;
-		} else if (content.length < 50) {
 			newErrors.content = `Mínimo 50 caracteres (tienes ${content.length}).`;
+			isValid = false;
+		} else if (content.length > 2000) {
+			newErrors.content = `Máximo 2000 caracteres (tienes ${content.length}).`;
 			isValid = false;
 		} else if (!hasLetters.test(content)) {
 			newErrors.content =
@@ -126,7 +130,7 @@ export const CreateLogbookModal: React.FC<
 
 	return (
 		<div className="modal modal-open">
-			<div className="modal-box relative">
+			<div className="modal-box relative w-11/12 max-w-5xl">
 				<button
 					onClick={onClose}
 					className="btn btn-sm btn-circle absolute right-2 top-2"
@@ -146,6 +150,7 @@ export const CreateLogbookModal: React.FC<
 							placeholder="Ej: Avance semanal del proyecto..."
 							value={title}
 							onChange={handleTitleChange}
+							maxLength={150}
 							disabled={isLoading}
 							className={errors.title ? 'input-error' : ''}
 						/>
@@ -163,10 +168,11 @@ export const CreateLogbookModal: React.FC<
 							placeholder="Describe los avances y tareas realizadas..."
 							value={content}
 							onChange={handleContentChange}
+							maxLength={2000}
 							disabled={isLoading}
-							className={
+							className={`h-96 ${
 								errors.content ? 'textarea-error' : ''
-							}
+							}`}
 						/>
 
 						{errors.content && (
@@ -176,7 +182,7 @@ export const CreateLogbookModal: React.FC<
 						)}
 
 						<div className="text-right text-xs text-gray-400 mt-1">
-							{content.length}
+							{content.length}/2000
 						</div>
 					</div>
 
