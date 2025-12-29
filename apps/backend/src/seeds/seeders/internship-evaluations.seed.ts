@@ -52,11 +52,11 @@ export async function seedInternshipEvaluations() {
 		return;
 	}
 
-	const letters = ['A', 'B', 'C', 'D', 'E'];
-	const values = [7, 6, 5, 4, 3];
+	const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+	const values = [7, 6, 5, 4, 3, 2];
 
-	// Crear evaluaciones para varios internships (hasta 6 para no saturar)
-	const limit = Math.min(internships.length, 6);
+	// Crear evaluaciones para varios internships (hasta 12 para más cobertura)
+	const limit = Math.min(internships.length, 12);
 	for (let k = 0; k < limit; k++) {
 		const internship = internships[k];
 		const ev = new InternshipEvaluation();

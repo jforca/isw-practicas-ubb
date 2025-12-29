@@ -25,11 +25,12 @@ export async function seedLogbookEntries() {
 	const entries = [] as LogbookEntries[];
 	for (
 		let i = 0;
-		i < Math.min(internships.length, 6);
+		i < Math.min(internships.length, 8);
 		i++
 	) {
 		const intern = internships[i];
-		for (let j = 0; j < 3; j++) {
+		// Crear 5 entradas por internship para mayor cobertura
+		for (let j = 0; j < 5; j++) {
 			const e = new LogbookEntries();
 			e.title = `Bitácora ${j + 1} - Internship ${intern.id}`;
 			e.body = `Entrada seed automática para la bitácora ${j + 1} del internship ${intern.id}. Actividades realizadas, aprendizajes y observaciones.`;

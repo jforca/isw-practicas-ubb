@@ -63,13 +63,16 @@ export async function seedInternships() {
 		const secondOffer =
 			offersList[(i + 1) % offersList.length];
 
+		// Alternar estado aprobado en algunas postulaciones
 		appsToCreate.push({
 			student,
 			offer: firstOffer,
+			status: i % 2 === 0 ? 'approved' : undefined,
 		} as Partial<Application>);
 		appsToCreate.push({
 			student,
 			offer: secondOffer,
+			status: i % 3 === 0 ? 'approved' : undefined,
 		} as Partial<Application>);
 	}
 
@@ -78,10 +81,12 @@ export async function seedInternships() {
 		appsToCreate.push({
 			student: students[1],
 			offer: offersList[2],
+			status: 'approved',
 		} as Partial<Application>);
 		appsToCreate.push({
 			student: students[0],
 			offer: offersList[offersList.length - 1],
+			status: 'approved',
 		} as Partial<Application>);
 	}
 
