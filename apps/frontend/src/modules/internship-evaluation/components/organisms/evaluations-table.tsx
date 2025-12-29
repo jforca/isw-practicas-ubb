@@ -159,28 +159,28 @@ export function EvaluationsTable() {
 				<table className="table table-zebra w-full">
 					<thead>
 						<tr>
-							<th className="text-xs uppercase">
+							<th className="text-xs uppercase text-primary font-semibold">
 								Estudiante
 							</th>
-							<th className="text-xs uppercase">
+							<th className="text-xs uppercase text-secondary font-semibold">
 								Supervisor
 							</th>
-							<th className="text-xs uppercase">
+							<th className="text-xs uppercase text-secondary font-semibold">
 								Encargado
 							</th>
-							<th className="text-xs uppercase">
+							<th className="text-xs uppercase text-accent font-semibold">
 								Nota supervisor
 							</th>
-							<th className="text-xs uppercase">
+							<th className="text-xs uppercase text-accent font-semibold">
 								Nota encargado
 							</th>
-							<th className="text-xs uppercase">
+							<th className="text-xs uppercase text-accent font-semibold">
 								Nota final
 							</th>
-							<th className="text-xs uppercase text-center">
+							<th className="text-xs uppercase text-center text-info font-semibold">
 								Evaluaciones
 							</th>
-							<th className="text-xs uppercase text-center">
+							<th className="text-xs uppercase text-center text-success font-semibold">
 								Firma
 							</th>
 						</tr>
