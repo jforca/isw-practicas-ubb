@@ -35,23 +35,23 @@ export function FilterMenu({
 			<div
 				// biome-ignore lint/a11y/noNoninteractiveTabindex: Required for DaisyUI dropdown
 				tabIndex={0}
-				className="dropdown-content z-[1] card card-compact w-72 p-2 shadow-lg bg-base-100 text-base-content border rounded-box mt-1"
+				className="dropdown-content z-[20] card card-compact w-56 p-2 shadow-xl bg-base-100 text-base-content border rounded-box mt-1"
 			>
-				<div className="card-body gap-4">
-					<h3 className="font-bold text-lg border-b pb-2">
+				<div className="card-body gap-2 p-2">
+					<h3 className="font-bold text-sm border-b pb-1">
 						Filtros
 					</h3>
 
 					{/* Filtro Práctica */}
-					<div className="flex flex-col gap-2">
-						<span className="text-sm font-bold opacity-70">
+					<div className="flex flex-col gap-1">
+						<span className="text-xs font-bold opacity-70">
 							Práctica
 						</span>
-						<div className="flex flex-col gap-1">
-							<label className="flex items-center gap-3 cursor-pointer hover:bg-base-200 p-1 rounded-md transition-colors">
+						<div className="flex flex-col gap-0.5">
+							<label className="flex items-center gap-2 cursor-pointer hover:bg-base-200 p-1 rounded-md transition-colors">
 								<input
 									type="checkbox"
-									className="checkbox checkbox-sm checkbox-primary rounded-sm"
+									className="checkbox checkbox-xs checkbox-primary rounded-sm"
 									checked={selectedFilters.internshipTypes.includes(
 										'Práctica 1',
 									)}
@@ -62,12 +62,12 @@ export function FilterMenu({
 										)
 									}
 								/>
-								<span className="text-sm">Práctica 1</span>
+								<span className="text-xs">Práctica 1</span>
 							</label>
-							<label className="flex items-center gap-3 cursor-pointer hover:bg-base-200 p-1 rounded-md transition-colors">
+							<label className="flex items-center gap-2 cursor-pointer hover:bg-base-200 p-1 rounded-md transition-colors">
 								<input
 									type="checkbox"
-									className="checkbox checkbox-sm checkbox-primary rounded-sm"
+									className="checkbox checkbox-xs checkbox-primary rounded-sm"
 									checked={selectedFilters.internshipTypes.includes(
 										'Práctica 2',
 									)}
@@ -78,19 +78,19 @@ export function FilterMenu({
 										)
 									}
 								/>
-								<span className="text-sm">Práctica 2</span>
+								<span className="text-xs">Práctica 2</span>
 							</label>
 						</div>
 					</div>
 
-					<div className="divider my-0"></div>
+					<div className="divider my-0 h-0"></div>
 
 					{/* Filtro Estado */}
-					<div className="flex flex-col gap-2">
-						<span className="text-sm font-bold opacity-70">
+					<div className="flex flex-col gap-1">
+						<span className="text-xs font-bold opacity-70">
 							Estado
 						</span>
-						<div className="flex flex-col gap-1">
+						<div className="flex flex-col gap-0.5">
 							{[
 								'En Curso',
 								'Evaluación Pendiente',
@@ -100,11 +100,11 @@ export function FilterMenu({
 							].map((status) => (
 								<label
 									key={status}
-									className="flex items-center gap-3 cursor-pointer hover:bg-base-200 p-1 rounded-md transition-colors"
+									className="flex items-center gap-2 cursor-pointer hover:bg-base-200 p-1 rounded-md transition-colors"
 								>
 									<input
 										type="checkbox"
-										className="checkbox checkbox-sm checkbox-primary rounded-sm"
+										className="checkbox checkbox-xs checkbox-primary rounded-sm"
 										checked={selectedFilters.statuses.includes(
 											status,
 										)}
@@ -112,7 +112,7 @@ export function FilterMenu({
 											toggleFilter('statuses', status)
 										}
 									/>
-									<span className="text-sm">{status}</span>
+									<span className="text-xs">{status}</span>
 								</label>
 							))}
 						</div>
