@@ -8,7 +8,6 @@ import {
 	UserCircle2,
 	UsersRound,
 	Book,
-	FileText,
 	FileStack,
 	School,
 } from 'lucide-react';
@@ -94,28 +93,7 @@ export function Layout() {
 							</span>
 						</NavLink>
 					</li>
-					<li>
-						<NavLink
-							to="/app/reports"
-							className={({ isActive }) =>
-								`flex flex-col lg:flex-row items-center gap-1${isActive ? ' text-primary' : ''}`
-							}
-						>
-							<FileText size={28} />
-							<span className="paragraph-1">Informes</span>
-						</NavLink>
-					</li>
-					<li>
-						<NavLink
-							to="/app/logbook"
-							className={({ isActive }) =>
-								`flex flex-col lg:flex-row items-center gap-1${isActive ? ' text-primary' : ''}`
-							}
-						>
-							<Book size={28} />
-							<span className="paragraph-1">Bitácora</span>
-						</NavLink>
-					</li>
+
 					<li>
 						<NavLink
 							to="/app/applications-management"
