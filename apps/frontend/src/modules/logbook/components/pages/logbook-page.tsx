@@ -146,16 +146,44 @@ export const LogbookPage: React.FC = () => {
 	) => {
 		let success = false;
 
+		// Validación mínima en cliente para evitar 400 por schema
+		if (
+			!title ||
+			title.trim().length < 10 ||
+			!content ||
+			content.trim().length < 50
+		) {
+			setFeedback({
+				isOpen: true,
+				type: 'error',
+				title: 'Error de validación',
+				message:
+					'El título debe tener al menos 10 caracteres y el contenido al menos 50.',
+			});
+			return;
+		}
+
 		if (editingData?.id) {
 			success = await updateEntry(editingData.id, {
 				title,
 				content,
 			});
 		} else {
+			if (!internshipId || internshipId <= 0) {
+				setFeedback({
+					isOpen: true,
+					type: 'error',
+					title: 'Error',
+					message:
+						'No se encontró práctica activa. No se puede crear la bitácora.',
+				});
+				return;
+			}
+
 			success = await createEntry({
 				title,
 				content,
-				internshipId: internshipId || 0,
+				internshipId,
 			});
 		}
 

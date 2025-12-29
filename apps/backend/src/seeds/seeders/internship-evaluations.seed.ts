@@ -36,108 +36,117 @@ export async function seedInternshipEvaluations() {
 		return;
 	}
 
-	const internship = internships[0];
-
-	const ev = new InternshipEvaluation();
-	ev.internship = internship;
-	ev.supervisorGrade = null;
-	ev.reportGrade = null;
-	ev.finalGrade = null;
-	ev.completedAt = null;
-	ev.signature_document = null;
-	const savedEv = await evalRepo.save(ev);
-
 	const supItems = await itemRepo.find({
 		where: { evaluationType: 'SUPERVISOR', isActive: true },
 		order: { order: 'ASC', id: 'ASC' },
 	});
-	if (!supItems.length) {
-		console.log(
-			'No hay items de SUPERVISOR — ejecuta seedEvaluationItems primero.',
-		);
-		return;
-	}
-
-	const responses: EvaluationResponse[] = [];
-	const letters = ['A', 'B', 'C', 'D', 'E'];
-	const values = [7, 6, 5, 4, 3];
-
-	for (let i = 0; i < supItems.length; i++) {
-		const item = supItems[i];
-		const resp = new EvaluationResponse();
-		resp.evaluation = savedEv;
-		resp.item = item;
-		const idx = i % 5;
-		resp.selectedValue = letters[idx];
-		resp.numericValue = values[idx];
-		resp.score = values[idx];
-		resp.comment = null;
-		responses.push(resp);
-	}
-
-	await responseRepo.save(responses);
-
-	// Recalcular nota promedio para supervisor (coerce a número para evitar NaN)
-	const totalScore = responses.reduce((sum, r) => {
-		const sc = Number(r.score);
-		return sum + (Number.isFinite(sc) ? sc : 0);
-	}, 0);
-	const avgGrade = responses.length
-		? Math.round((totalScore / responses.length) * 100) /
-			100
-		: null;
-	ev.supervisorGrade = avgGrade;
-
-	// Crear respuestas de REPORT también
 	const reportItems = await itemRepo.find({
 		where: { evaluationType: 'REPORT', isActive: true },
 		order: { order: 'ASC', id: 'ASC' },
 	});
-	if (reportItems.length) {
-		const reportResponses: EvaluationResponse[] = [];
-		for (let i = 0; i < reportItems.length; i++) {
-			const item = reportItems[i];
+
+	if (!supItems.length && !reportItems.length) {
+		console.log(
+			'No hay items de evaluación — ejecuta seedEvaluationItems primero.',
+		);
+		return;
+	}
+
+	const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+	const values = [7, 6, 5, 4, 3, 2];
+
+	// Crear evaluaciones para varios internships (hasta 12 para más cobertura)
+	const limit = Math.min(internships.length, 12);
+	for (let k = 0; k < limit; k++) {
+		const internship = internships[k];
+		const ev = new InternshipEvaluation();
+		ev.internship = internship;
+		ev.supervisorGrade = null;
+		ev.reportGrade = null;
+		ev.finalGrade = null;
+		ev.completedAt = new Date();
+		ev.signature_document = null;
+		const savedEv = await evalRepo.save(ev);
+
+		// respuestas supervisor
+		const responses: EvaluationResponse[] = [];
+		for (let i = 0; i < supItems.length; i++) {
+			const item = supItems[i];
 			const resp = new EvaluationResponse();
 			resp.evaluation = savedEv;
 			resp.item = item;
-			const idx = i % 5;
+			// rotar valores para diversidad
+			const idx = (k + i) % letters.length;
 			resp.selectedValue = letters[idx];
 			resp.numericValue = values[idx];
 			resp.score = values[idx];
-			resp.comment = null;
-			reportResponses.push(resp);
+			resp.comment = `Respuesta seed para item ${item.id}`;
+			responses.push(resp);
 		}
-		await responseRepo.save(reportResponses);
+		await responseRepo.save(responses);
 
-		const reportTotalScore = reportResponses.reduce(
-			(sum, r) => {
-				const sc = Number(r.score);
-				return sum + (Number.isFinite(sc) ? sc : 0);
-			},
+		const totalScore = responses.reduce(
+			(sum, r) =>
+				sum +
+				(Number.isFinite(Number(r.score))
+					? Number(r.score)
+					: 0),
 			0,
 		);
-		const reportAvgGrade = reportResponses.length
-			? Math.round(
-					(reportTotalScore / reportResponses.length) * 100,
-				) / 100
+		const avgGrade = responses.length
+			? Math.round((totalScore / responses.length) * 100) /
+				100
 			: null;
-		ev.reportGrade = reportAvgGrade;
+		ev.supervisorGrade = avgGrade;
+
+		// respuestas report
+		if (reportItems.length) {
+			const reportResponses: EvaluationResponse[] = [];
+			for (let i = 0; i < reportItems.length; i++) {
+				const item = reportItems[i];
+				const resp = new EvaluationResponse();
+				resp.evaluation = savedEv;
+				resp.item = item;
+				const idx = (k + i + 1) % letters.length;
+				resp.selectedValue = letters[idx];
+				resp.numericValue = values[idx];
+				resp.score = values[idx];
+				resp.comment = `Respuesta report seed para item ${item.id}`;
+				reportResponses.push(resp);
+			}
+			await responseRepo.save(reportResponses);
+			const reportTotal = reportResponses.reduce(
+				(s, r) =>
+					s +
+					(Number.isFinite(Number(r.score))
+						? Number(r.score)
+						: 0),
+				0,
+			);
+			ev.reportGrade = reportResponses.length
+				? Math.round(
+						(reportTotal / reportResponses.length) * 100,
+					) / 100
+				: null;
+		}
+
+		if (
+			ev.supervisorGrade != null &&
+			ev.reportGrade != null
+		) {
+			ev.finalGrade =
+				Math.round(
+					((ev.supervisorGrade + ev.reportGrade) / 2) * 100,
+				) / 100;
+		} else if (ev.supervisorGrade != null) {
+			ev.finalGrade = ev.supervisorGrade;
+		} else if (ev.reportGrade != null) {
+			ev.finalGrade = ev.reportGrade;
+		}
+
+		await evalRepo.save(ev);
+		console.log(
+			`✓ Seed: Evaluación para internship ${internship.id} — sup:${ev.supervisorGrade} report:${ev.reportGrade} final:${ev.finalGrade}`,
+		);
 	}
-
-	// Calcular nota final si hay ambas notas
-	if (
-		ev.supervisorGrade != null &&
-		ev.reportGrade != null
-	) {
-		ev.finalGrade =
-			Math.round(
-				((ev.supervisorGrade + ev.reportGrade) / 2) * 100,
-			) / 100;
-	}
-
-	await evalRepo.save(ev);
-
-	console.log(
-		`✓ Seed: Evaluación creada con ${responses.length} respuestas de supervisor (${avgGrade}) y ${reportItems.length} respuestas de report (${ev.reportGrade}). Nota final: ${ev.finalGrade}`,
-	);
 }

@@ -28,8 +28,12 @@ export function UseCreateLogbookEntry() {
 
 			if (!response.ok) {
 				const errorData = await response.json();
+				const details = errorData?.errorDetails
+					? ` - ${JSON.stringify(errorData.errorDetails)}`
+					: '';
 				throw new Error(
-					errorData.message || 'Error al crear la bitácora',
+					(errorData.message ||
+						'Error al crear la bitácora') + details,
 				);
 			}
 

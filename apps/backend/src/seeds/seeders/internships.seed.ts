@@ -16,6 +16,7 @@ export async function seedInternships() {
 		AppDataSource.getRepository(Internship);
 	const appRepo = AppDataSource.getRepository(Application);
 	const docRepo = AppDataSource.getRepository(Document);
+
 	const offerRepo = AppDataSource.getRepository(Offer);
 	const coordRepo =
 		AppDataSource.getRepository(Coordinator);
@@ -28,10 +29,10 @@ export async function seedInternships() {
 		return;
 	}
 
-	const student = await userRepo.findOne({
+	const students = await userRepo.find({
 		where: { user_role: 'student' },
 	});
-	const offer = (await offerRepo.find({ take: 1 }))[0];
+	const offersList = await offerRepo.find();
 	const coordinators = await coordRepo.find();
 	const supervisors = await supRepo.find({
 		relations: ['internshipCenter'],
@@ -41,36 +42,69 @@ export async function seedInternships() {
 	});
 
 	if (
-		!student ||
-		!offer ||
+		!students.length ||
+		!offersList.length ||
 		!coordinators.length ||
 		!supervisors.length ||
 		!systemUser
 	) {
 		console.log(
-			'Faltan entidades (student/offer/coordinator/supervisor/system user) para crear internships.',
+			'Faltan entidades (students/offers/coordinator/supervisor/system user) para crear internships y postulaciones.',
 		);
 		return;
 	}
 
-	// Guardar ruta relativa en el mismo formato que el upload flow:
-	// 'archives/convention/<filename>' para que el servidor la resuelva con
-	// path.join(__dirname, '..', file_path).
+	// Crear múltiples postulaciones (applications) para probar flujos.
+	const appsToCreate: Partial<Application>[] = [];
+	// Cada estudiante aplica a 2 ofertas distintas (si hay suficientes)
+	for (let i = 0; i < students.length; i++) {
+		const student = students[i];
+		const firstOffer = offersList[i % offersList.length];
+		const secondOffer =
+			offersList[(i + 1) % offersList.length];
+
+		// Alternar estado aprobado en algunas postulaciones
+		appsToCreate.push({
+			student,
+			offer: firstOffer,
+			status: i % 2 === 0 ? 'approved' : undefined,
+		} as Partial<Application>);
+		appsToCreate.push({
+			student,
+			offer: secondOffer,
+			status: i % 3 === 0 ? 'approved' : undefined,
+		} as Partial<Application>);
+	}
+
+	// Añadir algunas postulaciones extras para estudiantes repetidos
+	if (students.length > 1 && offersList.length > 2) {
+		appsToCreate.push({
+			student: students[1],
+			offer: offersList[2],
+			status: 'approved',
+		} as Partial<Application>);
+		appsToCreate.push({
+			student: students[0],
+			offer: offersList[offersList.length - 1],
+			status: 'approved',
+		} as Partial<Application>);
+	}
+
+	const createdApps = await appRepo.save(
+		appsToCreate as Application[],
+	);
+	console.log(
+		`Seed: creadas ${createdApps.length} postulaciones (applications).`,
+	);
+
+	// Crear internships para una parte de las postulaciones (ej. cada 3ª)
 	const relativePath = path.join(
 		'archives',
 		'convention',
 		'convenio_practica_plantilla.pdf',
 	);
 
-	const doc = new Document();
-	doc.file_name = 'final_report_dummy.pdf';
-	doc.file_path = relativePath;
-	doc.mime_type = 'application/pdf';
-	doc.uploaded_at = new Date();
-	doc.uploader = systemUser;
-	const savedDoc = await docRepo.save(doc);
-
-	// Asegurar que el archivo físico exista en la carpeta de runtime
+	// Asegurar plantilla en runtime (mismo comportamiento que antes)
 	try {
 		const destDir = path.join(
 			process.cwd(),
@@ -85,7 +119,6 @@ export async function seedInternships() {
 		);
 
 		if (!fs.existsSync(destPath)) {
-			// posibles rutas donde puede estar la plantilla en el repo
 			const candidates = [
 				path.join(
 					process.cwd(),
@@ -106,7 +139,7 @@ export async function seedInternships() {
 				),
 			];
 
-			let found = null as string | null;
+			let found: string | null = null;
 			for (const c of candidates) {
 				if (fs.existsSync(c)) {
 					found = c;
@@ -131,43 +164,62 @@ export async function seedInternships() {
 		);
 	}
 
-	// crear aplicación
-	const application = new Application();
-	application.student = student;
-	application.offer = offer;
-	const savedApp = await appRepo.save(application);
+	// Reusar repo de Document ya inicializado arriba
 
-	// Crear internship con SQL directo para insertar FK sin problemas de tipos
-	try {
-		const sql = `INSERT INTO internship (coordinator_id, supervisor_id, application_id, final_report_id, status) VALUES ($1, $2, $3, $4, $5) RETURNING id`;
-		const params = [
-			coordinators[0].id,
-			supervisors[0].userId,
-			savedApp.id,
-			savedDoc.id,
-			'in_progress',
-		];
+	let createdCount = 0;
+	for (let i = 0; i < createdApps.length; i++) {
+		const app = createdApps[i];
+		// Crear internship para cada 3ª aplicación
+		if (i % 3 !== 0) continue;
 
-		const res = await AppDataSource.manager.query(
-			sql,
-			params,
-		);
-		const createdId =
-			Array.isArray(res) && res[0] ? res[0].id : undefined;
-		console.log(
-			'Seed: internship creado (id:',
-			createdId,
-			')',
-		);
-	} catch (err) {
-		const error = err as Error;
-		console.error('Error insertando internship (SQL):', {
-			coordinatorId: coordinators[0]?.id,
-			supervisorUserId: supervisors[0]?.userId,
-			applicationId: savedApp?.id,
-			finalReportId: savedDoc?.id,
-			error: error.message,
-		});
-		throw err;
+		const doc = new Document();
+		doc.file_name = `final_report_dummy_${i}.pdf`;
+		doc.file_path = relativePath;
+		doc.mime_type = 'application/pdf';
+		doc.uploaded_at = new Date();
+		doc.uploader = systemUser as User;
+		const savedDoc = await docRepo.save(doc);
+
+		const coordinator =
+			coordinators[i % coordinators.length];
+		const supervisor = supervisors[i % supervisors.length];
+
+		try {
+			const sql = `INSERT INTO internship (coordinator_id, supervisor_id, application_id, final_report_id, status) VALUES ($1, $2, $3, $4, $5) RETURNING id`;
+			const params = [
+				coordinator.id,
+				supervisor.userId,
+				app.id,
+				savedDoc.id,
+				'in_progress',
+			];
+			const res = await AppDataSource.manager.query(
+				sql,
+				params,
+			);
+			const createdId =
+				Array.isArray(res) && res[0]
+					? res[0].id
+					: undefined;
+			console.log(
+				'Seed: internship creado (id:',
+				createdId,
+				')',
+			);
+			createdCount++;
+		} catch (err) {
+			const error = err as Error;
+			console.error('Error insertando internship (SQL):', {
+				coordinatorId: coordinator?.id,
+				supervisorUserId: supervisor?.userId,
+				applicationId: app?.id,
+				finalReportId: savedDoc?.id,
+				error: error.message,
+			});
+		}
 	}
+
+	console.log(
+		`Seed: creados ${createdCount} internships a partir de las postulaciones.`,
+	);
 }

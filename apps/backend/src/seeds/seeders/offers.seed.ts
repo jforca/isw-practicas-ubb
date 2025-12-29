@@ -30,6 +30,13 @@ export async function seedOffers() {
 	});
 	const coordinators = await coordRepo.find();
 	const centers = await centerRepo.find();
+	// Reservar algunos centros para que no tengan ofertas asociadas.
+	// Usaremos solo una porción de los centros para crear offers, dejando
+	// el resto sin ofertas para pruebas.
+	const centersForOffers = centers.slice(
+		0,
+		Math.max(6, Math.floor(centers.length * 0.6)),
+	);
 
 	if (!type1 && !type2) {
 		console.log(
@@ -115,7 +122,8 @@ export async function seedOffers() {
 
 			const coordinator =
 				coordinators[i % coordinators.length];
-			const center = centers[i % centers.length];
+			const center =
+				centersForOffers[i % centersForOffers.length];
 
 			const status =
 				i % 3 === 0

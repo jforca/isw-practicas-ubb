@@ -9,6 +9,8 @@ import { seedSignatureDocuments } from './seeders/signature-documents.seed';
 import { seedSupervisors } from './seeders/supervisors.seed';
 import { seedInternships } from './seeders/internships.seed';
 import { seedInternshipEvaluations } from './seeders/internship-evaluations.seed';
+import { seedLogbookEntries } from './seeders/logbook-entries.seed';
+import { seedFinalReports } from './seeders/final-reports.seed';
 
 async function run() {
 	try {
@@ -24,6 +26,8 @@ async function run() {
 		await seedSignatureDocuments();
 		await seedSupervisors();
 		await seedInternships();
+		await seedFinalReports();
+		await seedLogbookEntries();
 		await seedInternshipEvaluations();
 
 		console.log('Seeds ejecutados correctamente.');

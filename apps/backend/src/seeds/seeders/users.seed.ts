@@ -65,6 +65,26 @@ export async function seedUsers() {
 			image: undefined,
 			user_role: 'student',
 		},
+		{
+			id: randomUUID(),
+			rut: '77.777.777-7',
+			phone: '+56977777777',
+			name: 'Estudiante Tres',
+			email: 'student3@example.com',
+			emailVerified: false,
+			image: undefined,
+			user_role: 'student',
+		},
+		{
+			id: randomUUID(),
+			rut: '88.888.888-8',
+			phone: '+56988888888',
+			name: 'Estudiante Cuatro',
+			email: 'student4@example.com',
+			emailVerified: false,
+			image: undefined,
+			user_role: 'student',
+		},
 		// Supervisores
 		{
 			id: randomUUID(),
