@@ -15,6 +15,9 @@ export class LogbookEntries {
 	@Column({ type: 'varchar', length: 155 })
 	title: string;
 
+	@Column({ type: 'text' })
+	body: string;
+
 	@Column({
 		type: 'timestamp',
 		default: () => 'CURRENT_TIMESTAMP',

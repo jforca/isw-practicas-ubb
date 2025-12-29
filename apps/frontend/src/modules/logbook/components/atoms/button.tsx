@@ -17,7 +17,7 @@ export const Button: React.FC<IButtonProps> = ({
 			colorClass += ' btn-primary';
 			break;
 		case 'secondary':
-			colorClass += ' btn-ghost'; // Usamos btn-ghost para un estilo menos intrusivo
+			colorClass += ' btn-ghost';
 			break;
 		case 'danger':
 			colorClass += ' btn-error';

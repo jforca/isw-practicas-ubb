@@ -1,3 +1,5 @@
+import { BrowserRouter, Routes, Route } from 'react-router';
+import { Layout } from '@common/components';
 import {
 	ApplicationsPage,
 	EncargadoDashboardPage,
@@ -10,9 +12,9 @@ import {
 	ReportPage,
 	SupervisorPage,
 } from '@modules';
-import { BrowserRouter, Route, Routes } from 'react-router';
-// import { Auth } from '@common/components';
-import { Layout } from '@common/components';
+
+import { ReportsPage } from '@modules/reports/components/pages/reports-page';
+// import { Auth } from '@common/components/auth';
 
 function App() {
 	return (
@@ -48,6 +50,10 @@ function App() {
 						<Route
 							path="logbook"
 							element={<LogbookPage />}
+						/>
+						<Route
+							path="reports"
+							element={<ReportsPage />}
 						/>
 
 						<Route

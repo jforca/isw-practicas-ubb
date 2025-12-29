@@ -5,18 +5,47 @@ import {
 	Eye,
 	EyeOff,
 } from 'lucide-react';
+import { useAuth } from '../../../../common/hooks/auth.hook';
+import { useNavigate } from 'react-router';
 
 export function LoginForm() {
 	const id = useId();
+	const { signInEmail } = useAuth();
+	const navigate = useNavigate();
 
 	const [passwordVisible, setPasswordVisible] =
 		useState(false);
 
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [email, setEmail] = useState('');
+	const [password, setPassword] = useState('');
+	const [error, setError] = useState<string | null>(null);
 
-	const handleSubmit = (e: FormEvent) => {
+	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
 		setIsSubmitting(true);
+		setError(null);
+
+		try {
+			const { error } = await signInEmail(
+				email,
+				password,
+				false,
+			);
+
+			if (error) {
+				setError(
+					error.message ||
+						'Error al iniciar sesión. Verifica tus credenciales.',
+				);
+			} else {
+				navigate('/app/logbook');
+			}
+		} catch {
+			setError('Ocurrió un error inesperado');
+		} finally {
+			setIsSubmitting(false);
+		}
 	};
 
 	return (
@@ -30,6 +59,14 @@ export function LoginForm() {
 					Por favor ingresa tu correo y contraseña para
 					iniciar sesión.
 				</p>
+				{error && (
+					<div
+						role="alert"
+						className="alert alert-error text-xs p-2"
+					>
+						<span>{error}</span>
+					</div>
+				)}
 
 				{/* Correo */}
 				<label
@@ -52,6 +89,8 @@ export function LoginForm() {
 						placeholder="correo@ubiobio.cl"
 						required
 						id={`email-${id}`}
+						value={email}
+						onChange={(e) => setEmail(e.target.value)}
 					/>
 					<div className="validator-hint">
 						Ingresa un correo válido
@@ -80,6 +119,8 @@ export function LoginForm() {
 						minLength={8}
 						placeholder="Contraseña"
 						id={`password-${id}`}
+						value={password}
+						onChange={(e) => setPassword(e.target.value)}
 					/>
 
 					{passwordVisible ? (

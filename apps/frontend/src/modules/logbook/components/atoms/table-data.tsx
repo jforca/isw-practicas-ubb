@@ -7,7 +7,6 @@ export const TableData: React.FC<ITableDataProps> = ({
 	children,
 	...props
 }) => {
-	// DaisyUI usa clases de padding y color por defecto
 	return (
 		<td className="p-4" {...props}>
 			{children}

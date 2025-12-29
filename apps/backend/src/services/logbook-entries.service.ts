@@ -1,15 +1,23 @@
 import { AppDataSource } from '@config/db.config';
 import { LogbookEntries } from '@entities';
 
-export type TLogbookEntry = LogbookEntries;
+export interface ICreateLogbookDto {
+	title: string;
+	content: string;
+	internshipId: number;
+}
 
-const logbookEntriesRepo =
-	AppDataSource.getRepository(LogbookEntries);
+export interface IUpdateLogbookDto {
+	title?: string;
+	content?: string;
+	internshipId?: number;
+}
 
-async function findOne(
-	id: number,
-): Promise<TLogbookEntry | null> {
+async function findOne(id: number) {
 	try {
+		const logbookEntriesRepo =
+			AppDataSource.getRepository(LogbookEntries);
+
 		const entry = await logbookEntriesRepo.findOne({
 			where: { id },
 			relations: ['internship'],
@@ -17,31 +25,121 @@ async function findOne(
 
 		return entry;
 	} catch (error) {
+		console.error('Error al buscar la bitacora:', error);
+	}
+}
+
+async function findMany(
+	offset: number,
+	limit: number,
+	internshipId?: number,
+) {
+	try {
+		const logbookEntriesRepo =
+			AppDataSource.getRepository(LogbookEntries);
+
+		const [entries, total] =
+			await logbookEntriesRepo.findAndCount({
+				where: internshipId
+					? { internship: { id: internshipId } }
+					: {},
+				skip: offset,
+				take: limit,
+				order: { created_at: 'DESC' },
+				relations: ['internship'],
+			});
+
+		return { entries, total };
+	} catch (error) {
+		console.error('Error al buscar las bitacoras:', error);
+		return null;
+	}
+}
+
+async function createOne(data: ICreateLogbookDto) {
+	try {
+		const logbookEntriesRepo =
+			AppDataSource.getRepository(LogbookEntries);
+
+		const newEntry = logbookEntriesRepo.create({
+			title: data.title,
+			body: data.content, // Mapeo content -> body
+			internship: { id: data.internshipId },
+		});
+
+		return await logbookEntriesRepo.save(newEntry);
+	} catch (error) {
+		console.error('Error creando la bitacora:', error);
+		return null;
+	}
+}
+
+async function updateOne(
+	id: number,
+	data: IUpdateLogbookDto,
+) {
+	try {
+		const logbookEntriesRepo =
+			AppDataSource.getRepository(LogbookEntries);
+
+		const entry = await logbookEntriesRepo.findOneBy({
+			id,
+		});
+
+		if (!entry) return null;
+
+		// ✅ SOLUCIÓN AL ERROR DE 'ANY':
+		// Construimos el objeto dinámicamente usando spread syntax conditional.
+		// TypeScript inferirá automáticamente el tipo correcto.
+		const updatePayload = {
+			// Si data.title existe, agrega { title: data.title } al objeto
+			...(data.title && { title: data.title }),
+
+			// Si data.content existe, agrega { body: data.content } (MAPEO CLAVE)
+			...(data.content && { body: data.content }),
+
+			// Si data.internshipId existe, agrega la relación
+			...(data.internshipId && {
+				internship: { id: data.internshipId },
+			}),
+
+			// Siempre actualizamos la fecha
+			updated_at: new Date(),
+		};
+
+		// Ahora 'updatePayload' tiene un tipo seguro y merge lo aceptará
+		logbookEntriesRepo.merge(entry, updatePayload);
+
+		const updatedEntry =
+			await logbookEntriesRepo.save(entry);
+		return updatedEntry;
+	} catch (error) {
 		console.error(
-			'Error al buscar el registro del libro de bitácora por ID:',
+			'Error al actualizar la bitacora:',
 			error,
 		);
 		return null;
 	}
 }
 
-async function findAll(): Promise<TLogbookEntry[]> {
+async function deleteOne(id: number) {
 	try {
-		const rows = await logbookEntriesRepo.find({
-			relations: ['internship'],
-		});
+		const logbookEntriesRepo =
+			AppDataSource.getRepository(LogbookEntries);
 
-		return rows as TLogbookEntry[];
+		const result = await logbookEntriesRepo.delete(id);
+
+		return result.affected !== 0;
 	} catch (error) {
-		console.error(
-			'Error al obtener todos los registros del libro de bitácora:',
-			error,
-		);
-		return [];
+		console.error('Error al eliminar la bitacora:', error);
+		return false;
 	}
 }
 
-export const logbookEntriesService = {
+export const LogbookEntriesServices = {
 	findOne,
-	findAll,
+	findMany,
+	createOne,
+	updateOne,
+	deleteOne,
 };
