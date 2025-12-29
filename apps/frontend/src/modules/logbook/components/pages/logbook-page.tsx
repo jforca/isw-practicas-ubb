@@ -56,10 +56,6 @@ export const LogbookPage: React.FC = () => {
 		isLoading: isLoadingList,
 		error: listError,
 		handleFindMany,
-		nextPage,
-		prevPage,
-		currentPage,
-		totalPages,
 		pagination,
 		updateFilters,
 	} = UseFindManyLogbookEntries(internshipId || 0);
@@ -279,34 +275,6 @@ export const LogbookPage: React.FC = () => {
 					onDelete={handleDeleteClick}
 					onView={handleView}
 				/>
-
-				<div className="flex justify-between items-center mt-4 bg-base-200 p-3 rounded-lg">
-					<span className="text-sm text-gray-500">
-						Página {currentPage} de {totalPages || 1}
-					</span>
-					<div className="flex space-x-2">
-						<Button
-							variant="secondary"
-							onClick={prevPage}
-							disabled={
-								pagination.offset === 0 || isLoadingList
-							}
-							className="btn-sm"
-						>
-							Anterior
-						</Button>
-						<Button
-							variant="primary"
-							onClick={nextPage}
-							disabled={
-								!pagination.hasMore || isLoadingList
-							}
-							className="btn-sm"
-						>
-							Siguiente
-						</Button>
-					</div>
-				</div>
 			</div>
 		);
 	}
