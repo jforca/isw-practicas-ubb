@@ -129,9 +129,9 @@ export async function seedOffers() {
 				description: s.description,
 				deadline,
 				status,
-				coordinator: Promise.resolve(coordinator),
-				internshipCenter: Promise.resolve(center),
-			} as Partial<Offer>;
+				coordinator: coordinator,
+				internshipCenter: center,
+			} as unknown as Partial<Offer>;
 		},
 	);
 
