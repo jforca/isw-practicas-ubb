@@ -14,12 +14,7 @@ export const CreateApplicationSchema = z.object({
 });
 
 export const UpdateApplicationStatusSchema = z.object({
-	status: ApplicationStatusEnum.refine(
-		(val) => val === 'approved' || val === 'rejected',
-		{
-			message: 'El estado debe ser approved o rejected',
-		},
-	),
+	status: ApplicationStatusEnum,
 });
 
 export type TCreateApplication = z.infer<

@@ -12,6 +12,8 @@ import {
 } from '@services/internship-evaluation.service';
 import { DocumentServices } from '@services/documents.service';
 import path from 'node:path';
+import fs from 'node:fs';
+import { ARCHIVES_BASE_PATH } from '@config/multer.config';
 import {
 	InternshipEvaluation,
 	Internship,
@@ -452,12 +454,15 @@ export async function viewSignatureController(
 			return;
 		}
 		const doc = evaluation.signature_document;
-		const filePath = path.join(
-			__dirname,
-			'..',
+		const relativeInsideArchives = path.relative(
+			'archives',
 			doc.file_path,
 		);
-		const fs = await import('fs');
+		const filePath = path.join(
+			ARCHIVES_BASE_PATH,
+			relativeInsideArchives,
+		);
+
 		if (!fs.existsSync(filePath)) {
 			res.status(404).json({
 				data: null,

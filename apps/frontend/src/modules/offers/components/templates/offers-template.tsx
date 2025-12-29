@@ -1,21 +1,23 @@
-import { useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { SearchBar } from '@common/components';
 import {
-	Plus,
-	GraduationCap,
 	Building2,
 	Calendar,
+	GraduationCap,
 	Loader2,
+	Plus,
 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
-import { OffersHeader } from '@modules/offers/components/organisms/offers-header';
+import { ApplyModal } from '@modules/offers/components/organisms/apply-modal';
 import { OfferCards } from '@modules/offers/components/organisms/offer-cards';
+import { OffersHeader } from '@modules/offers/components/organisms/offers-header';
 import {
-	UseFindManyOffers,
+	UseCreateOneApplication,
 	UseCreateOneOffer,
-	UseFindOfferTypes,
 	UseFindInternshipCenters,
+	UseFindManyOffers,
+	UseFindOfferTypes,
 	type TFilters,
 } from '@modules/offers/hooks';
 
@@ -52,6 +54,23 @@ export function OffersTemplate() {
 		isLoading: isCreating,
 		error: createError,
 	} = UseCreateOneOffer();
+
+	// Hook para postulaciones
+	const {
+		handleCreateOne: handleApply,
+		isLoading: isApplying,
+		isSuccess: applySuccess,
+		error: applyError,
+		reset: resetApply,
+	} = UseCreateOneApplication();
+
+	// Estado del modal de postulación
+	const [applyModalOpen, setApplyModalOpen] =
+		useState(false);
+	const [selectedOffer, setSelectedOffer] = useState<{
+		id: number;
+		title: string;
+	} | null>(null);
 
 	// Cargar datos al montar
 	useEffect(() => {
@@ -250,6 +269,34 @@ export function OffersTemplate() {
 			createModalRef.current?.close();
 			refresh();
 		}
+	};
+
+	// Handlers para postulación
+	const handleOpenApplyModal = (
+		offerId: number,
+		offerTitle: string,
+	) => {
+		setSelectedOffer({ id: offerId, title: offerTitle });
+		setApplyModalOpen(true);
+	};
+
+	const handleConfirmApply = async (
+		cvFile: File,
+		motivationLetter?: File,
+	) => {
+		if (selectedOffer) {
+			await handleApply({
+				offerId: selectedOffer.id,
+				cvFile,
+				motivationLetter,
+			});
+		}
+	};
+
+	const handleCloseApplyModal = () => {
+		setApplyModalOpen(false);
+		setSelectedOffer(null);
+		resetApply();
 	};
 
 	return (
@@ -606,7 +653,21 @@ export function OffersTemplate() {
 				onPrevPage={prevPage}
 				onLimitChange={changeLimit}
 				onRefresh={refresh}
+				onApply={handleOpenApplyModal}
 			/>
+
+			{/* Modal de postulación */}
+			{selectedOffer && (
+				<ApplyModal
+					isOpen={applyModalOpen}
+					onClose={handleCloseApplyModal}
+					onConfirm={handleConfirmApply}
+					isLoading={isApplying}
+					isSuccess={applySuccess}
+					error={applyError}
+					offerTitle={selectedOffer.title}
+				/>
+			)}
 		</section>
 	);
 }

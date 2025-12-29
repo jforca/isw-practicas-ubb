@@ -1,29 +1,30 @@
-import { useId, useState, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import { Card, Modal } from '@common/components';
-import {
-	Eye,
-	PenLine,
-	Trash,
-	Building2,
-	Calendar,
-	GraduationCap,
-	Loader2,
-	FileText,
-} from 'lucide-react';
-import { Loader } from '@modules/offers/components/atoms/loader';
 import { EmptyState } from '@modules/offers/components/atoms/empty-state';
 import { ErrorState } from '@modules/offers/components/atoms/error-state';
+import { Loader } from '@modules/offers/components/atoms/loader';
 import { Pagination } from '@modules/offers/components/molecules/pagination';
 import { PaginationInfo } from '@modules/offers/components/molecules/pagination-info';
 import type {
-	TOffer,
-	TPagination,
-	TOfferType,
 	TInternshipCenterOption,
+	TOffer,
+	TOfferType,
+	TPagination,
 } from '@modules/offers/hooks';
-import { UseUpdateOneOffer } from '@modules/offers/hooks/update-one-offer.hook';
 import { UseDeleteOffer } from '@modules/offers/hooks/delete-offer.hook';
+import { UseUpdateOneOffer } from '@modules/offers/hooks/update-one-offer.hook';
+import {
+	Building2,
+	Calendar,
+	Eye,
+	FileText,
+	GraduationCap,
+	Loader2,
+	PenLine,
+	Send,
+	Trash,
+} from 'lucide-react';
+import { useId, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 // Reproducir reglas de validación del backend (mantener en sync con packages/schema/offers.schema.ts)
 const OFFER_TITLE_REGEX =
@@ -45,6 +46,7 @@ type TOfferCardsProps = {
 	onPrevPage: () => void;
 	onLimitChange: (limit: number) => void;
 	onRefresh: () => void;
+	onApply?: (offerId: number, offerTitle: string) => void;
 };
 
 export function OfferCards({
@@ -61,6 +63,7 @@ export function OfferCards({
 	onPrevPage,
 	onLimitChange,
 	onRefresh,
+	onApply,
 }: TOfferCardsProps) {
 	const id = useId();
 
@@ -98,6 +101,7 @@ export function OfferCards({
 							offerTypes={offerTypes}
 							internshipCenters={internshipCenters}
 							onRefresh={onRefresh}
+							onApply={onApply}
 						/>
 					))}
 				</div>
@@ -120,6 +124,7 @@ type TOfferCardProps = {
 	offerTypes: TOfferType[];
 	internshipCenters: TInternshipCenterOption[];
 	onRefresh: () => void;
+	onApply?: (offerId: number, offerTitle: string) => void;
 };
 
 function OfferCard({
@@ -127,6 +132,7 @@ function OfferCard({
 	offerTypes,
 	internshipCenters,
 	onRefresh,
+	onApply,
 }: TOfferCardProps) {
 	// Cambiar para soportar múltiples tipos de práctica
 	type TEditForm = {
@@ -938,6 +944,22 @@ function OfferCard({
 								</form>
 							</dialog>,
 							document.body,
+						)}
+
+						{/* Botón Postular */}
+						{o.status === 'published' && onApply && (
+							<Card.ToolTip
+								dataTip="Postular"
+								className="tooltip-info"
+							>
+								<button
+									type="button"
+									className="btn btn-info btn-soft rounded-full size-10"
+									onClick={() => onApply(o.id, o.title)}
+								>
+									<Send className="scale-300" />
+								</button>
+							</Card.ToolTip>
 						)}
 					</Card.Actions>
 				</Card.Container>

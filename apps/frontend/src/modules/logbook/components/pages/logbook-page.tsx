@@ -217,7 +217,7 @@ export const LogbookPage: React.FC = () => {
 	const pageHeader = (
 		<div className="flex justify-between items-center">
 			<h1 className="text-2xl font-bold text-base-content">
-				Gestión de Registros del Logbook
+				Bitácoras del Estudiante
 			</h1>
 			<div className="flex gap-4">
 				<input

@@ -1,6 +1,6 @@
-import { BrowserRouter, Routes, Route } from 'react-router';
 import { Layout } from '@common/components';
 import {
+	ApplicationsManagementPage,
 	ApplicationsPage,
 	EncargadoDashboardPage,
 	EvaluationsPage,
@@ -12,6 +12,7 @@ import {
 	ReportPage,
 	SupervisorPage,
 } from '@modules';
+import { BrowserRouter, Route, Routes } from 'react-router';
 
 import { ReportsPage } from '@modules/reports/components/pages/reports-page';
 import { Auth } from '@common/components/auth';
@@ -63,6 +64,10 @@ function App() {
 						<Route
 							path="logbook"
 							element={<LogbookPage />}
+						/>
+						<Route
+							path="applications-management"
+							element={<ApplicationsManagementPage />}
 						/>
 						<Route
 							path="my-applications"
