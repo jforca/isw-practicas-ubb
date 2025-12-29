@@ -243,8 +243,6 @@ export function SupervisorEvaluationForm({
 		existingSupervisorGrade,
 		setExistingSupervisorGrade,
 	] = useState<number | null>(null);
-	const [existingReportGrade, setExistingReportGrade] =
-		useState<number | null>(null);
 	const [localSuccess, setLocalSuccess] = useState(false);
 
 	// biome-ignore lint(correctness/useExhaustiveDependencies): Las dependencias se controlan manualmente
@@ -280,10 +278,6 @@ export function SupervisorEvaluationForm({
 				const num = Number(ev.supervisorGrade);
 				if (!Number.isNaN(num))
 					setExistingSupervisorGrade(num);
-			}
-			if (ev?.reportGrade != null) {
-				const num = Number(ev.reportGrade);
-				if (!Number.isNaN(num)) setExistingReportGrade(num);
 			}
 			if (ev?.supervisorComments) {
 				setObservations(ev.supervisorComments);
@@ -444,21 +438,12 @@ export function SupervisorEvaluationForm({
 						(Competencias)
 					</span>
 				</h3>
-				{(existingSupervisorGrade != null ||
-					existingReportGrade != null) && (
+				{existingSupervisorGrade != null && (
 					<div className="alert alert-info mb-4 text-sm space-y-1">
-						{existingSupervisorGrade != null && (
-							<div>
-								Nota previa del supervisor:{' '}
-								{existingSupervisorGrade.toFixed(2)} / 7
-							</div>
-						)}
-						{existingReportGrade != null && (
-							<div>
-								Nota previa del encargado:{' '}
-								{existingReportGrade.toFixed(2)} / 7
-							</div>
-						)}
+						<div>
+							Nota previa del supervisor:{' '}
+							{existingSupervisorGrade.toFixed(2)} / 7
+						</div>
 					</div>
 				)}
 				<div className="bg-info/10 border-l-4 border-info p-4 rounded-r-lg mb-6">
