@@ -447,7 +447,6 @@ export function EvaluationsTable() {
 							</button>
 						</div>
 					</div>
-					</div>
 					<form method="dialog" className="modal-backdrop">
 						<button type="submit">close</button>
 					</form>
