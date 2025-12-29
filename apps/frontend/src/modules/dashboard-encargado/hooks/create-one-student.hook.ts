@@ -9,7 +9,7 @@ type TCreateStudentData = Omit<
 	| 'user_role'
 	| 'emailverified'
 	| 'image'
->;
+> & { password?: string };
 
 export function UseCreateStudent() {
 	const [data, setData] = useState<TStudent | null>(null);

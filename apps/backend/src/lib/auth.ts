@@ -14,4 +14,12 @@ export const auth = betterAuth({
 	advanced: {
 		cookiePrefix: 'ing_sw_practicas',
 	},
+	user: {
+		additionalFields: {
+			user_role: {
+				type: 'string',
+				required: false,
+			},
+		},
+	},
 });

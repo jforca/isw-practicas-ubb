@@ -1,7 +1,6 @@
 import { AppDataSource } from '@config/db.config';
 import { User } from '@entities';
 import { Student } from '@entities/students.entity';
-import { randomUUID } from 'node:crypto';
 import {
 	Application,
 	ApplicationStatus,
@@ -11,6 +10,7 @@ import {
 	InternshipStatus,
 } from '@entities/internship.entity';
 import { StudentInternship } from '@packages/schema/student.schema';
+import { auth } from '@lib/auth';
 
 import type { TStudentInternship } from '@packages/schema/student.schema';
 
@@ -275,17 +275,62 @@ export async function findOne(id: string) {
 
 export async function createStudent(
 	studentData: Partial<
-		TStudentUser & { currentInternship?: string }
+		TStudentUser & {
+			currentInternship?: string;
+			password?: string;
+		}
 	>,
 ) {
 	try {
-		const newUser = userRepo.create({
-			...studentData,
-			id: randomUUID(),
+		if (
+			!studentData.email ||
+			!studentData.password ||
+			!studentData.name
+		) {
+			throw new Error(
+				'Faltan datos obligatorios (email, password, name)',
+			);
+		}
+
+		// Usar better-auth para crear el usuario y la cuenta con contraseña hasheada
+		const user = await auth.api.signUpEmail({
+			body: {
+				email: studentData.email,
+				password: studentData.password,
+				name: studentData.name,
+			},
+			asResponse: false, // Importante para obtener el objeto usuario directamente
+		});
+
+		if (!user) {
+			throw new Error(
+				'Error al crear el usuario en el sistema de autenticación',
+			);
+		}
+
+		// Actualizar campos adicionales del usuario que no vienen en signUpEmail por defecto si es necesario
+		// Por ejemplo, el RUT y el rol. signUpEmail crea el usuario, pero quizás necesitamos actualizarlo.
+		// Ojo: signUpEmail puede que no acepte campos custom en el body directamente dependiendo de la config.
+		// Lo más seguro es actualizar el usuario recién creado con el RUT y el Rol correcto.
+
+		const userId = user.user.id;
+
+		await userRepo.update(userId, {
+			rut: studentData.rut,
+			phone: studentData.phone,
 			user_role: 'student',
 		});
 
-		const savedUser = await userRepo.save(newUser);
+		// Recuperar el usuario actualizado
+		const savedUser = await userRepo.findOneBy({
+			id: userId,
+		});
+
+		if (!savedUser) {
+			throw new Error(
+				'Error al recuperar el usuario creado',
+			);
+		}
 
 		const newStudent = studentRepo.create({
 			id: savedUser.id,
@@ -298,6 +343,17 @@ export async function createStudent(
 
 		return { ...savedUser, ...newStudent };
 	} catch (error: unknown) {
+		// Manejo de errores de better-auth o DB
+		if (error instanceof Error) {
+			// Better auth puede lanzar APIError
+			if (
+				error.message.includes('already exists') ||
+				error.message.includes('registered')
+			) {
+				throw new Error('El correo ya está registrado');
+			}
+		}
+
 		const dbError = error as {
 			code?: string;
 			detail?: string;
@@ -312,7 +368,11 @@ export async function createStudent(
 			}
 		}
 		console.error('Error al crear el estudiante:', error);
-		throw new Error('Error al crear el estudiante');
+		throw new Error(
+			error instanceof Error
+				? error.message
+				: 'Error al crear el estudiante',
+		);
 	}
 }
 

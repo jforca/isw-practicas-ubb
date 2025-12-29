@@ -13,6 +13,7 @@ import {
 	Phone,
 	Loader2,
 	Briefcase,
+	LockKeyhole,
 } from 'lucide-react';
 import { StudentInternship } from '@packages/schema/student.schema';
 
@@ -22,6 +23,8 @@ type TCreateForm = {
 	rut: string;
 	phone: string;
 	currentInternship: string;
+	password?: string;
+	confirmPassword?: string;
 };
 
 interface ICreateStudentFormProps {
@@ -33,15 +36,20 @@ export function CreateStudentForm({
 	onSuccess,
 	studentId,
 }: ICreateStudentFormProps) {
-	const [createForm, setCreateForm] = useState<TCreateForm>(
-		{
-			name: '',
-			email: '',
-			rut: '',
-			phone: '',
-			currentInternship: StudentInternship.practica1,
-		},
-	);
+	const [createForm, setCreateForm] = useState<
+		TCreateForm & {
+			password?: string;
+			confirmPassword?: string;
+		}
+	>({
+		name: '',
+		email: '',
+		rut: '',
+		phone: '',
+		currentInternship: StudentInternship.practica1,
+		password: '',
+		confirmPassword: '',
+	});
 	const [createErrors, setCreateErrors] = useState<
 		Record<keyof TCreateForm, string | null>
 	>({} as Record<keyof TCreateForm, string | null>);
@@ -175,6 +183,21 @@ export function CreateStudentForm({
 				if (!studentId && !value)
 					return 'Este campo es obligatorio';
 				return null;
+			case 'password':
+				if (!studentId) {
+					if (!value) return 'La contraseña es obligatoria';
+					if (value.length < 8)
+						return 'La contraseña debe tener al menos 8 caracteres';
+				}
+				return null;
+			case 'confirmPassword':
+				if (!studentId) {
+					if (!value)
+						return 'Debes confirmar la contraseña';
+					if (value !== createForm.password)
+						return 'Las contraseñas no coinciden';
+				}
+				return null;
 			default:
 				if (!studentId && !value)
 					return 'Este campo es obligatorio';
@@ -236,6 +259,7 @@ export function CreateStudentForm({
 				? createForm.phone.replace(/\s+/g, '')
 				: null,
 			currentInternship: createForm.currentInternship,
+			password: createForm.password,
 		};
 
 		let result: unknown;
@@ -397,6 +421,66 @@ export function CreateStudentForm({
 						)}
 					</select>
 				</div>
+
+				{!studentId && (
+					<>
+						<div className="flex flex-col gap-2">
+							<h4>
+								<LockKeyhole
+									size={18}
+									className="inline mr-2"
+								/>
+								Contraseña *
+							</h4>
+							<input
+								type="password"
+								value={createForm.password || ''}
+								onChange={(e) =>
+									handleInputChange(
+										'password',
+										e.target.value,
+									)
+								}
+								className={getInputClass('password')}
+								disabled={isLoading}
+								placeholder="********"
+							/>
+							{createErrors.password && (
+								<span className="text-error text-xs mt-1 block">
+									{createErrors.password}
+								</span>
+							)}
+						</div>
+
+						<div className="flex flex-col gap-2">
+							<h4>
+								<LockKeyhole
+									size={18}
+									className="inline mr-2"
+								/>
+								Confirmar Contraseña *
+							</h4>
+							<input
+								type="password"
+								value={createForm.confirmPassword || ''}
+								onChange={(e) =>
+									handleInputChange(
+										'confirmPassword',
+										e.target.value,
+									)
+								}
+								className={getInputClass('confirmPassword')}
+								disabled={isLoading}
+								placeholder="********"
+							/>
+							{createErrors.confirmPassword && (
+								<span className="text-error text-xs mt-1 block">
+									{createErrors.confirmPassword}
+								</span>
+							)}
+						</div>
+					</>
+				)}
 			</div>
 
 			<div className="flex justify-end gap-3 mt-4">

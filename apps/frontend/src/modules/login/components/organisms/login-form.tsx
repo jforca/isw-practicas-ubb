@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../../../common/hooks/auth.hook';
 import { useNavigate } from 'react-router';
+import { authClient } from '@lib/auth-client';
 
 export function LoginForm() {
 	const id = useId();
@@ -39,7 +40,22 @@ export function LoginForm() {
 						'Error al iniciar sesión. Verifica tus credenciales.',
 				);
 			} else {
-				navigate('/app/logbook');
+				// Obtener sesión para saber el rol y redirigir
+				const { data: sessionData } =
+					await authClient.getSession();
+				// @ts-expect-error: better-auth types
+				const role = sessionData?.user?.user_role;
+
+				if (role === 'coordinator') {
+					navigate('/app/students');
+				} else if (role === 'student') {
+					navigate('/app/logbook');
+				} else if (role === 'supervisor') {
+					navigate('/app/internship/supervisor');
+				} else {
+					// Fallback
+					navigate('/app/logbook');
+				}
 			}
 		} catch {
 			setError('Ocurrió un error inesperado');
