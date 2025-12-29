@@ -28,6 +28,7 @@ export const ReportsPage: React.FC = () => {
 		data: reports,
 		isLoading: isLoadingReports,
 		findReports,
+		removeReport,
 		error: listError,
 	} = UseFindReports();
 	const { createReport, isLoading: isCreating } =
@@ -60,11 +61,13 @@ export const ReportsPage: React.FC = () => {
 		fetchInternshipId();
 	}, [getSession, handleGetStudentDetails]);
 
+	const [searchTerm, setSearchTerm] = useState('');
+
 	useEffect(() => {
 		if (internshipId) {
-			findReports(internshipId);
+			findReports(internshipId, searchTerm);
 		}
-	}, [internshipId, findReports]);
+	}, [internshipId, findReports, searchTerm]);
 
 	const handleOpenUpload = () => {
 		setIsUploadModalOpen(true);
@@ -84,7 +87,7 @@ export const ReportsPage: React.FC = () => {
 
 		if (success) {
 			setIsUploadModalOpen(false);
-			findReports(internshipId);
+			findReports(internshipId, searchTerm);
 		} else {
 			alert('Error al subir el informe');
 		}
@@ -95,7 +98,8 @@ export const ReportsPage: React.FC = () => {
 
 		const success = await deleteReport(id);
 		if (success) {
-			findReports(internshipId);
+			removeReport(id);
+			findReports(internshipId, searchTerm);
 		} else {
 			alert('Error al eliminar el informe');
 		}
@@ -106,9 +110,22 @@ export const ReportsPage: React.FC = () => {
 			<h1 className="text-2xl font-bold text-base-content">
 				Gestión de Informes (PDF)
 			</h1>
-			<Button onClick={handleOpenUpload} variant="primary">
-				+ Subir Informe
-			</Button>
+			<div className="flex gap-4">
+				<input
+					type="text"
+					placeholder="Buscar por nombre..."
+					className="input input-bordered w-full max-w-xs"
+					value={searchTerm}
+					maxLength={155}
+					onChange={(e) => setSearchTerm(e.target.value)}
+				/>
+				<Button
+					onClick={handleOpenUpload}
+					variant="primary"
+				>
+					+ Subir Informe
+				</Button>
+			</div>
 		</div>
 	);
 
