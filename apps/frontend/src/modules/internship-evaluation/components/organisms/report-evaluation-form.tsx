@@ -458,7 +458,7 @@ export function ReportEvaluationForm({
 				<div className="form-control w-full">
 					<LabelAtom htmlFor={commentsId}>
 						<span className="text-lg font-semibold">
-							V.- Observaciones del informe
+							Observaciones del informe
 						</span>
 					</LabelAtom>
 					<div className="mt-3">

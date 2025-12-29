@@ -532,7 +532,7 @@ export function SupervisorEvaluationForm({
 				<div className="form-control w-full">
 					<LabelAtom htmlFor={`observations-${id}`}>
 						<span className="text-lg font-semibold">
-							V.- Observaciones del supervisor
+							Observaciones del supervisor
 						</span>
 					</LabelAtom>
 					<div className="mt-3">
