@@ -95,7 +95,7 @@ export async function seedInternshipCenters() {
 		{
 			legal_name: 'Diseño y Arquitectura Urbana Ltda',
 			company_rut: '76.444.555-6',
-			email: 'contacto@duarquitectura.cl',
+			email: 'contacto@arqui.cl',
 			phone: '+56961234575',
 			address: 'Pasaje Alto 56, Concepción',
 			description:

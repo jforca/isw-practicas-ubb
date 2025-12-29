@@ -165,7 +165,11 @@ export function StudentDetailsModal({
 																'Oferta eliminada'}
 														</h4>
 														<p className="text-sm opacity-70">
-															{app.offer?.offerType?.name}
+															{
+																app.offer
+																	?.offerOfferTypes?.[0]
+																	?.offerType?.name
+															}
 														</p>
 													</div>
 													<div
@@ -177,7 +181,21 @@ export function StudentDetailsModal({
 																	: 'badge-warning'
 														}`}
 													>
-														{app.status}
+														{(() => {
+															const statusMap: Record<
+																string,
+																string
+															> = {
+																pending:
+																	'Pendiente de aprobación',
+																approved: 'Aprobada',
+																rejected: 'Rechazada',
+															};
+															return (
+																statusMap[app.status] ||
+																app.status
+															);
+														})()}
 													</div>
 												</div>
 												<div className="text-xs mt-2 opacity-50">
@@ -215,7 +233,23 @@ export function StudentDetailsModal({
 																Estado
 															</div>
 															<div className="stat-value text-primary text-lg">
-																{internship.status}
+																{(() => {
+																	const statusMap: Record<
+																		string,
+																		string
+																	> = {
+																		in_progress:
+																			'En proceso',
+																		pending_evaluation:
+																			'Evaluación pendiente',
+																		finished: 'Finalizada',
+																	};
+																	return (
+																		statusMap[
+																			internship.status
+																		] || internship.status
+																	);
+																})()}
 															</div>
 														</div>
 														<div className="stat">
@@ -247,6 +281,25 @@ export function StudentDetailsModal({
 																<FileText size={16} />{' '}
 																Evaluaciones
 															</h3>
+															{(() => {
+																const app =
+																	data.applications.find(
+																		(a) =>
+																			a.internship?.id ===
+																			internship.id,
+																	);
+																const offerTypeName =
+																	app?.offer
+																		?.offerOfferTypes?.[0]
+																		?.offerType?.name;
+																return (
+																	offerTypeName && (
+																		<div className="badge badge-primary badge-outline ml-2">
+																			{offerTypeName}
+																		</div>
+																	)
+																);
+															})()}
 															<div className="divider my-1"></div>
 															{internship.evaluations ? (
 																<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

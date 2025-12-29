@@ -1,5 +1,6 @@
 import { AppDataSource } from '@config/db.config';
 import { LogbookEntries } from '@entities';
+import { Like, FindOptionsWhere } from 'typeorm';
 
 export interface ICreateLogbookDto {
 	title: string;
@@ -33,16 +34,23 @@ async function findMany(
 	offset: number,
 	limit: number,
 	internshipId?: number,
+	title?: string,
 ) {
 	try {
 		const logbookEntriesRepo =
 			AppDataSource.getRepository(LogbookEntries);
 
+		const where: FindOptionsWhere<LogbookEntries> = {};
+		if (internshipId) {
+			where.internship = { id: internshipId };
+		}
+		if (title) {
+			where.title = Like(`%${title}%`);
+		}
+
 		const [entries, total] =
 			await logbookEntriesRepo.findAndCount({
-				where: internshipId
-					? { internship: { id: internshipId } }
-					: {},
+				where,
 				skip: offset,
 				take: limit,
 				order: { created_at: 'DESC' },
@@ -63,7 +71,7 @@ async function createOne(data: ICreateLogbookDto) {
 
 		const newEntry = logbookEntriesRepo.create({
 			title: data.title,
-			body: data.content, // Mapeo content -> body
+			body: data.content,
 			internship: { id: data.internshipId },
 		});
 
@@ -87,27 +95,18 @@ async function updateOne(
 		});
 
 		if (!entry) return null;
-
-		// ✅ SOLUCIÓN AL ERROR DE 'ANY':
-		// Construimos el objeto dinámicamente usando spread syntax conditional.
-		// TypeScript inferirá automáticamente el tipo correcto.
 		const updatePayload = {
-			// Si data.title existe, agrega { title: data.title } al objeto
 			...(data.title && { title: data.title }),
 
-			// Si data.content existe, agrega { body: data.content } (MAPEO CLAVE)
 			...(data.content && { body: data.content }),
 
-			// Si data.internshipId existe, agrega la relación
 			...(data.internshipId && {
 				internship: { id: data.internshipId },
 			}),
 
-			// Siempre actualizamos la fecha
 			updated_at: new Date(),
 		};
 
-		// Ahora 'updatePayload' tiene un tipo seguro y merge lo aceptará
 		logbookEntriesRepo.merge(entry, updatePayload);
 
 		const updatedEntry =

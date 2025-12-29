@@ -8,6 +8,8 @@ import {
 	School,
 	UserCircle2,
 	UsersRound,
+	Book,
+	FileText,
 } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router';
 
@@ -115,6 +117,32 @@ export function Layout() {
 										</span>
 									</NavLink>
 								</li>
+								<li>
+									<NavLink
+										to="/app/logbook"
+										className={({ isActive }) =>
+											`flex flex-col items-center gap-1${isActive ? ' text-primary' : ''}`
+										}
+									>
+										<Book size={28} />
+										<span className="paragraph-1">
+											Bitácora
+										</span>
+									</NavLink>
+								</li>
+								<li>
+									<NavLink
+										to="/app/reports"
+										className={({ isActive }) =>
+											`flex flex-col items-center gap-1${isActive ? ' text-primary' : ''}`
+										}
+									>
+										<FileText size={28} />
+										<span className="paragraph-1">
+											Informe final
+										</span>
+									</NavLink>
+								</li>
 							</ul>
 						</div>
 
@@ -176,7 +204,6 @@ export function Layout() {
 						className="drawer-overlay"
 					></label>
 					<ul className="menu bg-base-200 min-h-full w-80 p-4">
-						{/* Sidebar content here */}
 						<h2 className="text-center font-bold subtitle-1 mb-4">
 							Ubb practicas
 						</h2>
@@ -214,6 +241,32 @@ export function Layout() {
 								<BookCheck size={28} />
 								<span className="paragraph-1">
 									Evaluaciones
+								</span>
+							</NavLink>
+						</li>
+						<li>
+							<NavLink
+								to="/app/logbook"
+								className={({ isActive }) =>
+									`flex gap-1${isActive ? ' text-primary' : ''}`
+								}
+							>
+								<Book size={28} />
+								<span className="paragraph-1">
+									Bitácora
+								</span>
+							</NavLink>
+						</li>
+						<li>
+							<NavLink
+								to="/app/reports"
+								className={({ isActive }) =>
+									`flex gap-1${isActive ? ' text-primary' : ''}`
+								}
+							>
+								<FileText size={28} />
+								<span className="paragraph-1">
+									Informe final
 								</span>
 							</NavLink>
 						</li>

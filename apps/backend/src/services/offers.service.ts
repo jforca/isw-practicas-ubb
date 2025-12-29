@@ -3,11 +3,12 @@ import {
 	Offer,
 	OfferStatus,
 } from '@entities/offers.entity';
+import { Application } from '@entities/application.entity';
 import type { DeepPartial } from 'typeorm';
 import { OffersType } from '@entities/offers-types.entity';
 import { OfferOfferType } from '@entities/offer-offer-type.entity';
 import { InternshipCenter } from '@entities/internship-centers.entity';
-import { In } from 'typeorm';
+import { In, FindOptionsWhere } from 'typeorm';
 
 const offerRepo = AppDataSource.getRepository(Offer);
 const offerTypeRepo =
@@ -330,6 +331,20 @@ export async function deleteOne(id: number) {
 
 	if (!offer) {
 		return null;
+	}
+
+	// Verificar si existen postulaciones asociadas a esta oferta
+	const applicationRepo =
+		AppDataSource.getRepository(Application);
+	const applicationsCount = await applicationRepo.count({
+		where: {
+			offer: { id },
+		} as FindOptionsWhere<Application>,
+	});
+
+	if (applicationsCount > 0) {
+		// Lanzar un error controlado que el controlador podrá mapear a un mensaje de cliente
+		throw new Error('OFFER_HAS_APPLICATIONS');
 	}
 
 	await offerRepo.remove(offer);

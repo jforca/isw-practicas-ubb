@@ -46,7 +46,9 @@ export const ReportsTable: React.FC<IReportsTableProps> = ({
 					{reports.map((report) => (
 						<tr key={report.id} className="hover">
 							<td className="font-bold text-base-content">
-								{report.title}
+								{report.title.length > 80
+									? `${report.title.substring(0, 80)}...`
+									: report.title}
 							</td>
 
 							<td>

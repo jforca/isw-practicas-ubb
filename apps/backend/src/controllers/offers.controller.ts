@@ -240,6 +240,19 @@ async function deleteOne(req: Request, res: Response) {
 			null,
 		);
 	} catch (error) {
+		if (
+			error instanceof Error &&
+			error.message === 'OFFER_HAS_APPLICATIONS'
+		) {
+			handleErrorClient(
+				res,
+				400,
+				'No se puede eliminar la oferta',
+				'La oferta tiene postulaciones asociadas y no puede ser eliminada',
+			);
+			return;
+		}
+
 		handleErrorServer(
 			res,
 			500,

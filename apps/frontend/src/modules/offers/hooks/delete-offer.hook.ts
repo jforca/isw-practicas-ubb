@@ -18,10 +18,16 @@ export function UseDeleteOffer() {
 				);
 
 				if (!response.ok) {
-					const result = await response.json();
-					throw new Error(
-						result.message || 'Error al eliminar la oferta',
-					);
+					// Tipar la respuesta de error del backend
+					const result = (await response.json()) as {
+						message?: string;
+						errorDetails?: string;
+					};
+					const message =
+						result.errorDetails ||
+						result.message ||
+						'Error al eliminar la oferta';
+					throw new Error(message);
 				}
 
 				return true;

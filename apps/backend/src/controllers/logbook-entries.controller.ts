@@ -47,13 +47,13 @@ async function findMany(req: Request, res: Response) {
 		const internshipId = req.query.internshipId
 			? Number(req.query.internshipId)
 			: undefined;
-
-		// Si tu servicio soporta búsqueda por texto, aquí deberías extraer req.query.search
+		const subTitle = req.query.title as string | undefined;
 
 		const result = await LogbookEntriesServices.findMany(
 			offset,
 			limit,
 			internshipId,
+			subTitle,
 		);
 
 		if (!result) {
@@ -93,13 +93,11 @@ async function findMany(req: Request, res: Response) {
 
 async function createOne(req: Request, res: Response) {
 	try {
-		// 1. VALIDACIÓN MANUAL CON ZOD
 		const validation = CreateLogbookSchema.safeParse(
 			req.body,
 		);
 
 		if (!validation.success) {
-			// Formateamos los errores para que el frontend los entienda
 			const errors = validation.error.issues.map(
 				(issue) => ({
 					field: issue.path[0],
@@ -111,11 +109,10 @@ async function createOne(req: Request, res: Response) {
 				res,
 				400,
 				'Error de validación',
-				errors, // Enviamos los detalles del error
+				errors,
 			);
 		}
 
-		// 2. Si pasa la validación, usamos los datos LIMPIOS (validation.data)
 		const { title, content, internshipId } =
 			validation.data;
 
@@ -148,8 +145,6 @@ async function updateOne(req: Request, res: Response) {
 	try {
 		const { id } = req.params;
 
-		// 1. VALIDACIÓN MANUAL (PARCIAL)
-		// Usamos .partial() porque al editar quizás solo envían el título o solo el contenido
 		const validation =
 			CreateLogbookSchema.partial().safeParse(req.body);
 
@@ -168,7 +163,6 @@ async function updateOne(req: Request, res: Response) {
 			);
 		}
 
-		// 2. Usamos los datos validados
 		const { title, content } = validation.data;
 
 		const data = await LogbookEntriesServices.updateOne(

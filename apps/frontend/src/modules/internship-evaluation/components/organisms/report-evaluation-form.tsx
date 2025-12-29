@@ -147,6 +147,10 @@ export function ReportEvaluationForm({
 		),
 	);
 	const [reportComments, setReportComments] = useState('');
+	const [
+		existingSupervisorGrade,
+		setExistingSupervisorGrade,
+	] = useState<number | null>(null);
 	const [existingReportGrade, setExistingReportGrade] =
 		useState<number | null>(null);
 	const [localSuccess, setLocalSuccess] = useState(false);
@@ -183,6 +187,11 @@ export function ReportEvaluationForm({
 				);
 			}
 			const ev = await handleFindOne(evaluationId);
+			if (ev?.supervisorGrade != null) {
+				const num = Number(ev.supervisorGrade);
+				if (!Number.isNaN(num))
+					setExistingSupervisorGrade(num);
+			}
 			if (ev?.reportGrade != null) {
 				const num = Number(ev.reportGrade);
 				if (!Number.isNaN(num)) setExistingReportGrade(num);
@@ -341,12 +350,21 @@ export function ReportEvaluationForm({
 						(Informe)
 					</span>
 				</h3>
-				{existingReportGrade != null && (
-					<div className="alert alert-info mb-4 text-sm">
-						<div>
-							Nota previa del encargado:{' '}
-							{existingReportGrade.toFixed(2)} / 7
-						</div>
+				{(existingSupervisorGrade != null ||
+					existingReportGrade != null) && (
+					<div className="alert alert-info mb-4 text-sm space-y-1">
+						{existingSupervisorGrade != null && (
+							<div>
+								Nota previa del supervisor:{' '}
+								{existingSupervisorGrade.toFixed(2)} / 7
+							</div>
+						)}
+						{existingReportGrade != null && (
+							<div>
+								Nota previa del encargado:{' '}
+								{existingReportGrade.toFixed(2)} / 7
+							</div>
+						)}
 					</div>
 				)}
 				<div className="bg-info/10 border-l-4 border-info p-4 rounded-r-lg mb-6">
@@ -440,7 +458,7 @@ export function ReportEvaluationForm({
 				<div className="form-control w-full">
 					<LabelAtom htmlFor={commentsId}>
 						<span className="text-lg font-semibold">
-							V.- Observaciones del informe
+							Observaciones del informe
 						</span>
 					</LabelAtom>
 					<div className="mt-3">

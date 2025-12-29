@@ -8,6 +8,7 @@ import {
 } from '@handlers/response.handler';
 import path from 'node:path';
 import fs from 'node:fs';
+import { ARCHIVES_BASE_PATH } from '@config/multer.config';
 
 async function uploadConvention(
 	req: Request,
@@ -176,11 +177,15 @@ async function downloadConvention(
 			return;
 		}
 
-		// Construir ruta absoluta desde ruta relativa
-		const filePath = path.join(
-			__dirname,
-			'..',
+		// Construir ruta absoluta usando el `ARCHIVES_BASE_PATH` configurado
+		// document.file_path tiene la forma 'archives/...', así que tomar la parte relativa
+		const relativeInsideArchives = path.relative(
+			'archives',
 			document.file_path,
+		);
+		const filePath = path.join(
+			ARCHIVES_BASE_PATH,
+			relativeInsideArchives,
 		);
 
 		if (!fs.existsSync(filePath)) {
@@ -267,11 +272,14 @@ async function viewConvention(req: Request, res: Response) {
 			return;
 		}
 
-		// Construir ruta absoluta desde ruta relativa
-		const filePath = path.join(
-			__dirname,
-			'..',
+		// Construir ruta absoluta usando el `ARCHIVES_BASE_PATH` configurado
+		const relativeInsideArchives = path.relative(
+			'archives',
 			document.file_path,
+		);
+		const filePath = path.join(
+			ARCHIVES_BASE_PATH,
+			relativeInsideArchives,
 		);
 
 		if (!fs.existsSync(filePath)) {

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { InternshipCenterServices } from '@services/internship-centers.service';
+import { DependentRecordsError } from '@services/internship-centers.service';
 import {
 	handleSuccess,
 	handleErrorServer,
@@ -291,6 +292,17 @@ async function deleteOne(req: Request, res: Response) {
 			{ id },
 		);
 	} catch (error) {
+		// Si existen registros dependientes, devolver error de cliente claro
+		if (error instanceof DependentRecordsError) {
+			handleErrorClient(
+				res,
+				400,
+				'No se puede eliminar centro de prácticas: existen registros dependientes',
+				error.dependent,
+			);
+			return;
+		}
+
 		handleErrorServer(
 			res,
 			500,

@@ -44,7 +44,6 @@ export const DeleteConfirmationModal: React.FC<
 				</div>
 			</div>
 
-			{/* Fondo para cerrar al hacer click fuera */}
 			<form method="dialog" className="modal-backdrop">
 				<button onClick={onClose} type="button">
 					close

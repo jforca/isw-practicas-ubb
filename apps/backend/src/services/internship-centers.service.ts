@@ -1,6 +1,24 @@
 import { AppDataSource } from '@config/db.config';
 import { InternshipCenter } from '@entities/internship-centers.entity';
 import { Document } from '@entities/documents.entity';
+import { Offer } from '@entities/offers.entity';
+
+export class DependentRecordsError extends Error {
+	public readonly code = 'DEPENDENT_RECORDS';
+
+	public readonly dependent: { offersCount: number };
+
+	constructor(offersCount: number) {
+		super(
+			'Existen registros dependientes en la tabla offer',
+		);
+		this.dependent = { offersCount };
+		Object.setPrototypeOf(
+			this,
+			DependentRecordsError.prototype,
+		);
+	}
+}
 
 const internshipCenterRepository =
 	AppDataSource.getRepository(InternshipCenter);
@@ -117,6 +135,18 @@ async function deleteOne(id: number) {
 
 	if (!internshipCenter) {
 		return null;
+	}
+
+	// Verificar dependencias en la tabla `offer`
+	const offerRepository =
+		AppDataSource.getRepository(Offer);
+	const offersCount = await offerRepository
+		.createQueryBuilder('o')
+		.where('o.internship_center_id = :id', { id })
+		.getCount();
+
+	if (offersCount > 0) {
+		throw new DependentRecordsError(offersCount);
 	}
 
 	await internshipCenterRepository.remove(internshipCenter);

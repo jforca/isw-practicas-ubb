@@ -87,7 +87,7 @@ export function UseFindManyLogbookEntries(
 				});
 
 				if (activeFilters.search) {
-					params.append('search', activeFilters.search);
+					params.append('title', activeFilters.search);
 				}
 
 				const response = await fetch(

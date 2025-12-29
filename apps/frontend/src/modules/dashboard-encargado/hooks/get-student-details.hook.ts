@@ -17,11 +17,14 @@ export interface IStudentDetails {
 		created_at: string;
 		offer?: {
 			title: string;
-			offerType: {
-				name: string;
-			};
+			offerOfferTypes: Array<{
+				offerType: {
+					name: string;
+				};
+			}>;
 		};
 		internship?: {
+			id: number;
 			status: string;
 			// biome-ignore lint/style/useNamingConvention: Backend property
 			start_date: string;
