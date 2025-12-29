@@ -76,7 +76,6 @@ export function UseFindReports() {
 		[],
 	);
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: Standard setState pattern
 	const removeReport = useCallback((id: number) => {
 		setData((prev) =>
 			prev.filter((report) => report.id !== id),
