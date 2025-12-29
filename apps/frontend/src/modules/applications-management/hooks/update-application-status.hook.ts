@@ -1,8 +1,13 @@
 import { useCallback, useState } from 'react';
 
+type TApplicationStatus =
+	| 'pending'
+	| 'approved'
+	| 'rejected';
+
 type TUpdateStatusResponse = {
 	id: number;
-	status: 'approved' | 'rejected';
+	status: TApplicationStatus;
 };
 
 export function UseUpdateApplicationStatus() {
@@ -13,7 +18,7 @@ export function UseUpdateApplicationStatus() {
 	const handleUpdateStatus = useCallback(
 		async (
 			applicationId: number,
-			status: 'approved' | 'rejected',
+			status: TApplicationStatus,
 		): Promise<TUpdateStatusResponse | null> => {
 			setIsLoading(true);
 			setError(null);

@@ -1,15 +1,20 @@
 import {
+	FileText,
+	Loader2,
+	RefreshCw,
+	Upload,
+} from 'lucide-react';
+import {
 	useEffect,
-	useMemo,
 	useId,
+	useMemo,
 	useRef,
 	useState,
 } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router';
-import { InputAtom, LabelAtom } from '../atoms';
 import { UseFindManyInternshipEvaluation } from '../../hooks/find-many-internship-evaluation.hook';
-import { FileText, Loader2 } from 'lucide-react';
+import { InputAtom, LabelAtom } from '../atoms';
 
 const formatGrade = (grade?: number | string | null) => {
 	if (grade == null) return '—';
@@ -270,7 +275,10 @@ export function EvaluationsTable() {
 															className="btn btn-circle btn-ghost btn-sm"
 															title="Ver firma"
 														>
-															📄
+															<FileText
+																size={16}
+																className="text-success"
+															/>
 														</a>
 														<button
 															type="button"
@@ -280,7 +288,10 @@ export function EvaluationsTable() {
 																openSignatureModal(item.id)
 															}
 														>
-															♻️
+															<RefreshCw
+																size={16}
+																className="text-info"
+															/>
 														</button>
 													</div>
 												);
@@ -294,7 +305,10 @@ export function EvaluationsTable() {
 														openSignatureModal(item.id)
 													}
 												>
-													⬆️
+													<Upload
+														size={16}
+														className="text-primary"
+													/>
 												</button>
 											);
 										})()}

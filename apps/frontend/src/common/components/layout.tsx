@@ -1,15 +1,14 @@
 import {
+	Book,
 	BookCheck,
 	Briefcase,
 	Building,
 	ClipboardList,
+	FileText,
 	LogOut,
 	Menu,
-	School,
 	UserCircle2,
 	UsersRound,
-	Book,
-	FileText,
 } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router';
 
@@ -75,19 +74,6 @@ export function Layout() {
 										<BookCheck size={28} />
 										<span className="paragraph-1">
 											Evaluaciones
-										</span>
-									</NavLink>
-								</li>
-								<li>
-									<NavLink
-										to="/app/internship/supervisor"
-										className={({ isActive }) =>
-											`flex flex-col items-center gap-1${isActive ? ' text-primary' : ''}`
-										}
-									>
-										<School size={28} />
-										<span className="paragraph-1">
-											Supervisor
 										</span>
 									</NavLink>
 								</li>

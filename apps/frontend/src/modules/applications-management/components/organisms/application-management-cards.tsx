@@ -18,6 +18,7 @@ import {
 	Calendar,
 	CheckCircle,
 	Clock,
+	Edit,
 	GraduationCap,
 	Loader2,
 	Mail,
@@ -132,10 +133,14 @@ function ApplicationManagementCard({
 
 	const approveModalRef = useRef<HTMLDialogElement>(null);
 	const rejectModalRef = useRef<HTMLDialogElement>(null);
+	const editModalRef = useRef<HTMLDialogElement>(null);
 
 	const [actionType, setActionType] = useState<
-		'approved' | 'rejected' | null
+		'approved' | 'rejected' | 'pending' | null
 	>(null);
+	const [selectedStatus, setSelectedStatus] = useState<
+		'pending' | 'approved' | 'rejected'
+	>(application.status);
 
 	const { handleUpdateStatus, isLoading, error, reset } =
 		UseUpdateApplicationStatus();
@@ -164,12 +169,29 @@ function ApplicationManagementCard({
 		}
 	};
 
+	const handleEditStatus = async () => {
+		setActionType(selectedStatus);
+		const result = await handleUpdateStatus(
+			application.id,
+			selectedStatus,
+		);
+		if (result) {
+			editModalRef.current?.close();
+			onRefresh();
+		}
+	};
+
 	const handleCloseModal = (
 		ref: React.RefObject<HTMLDialogElement | null>,
 	) => {
 		ref.current?.close();
 		reset();
 		setActionType(null);
+	};
+
+	const handleOpenEditModal = () => {
+		setSelectedStatus(application.status);
+		editModalRef.current?.showModal();
 	};
 
 	// Obtener tipos de práctica
@@ -249,30 +271,41 @@ function ApplicationManagementCard({
 				<Card.Divider />
 
 				{/* Acciones */}
-				{application.status === 'pending' && (
-					<div className="flex justify-end gap-2">
+				<div className="flex justify-end gap-2">
+					{application.status === 'pending' ? (
+						<>
+							<button
+								type="button"
+								className="btn btn-error btn-sm gap-1"
+								onClick={() =>
+									rejectModalRef.current?.showModal()
+								}
+							>
+								<XCircle size={16} />
+								Rechazar
+							</button>
+							<button
+								type="button"
+								className="btn btn-success btn-sm gap-1"
+								onClick={() =>
+									approveModalRef.current?.showModal()
+								}
+							>
+								<CheckCircle size={16} />
+								Aprobar
+							</button>
+						</>
+					) : (
 						<button
 							type="button"
-							className="btn btn-error btn-sm gap-1"
-							onClick={() =>
-								rejectModalRef.current?.showModal()
-							}
+							className="btn btn-outline btn-sm gap-1"
+							onClick={handleOpenEditModal}
 						>
-							<XCircle size={16} />
-							Rechazar
+							<Edit size={16} />
+							Editar estado
 						</button>
-						<button
-							type="button"
-							className="btn btn-success btn-sm gap-1"
-							onClick={() =>
-								approveModalRef.current?.showModal()
-							}
-						>
-							<CheckCircle size={16} />
-							Aprobar
-						</button>
-					</div>
-				)}
+					)}
+				</div>
 
 				{/* Modal Aprobar */}
 				{createPortal(
@@ -387,6 +420,177 @@ function ApplicationManagementCard({
 										<>
 											<XCircle size={16} />
 											Confirmar Rechazo
+										</>
+									)}
+								</button>
+							</div>
+						</div>
+						<form
+							method="dialog"
+							className="modal-backdrop"
+						>
+							<button type="submit">close</button>
+						</form>
+					</dialog>,
+					document.body,
+				)}
+
+				{/* Modal Editar Estado */}
+				{createPortal(
+					<dialog ref={editModalRef} className="modal">
+						<div className="modal-box">
+							<h3 className="font-bold text-lg text-primary">
+								Editar Estado de Postulación
+							</h3>
+							<p className="py-2 text-base-content/70">
+								Cambia el estado de la postulación de{' '}
+								<strong>{application.student?.name}</strong>{' '}
+								a la oferta{' '}
+								<strong>{application.offer.title}</strong>
+							</p>
+
+							<div className="form-control w-full mt-4">
+								<label className="label">
+									<span className="label-text font-medium">
+										Nuevo estado
+									</span>
+								</label>
+								<div className="flex flex-col gap-2">
+									<label
+										className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-colors ${
+											selectedStatus === 'pending'
+												? 'border-warning bg-warning/10'
+												: 'border-base-300 hover:border-warning/50'
+										}`}
+									>
+										<input
+											type="radio"
+											name="status"
+											value="pending"
+											checked={selectedStatus === 'pending'}
+											onChange={(e) =>
+												setSelectedStatus(
+													e.target.value as
+														| 'pending'
+														| 'approved'
+														| 'rejected',
+												)
+											}
+											className="radio radio-warning"
+										/>
+										<Clock
+											size={18}
+											className="text-warning"
+										/>
+										<span className="font-medium">
+											Pendiente
+										</span>
+									</label>
+									<label
+										className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-colors ${
+											selectedStatus === 'approved'
+												? 'border-success bg-success/10'
+												: 'border-base-300 hover:border-success/50'
+										}`}
+									>
+										<input
+											type="radio"
+											name="status"
+											value="approved"
+											checked={
+												selectedStatus === 'approved'
+											}
+											onChange={(e) =>
+												setSelectedStatus(
+													e.target.value as
+														| 'pending'
+														| 'approved'
+														| 'rejected',
+												)
+											}
+											className="radio radio-success"
+										/>
+										<CheckCircle
+											size={18}
+											className="text-success"
+										/>
+										<span className="font-medium">
+											Aprobada
+										</span>
+									</label>
+									<label
+										className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-colors ${
+											selectedStatus === 'rejected'
+												? 'border-error bg-error/10'
+												: 'border-base-300 hover:border-error/50'
+										}`}
+									>
+										<input
+											type="radio"
+											name="status"
+											value="rejected"
+											checked={
+												selectedStatus === 'rejected'
+											}
+											onChange={(e) =>
+												setSelectedStatus(
+													e.target.value as
+														| 'pending'
+														| 'approved'
+														| 'rejected',
+												)
+											}
+											className="radio radio-error"
+										/>
+										<XCircle
+											size={18}
+											className="text-error"
+										/>
+										<span className="font-medium">
+											Rechazada
+										</span>
+									</label>
+								</div>
+							</div>
+
+							{error && actionType === selectedStatus && (
+								<div className="alert alert-error mt-4">
+									<span>{error}</span>
+								</div>
+							)}
+
+							<div className="modal-action">
+								<button
+									type="button"
+									className="btn btn-ghost"
+									onClick={() =>
+										handleCloseModal(editModalRef)
+									}
+									disabled={isLoading}
+								>
+									Cancelar
+								</button>
+								<button
+									type="button"
+									className="btn btn-primary gap-2"
+									onClick={handleEditStatus}
+									disabled={
+										isLoading ||
+										selectedStatus === application.status
+									}
+								>
+									{isLoading ? (
+										<>
+											<Loader2
+												size={16}
+												className="animate-spin"
+											/>
+											Guardando...
+										</>
+									) : (
+										<>
+											<Edit size={16} />
+											Guardar cambio
 										</>
 									)}
 								</button>
