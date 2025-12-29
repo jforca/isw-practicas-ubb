@@ -215,7 +215,23 @@ export function StudentDetailsModal({
 																Estado
 															</div>
 															<div className="stat-value text-primary text-lg">
-																{internship.status}
+																{(() => {
+																	const statusMap: Record<
+																		string,
+																		string
+																	> = {
+																		in_progress:
+																			'En proceso',
+																		pending_evaluation:
+																			'Evaluación pendiente',
+																		finished: 'Finalizada',
+																	};
+																	return (
+																		statusMap[
+																			internship.status
+																		] || internship.status
+																	);
+																})()}
 															</div>
 														</div>
 														<div className="stat">
