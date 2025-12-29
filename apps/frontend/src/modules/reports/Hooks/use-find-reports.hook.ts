@@ -43,7 +43,6 @@ export function UseFindReports() {
 
 				const result = await response.json();
 				if (result?.data) {
-					// Using any to map backend response without enforcing frontend naming conventions on the raw object
 					const mappedData = result.data.map(
 						(item: IRawReport) => ({
 							id: item.id,
