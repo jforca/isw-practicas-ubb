@@ -1,7 +1,15 @@
-import { useEffect, useMemo, useId } from 'react';
+import {
+	useEffect,
+	useMemo,
+	useId,
+	useRef,
+	useState,
+} from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router';
 import { InputAtom, LabelAtom } from '../atoms';
 import { UseFindManyInternshipEvaluation } from '../../hooks/find-many-internship-evaluation.hook';
+import { FileText, Loader2 } from 'lucide-react';
 
 const formatGrade = (grade?: number | string | null) => {
 	if (grade == null) return '—';
@@ -38,32 +46,82 @@ export function EvaluationsTable() {
 
 	const hasData = useMemo(() => data.length > 0, [data]);
 
+	// Estado para modal de firma
+	const [selectedEvaluationId, setSelectedEvaluationId] =
+		useState<number | null>(null);
+	const [signatureFile, setSignatureFile] =
+		useState<File | null>(null);
+	const [signatureError, setSignatureError] = useState<
+		string | null
+	>(null);
+	const [isSignatureUploading, setIsSignatureUploading] =
+		useState(false);
+	const signatureModalRef = useRef<HTMLDialogElement>(null);
+	const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+
 	const handleUploadSignature = async (
 		evaluationId: number,
 		file: File,
 	) => {
-		const fd = new FormData();
-		fd.append('file', file);
-		const res = await fetch(
-			`/api/internship-evaluations/upload-signature/${evaluationId}`,
-			{ method: 'POST', body: fd },
-		);
-		if (!res.ok) {
-			window.alert('No se pudo adjuntar la firma');
-			return;
+		setIsSignatureUploading(true);
+		setSignatureError(null);
+		try {
+			const fd = new FormData();
+			fd.append('file', file);
+			const res = await fetch(
+				`/api/internship-evaluations/upload-signature/${evaluationId}`,
+				{ method: 'POST', body: fd },
+			);
+			if (!res.ok) {
+				setSignatureError('No se pudo adjuntar la firma');
+				return;
+			}
+			// Limpiar estado y cerrar modal
+			setSignatureFile(null);
+			setSignatureError(null);
+			signatureModalRef.current?.close();
+			handleFindMany(pagination.offset, pagination.limit);
+		} catch {
+			setSignatureError('Error al subir la firma');
+		} finally {
+			setIsSignatureUploading(false);
 		}
-		handleFindMany(pagination.offset, pagination.limit);
 	};
 
-	const triggerUpload = (evaluationId: number) => {
-		const input = document.createElement('input');
-		input.type = 'file';
-		input.accept = 'application/pdf';
-		input.onchange = () => {
-			const file = input.files?.[0];
-			if (file) handleUploadSignature(evaluationId, file);
-		};
-		input.click();
+	const handleFileChange = (
+		e: React.ChangeEvent<HTMLInputElement>,
+	) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+		if (file.type !== 'application/pdf') {
+			setSignatureError('Solo se permiten archivos PDF');
+			setSignatureFile(null);
+			return;
+		}
+		if (file.size > MAX_FILE_SIZE_BYTES) {
+			setSignatureError(
+				'Archivo demasiado grande (máx 10 MB)',
+			);
+			setSignatureFile(null);
+			return;
+		}
+		setSignatureError(null);
+		setSignatureFile(file);
+	};
+
+	const openSignatureModal = (evaluationId: number) => {
+		setSelectedEvaluationId(evaluationId);
+		setSignatureFile(null);
+		setSignatureError(null);
+		signatureModalRef.current?.showModal();
+	};
+
+	const handleSaveSignature = async () => {
+		if (!selectedEvaluationId || !signatureFile) return;
+		await handleUploadSignature(
+			selectedEvaluationId,
+			signatureFile,
+		);
 	};
 
 	return (
@@ -201,29 +259,45 @@ export function EvaluationsTable() {
 											const sigDoc =
 												item.signature_document ??
 												item.signatureDocument;
-											return sigDoc;
-										})() ? (
-											<a
-												href={`/api/internship-evaluations/view-signature/${item.id}`}
-												target="_blank"
-												rel="noopener noreferrer"
-												className="btn btn-circle btn-ghost btn-sm"
-												title="Ver firma"
-											>
-												📄
-											</a>
-										) : (
-											<button
-												type="button"
-												className="btn btn-circle btn-ghost btn-sm"
-												title="Adjuntar firma"
-												onClick={() =>
-													triggerUpload(item.id)
-												}
-											>
-												⬆️
-											</button>
-										)}
+											const hasSignature = Boolean(sigDoc);
+											if (hasSignature) {
+												return (
+													<div className="flex items-center justify-center gap-2">
+														<a
+															href={`/api/internship-evaluations/view-signature/${item.id}`}
+															target="_blank"
+															rel="noopener noreferrer"
+															className="btn btn-circle btn-ghost btn-sm"
+															title="Ver firma"
+														>
+															📄
+														</a>
+														<button
+															type="button"
+															className="btn btn-circle btn-ghost btn-sm"
+															title="Reemplazar firma"
+															onClick={() =>
+																openSignatureModal(item.id)
+															}
+														>
+															♻️
+														</button>
+													</div>
+												);
+											}
+											return (
+												<button
+													type="button"
+													className="btn btn-circle btn-ghost btn-sm"
+													title="Adjuntar firma"
+													onClick={() =>
+														openSignatureModal(item.id)
+													}
+												>
+													⬆️
+												</button>
+											);
+										})()}
 									</td>
 								</tr>
 							))}
@@ -272,6 +346,99 @@ export function EvaluationsTable() {
 					</button>
 				</div>
 			</div>
+
+			{/* Modal de firma */}
+			{createPortal(
+				<dialog ref={signatureModalRef} className="modal">
+					<div className="modal-box">
+						<button
+							type="button"
+							className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+							onClick={() =>
+								signatureModalRef.current?.close()
+							}
+						>
+							✕
+						</button>
+						<h3 className="font-bold text-lg mb-4">
+							Gestionar Firma
+						</h3>
+						<div className="flex flex-col gap-4">
+							{signatureError && (
+								<div className="alert alert-error">
+									<span>{signatureError}</span>
+								</div>
+							)}
+							<div className="flex flex-col gap-2">
+								<h4 className="flex items-center gap-2">
+									<FileText size={18} />
+									Firma (PDF)
+								</h4>
+								<input
+									type="file"
+									accept="application/pdf"
+									onChange={handleFileChange}
+									className="file-input file-input-bordered w-full"
+									disabled={isSignatureUploading}
+								/>
+								<span className="text-sm text-base-content/60">
+									Máximo 10MB
+								</span>
+								{signatureFile && (
+									<div className="flex items-center gap-2 p-2 bg-success/10 rounded-lg">
+										<FileText
+											size={16}
+											className="text-success"
+										/>
+										<span className="text-sm text-success">
+											{signatureFile.name}
+										</span>
+									</div>
+								)}
+							</div>
+						</div>
+						<div className="modal-action">
+							<button
+								type="button"
+								className="btn btn-error btn-soft"
+								onClick={() =>
+									signatureModalRef.current?.close()
+								}
+								disabled={isSignatureUploading}
+							>
+								Cancelar
+							</button>
+							<button
+								type="button"
+								className="btn btn-primary"
+								onClick={handleSaveSignature}
+								disabled={
+									!signatureFile || isSignatureUploading
+								}
+							>
+								{isSignatureUploading ? (
+									<>
+										<Loader2
+											size={18}
+											className="animate-spin"
+										/>
+										Subiendo...
+									</>
+								) : (
+									<>
+										<FileText size={18} />
+										Guardar Firma
+									</>
+								)}
+							</button>
+						</div>
+					</div>
+					<form method="dialog" className="modal-backdrop">
+						<button type="submit">close</button>
+					</form>
+				</dialog>,
+				document.body,
+			)}
 		</div>
 	);
 }
