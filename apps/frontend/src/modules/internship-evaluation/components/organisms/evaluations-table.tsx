@@ -6,18 +6,10 @@ import {
 	useState,
 } from 'react';
 import { createPortal } from 'react-dom';
+import { Link } from 'react-router';
 import { InputAtom, LabelAtom } from '../atoms';
 import { UseFindManyInternshipEvaluation } from '../../hooks/find-many-internship-evaluation.hook';
-import {
-	FileText,
-	Loader2,
-	Eye,
-	CheckCircle,
-	AlertCircle,
-	ClipboardList,
-	RotateCcw,
-	Upload,
-} from 'lucide-react';
+import { FileText, Loader2 } from 'lucide-react';
 
 const formatGrade = (grade?: number | string | null) => {
 	if (grade == null) return '—';
@@ -44,6 +36,7 @@ export function EvaluationsTable() {
 		updateFilters,
 		nextPage,
 		prevPage,
+		goToPage,
 		changeLimit,
 	} = UseFindManyInternshipEvaluation();
 
@@ -132,10 +125,9 @@ export function EvaluationsTable() {
 	};
 
 	return (
-		<div className="space-y-6">
-			{/* Header y filtros */}
-			<div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
-				<div className="flex-1">
+		<div className="space-y-4">
+			<div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+				<div className="w-full md:max-w-sm">
 					<LabelAtom htmlFor={searchId}>Buscar</LabelAtom>
 					<InputAtom
 						id={searchId}
@@ -143,13 +135,13 @@ export function EvaluationsTable() {
 						onChange={(e) =>
 							updateFilters({ search: e.target.value })
 						}
-						placeholder="Buscar por estudiante, supervisor..."
+						placeholder="Buscar por id o término..."
 					/>
 				</div>
 				<div className="flex items-center gap-3 text-sm text-base-content/70">
-					<span>Mostrar</span>
+					<span>Mostrando</span>
 					<select
-						className="select select-bordered select-sm w-20"
+						className="select select-bordered select-sm"
 						value={pagination.limit}
 						onChange={(e) =>
 							changeLimit(Number(e.target.value))
@@ -163,33 +155,37 @@ export function EvaluationsTable() {
 				</div>
 			</div>
 
-			{/* Tabla estilizada */}
-			<div className="rounded-lg border border-base-200 bg-base-100 shadow-sm overflow-hidden">
-				<div className="overflow-x-auto">
-					<table className="table w-full">
-						<thead className="bg-base-200">
-							<tr>
-								<th className="text-xs font-semibold uppercase text-base-content/70">
-									Estudiante
-								</th>
-								<th className="text-xs font-semibold uppercase text-base-content/70">
-									Supervisor
-								</th>
-								<th className="text-xs font-semibold uppercase text-base-content/70">
-									Coordinador
-								</th>
-								<th className="text-xs font-semibold uppercase text-base-content/70 text-center">
-									Notas
-								</th>
-								<th className="text-xs font-semibold uppercase text-base-content/70 text-center">
-									Evaluaciones
-								</th>
-								<th className="text-xs font-semibold uppercase text-base-content/70 text-center">
-									Firma
-								</th>
-							</tr>
-						</thead>
-						<tbody className="divide-y divide-base-200">
+			<div className="overflow-x-auto rounded-box border border-base-200 bg-base-100 shadow">
+				<table className="table table-zebra w-full">
+					<thead>
+						<tr>
+							<th className="text-xs uppercase">
+								Estudiante
+							</th>
+							<th className="text-xs uppercase">
+								Supervisor
+							</th>
+							<th className="text-xs uppercase">
+								Encargado
+							</th>
+							<th className="text-xs uppercase">
+								Nota supervisor
+							</th>
+							<th className="text-xs uppercase">
+								Nota encargado
+							</th>
+							<th className="text-xs uppercase">
+								Nota final
+							</th>
+							<th className="text-xs uppercase text-center">
+								Evaluaciones
+							</th>
+							<th className="text-xs uppercase text-center">
+								Firma
+							</th>
+						</tr>
+					</thead>
+					<tbody>
 						{isLoading && (
 							<tr>
 								<td
@@ -216,48 +212,49 @@ export function EvaluationsTable() {
 							!error &&
 							hasData &&
 							data.map((item) => (
-								<tr key={item.id} className="hover:bg-base-50">
-									<td className="py-4 font-medium text-base-content">
+								<tr key={item.id}>
+									<td className="font-semibold">
 										{formatText(
 											item.internship?.application?.student
 												?.name,
 										)}
 									</td>
-									<td className="py-4 text-sm text-base-content/70">
+									<td>
 										{formatText(
 											item.internship?.supervisor?.user
 												?.name,
 										)}
 									</td>
-									<td className="py-4 text-sm text-base-content/70">
+									<td>
 										{formatText(
 											item.internship?.coordinator?.user
 												?.name,
 										)}
 									</td>
-									<td className="py-4 text-center">
-										<div className="flex flex-col items-center gap-1">
-											<span className="text-xs uppercase text-base-content/60">
+									<td>
+										{formatGrade(item.supervisorGrade)}
+									</td>
+									<td>{formatGrade(item.reportGrade)}</td>
+									<td className="font-bold">
+										{formatGrade(item.finalGrade)}
+									</td>
+									<td>
+										<div className="flex flex-wrap gap-2 justify-center">
+											<Link
+												to={`/app/internship/supervisor?evaluationId=${item.id}`}
+												className="btn btn-outline btn-sm"
+											>
 												Supervisor
-											</span>
-											<span className="font-medium text-primary">
-												{formatGrade(item.supervisorGrade)}
-											</span>
+											</Link>
+											<Link
+												to={`/app/internship/report?evaluationId=${item.id}`}
+												className="btn btn-primary btn-sm"
+											>
+												Encargado
+											</Link>
 										</div>
 									</td>
-									<td className="py-4 text-center">
-										<button
-											type="button"
-											onClick={() => {
-												// Open evaluation modal
-											}}
-											className="btn btn-xs btn-info btn-soft gap-1 rounded-full"
-											title="Abrir/editar evaluación"
-										>
-											<ClipboardList className="size-4" />
-										</button>
-									</td>
-									<td className="py-4 text-center">
+									<td className="text-center">
 										{(() => {
 											const sigDoc =
 												item.signature_document ??
@@ -270,20 +267,20 @@ export function EvaluationsTable() {
 															href={`/api/internship-evaluations/view-signature/${item.id}`}
 															target="_blank"
 															rel="noopener noreferrer"
-															className="btn btn-xs btn-primary btn-soft rounded-full"
+															className="btn btn-circle btn-ghost btn-sm"
 															title="Ver firma"
 														>
-															<Eye className="size-4" />
+															📄
 														</a>
 														<button
 															type="button"
-															className="btn btn-xs btn-accent btn-soft rounded-full"
-															title="Cambiar firma"
+															className="btn btn-circle btn-ghost btn-sm"
+															title="Reemplazar firma"
 															onClick={() =>
 																openSignatureModal(item.id)
 															}
 														>
-															<RotateCcw className="size-4" />
+															♻️
 														</button>
 													</div>
 												);
@@ -291,13 +288,13 @@ export function EvaluationsTable() {
 											return (
 												<button
 													type="button"
-													className="btn btn-xs btn-success btn-soft rounded-full"
-													title="Subir firma"
+													className="btn btn-circle btn-ghost btn-sm"
+													title="Adjuntar firma"
 													onClick={() =>
 														openSignatureModal(item.id)
 													}
 												>
-													<Upload className="size-4" />
+													⬆️
 												</button>
 											);
 										})()}
@@ -308,15 +305,10 @@ export function EvaluationsTable() {
 						{!isLoading && !error && !hasData && (
 							<tr>
 								<td
-									colSpan={6}
-									className="text-center py-8 text-base-content/60"
+									colSpan={8}
+									className="text-center py-6 text-base-content/60"
 								>
-									<div className="flex flex-col items-center gap-2">
-										<ClipboardList className="size-6 text-base-content/40" />
-										<span>
-											No hay evaluaciones registradas
-										</span>
-									</div>
+									No hay evaluaciones registradas.
 								</td>
 							</tr>
 						)}
@@ -324,33 +316,33 @@ export function EvaluationsTable() {
 				</table>
 			</div>
 
-			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between text-sm text-base-content/70">
+			<div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between text-sm text-base-content/70">
 				<div>
-					Página <span className="font-semibold text-base-content">{currentPage}</span> de{" "}
-					<span className="font-semibold text-base-content">{totalPages || 1}</span>
+					Página {currentPage} de {totalPages || 1}
 				</div>
 				<div className="join">
 					<button
 						type="button"
-						className="btn btn-sm join-item btn-outline"
+						className="btn btn-sm join-item"
 						onClick={prevPage}
 						disabled={pagination.offset === 0}
 					>
-						← Anterior
+						Anterior
 					</button>
 					<button
 						type="button"
-						className="btn btn-sm join-item btn-neutral"
+						className="btn btn-sm join-item"
+						onClick={() => goToPage(currentPage)}
 					>
 						{currentPage}
 					</button>
 					<button
 						type="button"
-						className="btn btn-sm join-item btn-outline"
+						className="btn btn-sm join-item"
 						onClick={nextPage}
 						disabled={!pagination.hasMore}
 					>
-						Siguiente →
+						Siguiente
 					</button>
 				</div>
 			</div>
@@ -358,7 +350,7 @@ export function EvaluationsTable() {
 			{/* Modal de firma */}
 			{createPortal(
 				<dialog ref={signatureModalRef} className="modal">
-					<div className="modal-box w-full max-w-md rounded-lg shadow-lg">
+					<div className="modal-box">
 						<button
 							type="button"
 							className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
@@ -368,53 +360,47 @@ export function EvaluationsTable() {
 						>
 							✕
 						</button>
-						<h3 className="font-bold text-lg text-base-content mb-6 flex items-center gap-2">
-							<FileText className="text-primary" size={24} />
+						<h3 className="font-bold text-lg mb-4">
 							Gestionar Firma
 						</h3>
-						<div className="space-y-4">
+						<div className="flex flex-col gap-4">
 							{signatureError && (
-								<div className="alert alert-error shadow-sm">
-									<AlertCircle size={18} />
+								<div className="alert alert-error">
 									<span>{signatureError}</span>
 								</div>
 							)}
-							<div className="form-control gap-3">
-								<label className="label">
-									<span className="label-text font-semibold flex items-center gap-2">
-										<FileText size={16} />
-										Archivo PDF
-									</span>
-								</label>
+							<div className="flex flex-col gap-2">
+								<h4 className="flex items-center gap-2">
+									<FileText size={18} />
+									Firma (PDF)
+								</h4>
 								<input
 									type="file"
 									accept="application/pdf"
 									onChange={handleFileChange}
-									className="file-input file-input-bordered file-input-sm w-full"
+									className="file-input file-input-bordered w-full"
 									disabled={isSignatureUploading}
 								/>
-								<span className="text-xs text-base-content/60 mt-1">
-									Máximo 10 MB • Solo archivos PDF
+								<span className="text-sm text-base-content/60">
+									Máximo 10MB
 								</span>
 								{signatureFile && (
-									<div className="alert alert-success alert-sm">
-										<CheckCircle size={16} />
-										<div className="flex flex-col gap-1">
-											<span className="font-medium text-sm">
-												Archivo listo
-											</span>
-											<span className="text-xs opacity-75">
-												{signatureFile.name}
-											</span>
-										</div>
+									<div className="flex items-center gap-2 p-2 bg-success/10 rounded-lg">
+										<FileText
+											size={16}
+											className="text-success"
+										/>
+										<span className="text-sm text-success">
+											{signatureFile.name}
+										</span>
 									</div>
 								)}
 							</div>
 						</div>
-						<div className="modal-action mt-6">
+						<div className="modal-action">
 							<button
 								type="button"
-								className="btn btn-sm"
+								className="btn btn-error btn-soft"
 								onClick={() =>
 									signatureModalRef.current?.close()
 								}
@@ -424,7 +410,7 @@ export function EvaluationsTable() {
 							</button>
 							<button
 								type="button"
-								className="btn btn-sm btn-primary"
+								className="btn btn-primary"
 								onClick={handleSaveSignature}
 								disabled={
 									!signatureFile || isSignatureUploading
@@ -433,14 +419,14 @@ export function EvaluationsTable() {
 								{isSignatureUploading ? (
 									<>
 										<Loader2
-											size={16}
+											size={18}
 											className="animate-spin"
 										/>
 										Subiendo...
 									</>
 								) : (
 									<>
-										<Upload size={16} />
+										<FileText size={18} />
 										Guardar Firma
 									</>
 								)}
