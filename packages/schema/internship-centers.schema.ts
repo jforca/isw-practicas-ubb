@@ -7,7 +7,7 @@ import { z } from 'zod/v4';
 export const NAME_REGEX =
 	/^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s.,&\-()]+$/u;
 export const ADDRESS_REGEX =
-	/^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s.,º#\-/()]+$/u;
+	/^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s',.´\u2019()]+$/u;
 export const DESCRIPTION_REGEX =
 	/^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s.,;:()\-'"¿?¡!&%#@[\]/\\]+$/u;
 
