@@ -461,7 +461,9 @@ export async function getStudentDetails(id: string) {
 
 		return {
 			user,
-			student: studentProfile,
+			student: studentProfile || {
+				currentInternship: StudentInternship.practica1,
+			},
 			applications: applicationsWithDetails,
 		};
 	} catch (error) {
