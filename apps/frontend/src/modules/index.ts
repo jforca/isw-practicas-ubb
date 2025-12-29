@@ -1,3 +1,4 @@
+export { ApplicationsManagementPage } from './applications-management/components/pages/applications-management-page';
 export { ApplicationsPage } from './applications/components/pages/applications-page';
 export { EncargadoDashboardPage } from './dashboard-encargado/components/pages/encargado-dashboard-page';
 export { InternshipCentersPage } from './internship-centers/components/pages/internship-centers-page';

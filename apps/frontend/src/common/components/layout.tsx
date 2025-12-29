@@ -1,14 +1,15 @@
-import { Outlet, NavLink } from 'react-router';
 import {
-	Menu,
-	UserCircle2,
-	Building,
-	Briefcase,
-	LogOut,
 	BookCheck,
+	Briefcase,
+	Building,
+	ClipboardList,
+	LogOut,
+	Menu,
 	School,
+	UserCircle2,
 	UsersRound,
 } from 'lucide-react';
+import { NavLink, Outlet } from 'react-router';
 
 export function Layout() {
 	return (
@@ -98,6 +99,19 @@ export function Layout() {
 										<UsersRound size={28} />
 										<span className="paragraph-1">
 											Alumnos
+										</span>
+									</NavLink>
+								</li>
+								<li>
+									<NavLink
+										to="/app/applications-management"
+										className={({ isActive }) =>
+											`flex flex-col items-center gap-1${isActive ? ' text-primary' : ''}`
+										}
+									>
+										<ClipboardList size={28} />
+										<span className="paragraph-1">
+											Postulaciones
 										</span>
 									</NavLink>
 								</li>
