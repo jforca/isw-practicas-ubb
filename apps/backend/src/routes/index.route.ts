@@ -6,6 +6,7 @@ import {
 	LogbookRouter,
 	OffersRouter,
 	DocumentsRouter,
+	ReportsRouter,
 } from '@routes';
 
 export function routerApi(app: Express) {
@@ -18,6 +19,7 @@ export function routerApi(app: Express) {
 	api.use('/students', StudentsRouter);
 	api.use('/offers', OffersRouter);
 	api.use('/logbook-entries', LogbookRouter);
+	api.use('/reports', ReportsRouter);
 	api.use('/documents', DocumentsRouter);
 
 	app.use('/api', api);

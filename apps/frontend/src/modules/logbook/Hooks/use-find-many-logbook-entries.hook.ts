@@ -1,4 +1,9 @@
-import { useState, useCallback, useRef } from 'react';
+import {
+	useState,
+	useCallback,
+	useRef,
+	useEffect,
+} from 'react';
 
 export type TLogbookEntry = {
 	id: number;
@@ -29,7 +34,7 @@ export type TFilters = {
 const initialPagination: TPagination = {
 	total: 0,
 	offset: 0,
-	limit: 5,
+	limit: 10,
 	hasMore: false,
 };
 
@@ -55,6 +60,11 @@ export function UseFindManyLogbookEntries(
 		...initialFilters,
 		internshipId,
 	});
+
+	useEffect(() => {
+		setFilters((prev) => ({ ...prev, internshipId }));
+		filtersRef.current.internshipId = internshipId;
+	}, [internshipId]);
 
 	const handleFindMany = useCallback(
 		async (

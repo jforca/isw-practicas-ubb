@@ -18,9 +18,12 @@ import { Button } from '../atoms/button';
 import { UseFindManyLogbookEntries } from '../../Hooks/use-find-many-logbook-entries.hook';
 import { UseCreateLogbookEntry } from '../../Hooks/use-create-logbook-entry.hook';
 import { UseUpdateLogbookEntry } from '../../Hooks/use-update-logbook-entry.hook';
+import { useAuth } from '../../../../common/hooks/auth.hook';
+import {
+	UseGetStudentDetails,
+	type IStudentDetails,
+} from '../../../dashboard-encargado/hooks/get-student-details.hook';
 import { UseDeleteLogbookEntry } from '../../Hooks/use-delete-logbook-entry.hook';
-
-const CURRENT_INTERNSHIP_ID = 1;
 
 export const LogbookPage: React.FC = () => {
 	const [isFormModalOpen, setIsFormModalOpen] =
@@ -39,6 +42,15 @@ export const LogbookPage: React.FC = () => {
 		message: '',
 	});
 
+	const { getSession } = useAuth();
+	const {
+		handleGetStudentDetails,
+		isLoading: isLoadingStudent,
+	} = UseGetStudentDetails();
+	const [internshipId, setInternshipId] = useState<
+		number | null
+	>(null);
+
 	const {
 		data,
 		isLoading: isLoadingList,
@@ -49,7 +61,7 @@ export const LogbookPage: React.FC = () => {
 		currentPage,
 		totalPages,
 		pagination,
-	} = UseFindManyLogbookEntries(CURRENT_INTERNSHIP_ID);
+	} = UseFindManyLogbookEntries(internshipId || 0);
 
 	const { createEntry, isLoading: isCreating } =
 		UseCreateLogbookEntry();
@@ -59,8 +71,36 @@ export const LogbookPage: React.FC = () => {
 		UseDeleteLogbookEntry();
 
 	useEffect(() => {
-		handleFindMany(0, 5);
-	}, [handleFindMany]);
+		const fetchInternshipId = async () => {
+			const { session } = await getSession();
+			if (session?.user?.id) {
+				const details = (await handleGetStudentDetails(
+					session.user.id,
+				)) as IStudentDetails;
+				const activeApp = details?.applications?.find(
+					(app) => app.internship,
+				);
+				if (activeApp?.internship) {
+					setInternshipId(
+						Number(
+							(
+								activeApp.internship as unknown as {
+									id: number | string;
+								}
+							).id,
+						),
+					);
+				}
+			}
+		};
+		fetchInternshipId();
+	}, [getSession, handleGetStudentDetails]);
+
+	useEffect(() => {
+		if (internshipId) {
+			handleFindMany(0, 10);
+		}
+	}, [internshipId, handleFindMany]);
 
 	const entries: ILogbookEntry[] = useMemo(() => {
 		return data.map((item) => ({
@@ -113,7 +153,7 @@ export const LogbookPage: React.FC = () => {
 			success = await createEntry({
 				title,
 				content,
-				internshipId: CURRENT_INTERNSHIP_ID,
+				internshipId: internshipId || 0,
 			});
 		}
 
@@ -200,6 +240,19 @@ export const LogbookPage: React.FC = () => {
 		contentNode = (
 			<div className="alert alert-error">
 				Error: {listError}
+			</div>
+		);
+	} else if (isLoadingStudent) {
+		contentNode = (
+			<div className="flex justify-center p-8">
+				<span className="loading loading-spinner text-primary"></span>
+			</div>
+		);
+	} else if (!internshipId) {
+		contentNode = (
+			<div className="alert alert-warning">
+				No se encontró una práctica activa para este
+				estudiante.
 			</div>
 		);
 	} else {
