@@ -1,15 +1,16 @@
-import { BrowserRouter, Routes, Route } from 'react-router';
 import {
-	LoginPage,
-	InternshipCentersPage,
-	NotFoundPage,
+	ApplicationsPage,
 	EncargadoDashboardPage,
-	OffersPage,
-	LogbookPage,
-	ReportPage,
 	EvaluationsPage,
+	InternshipCentersPage,
+	LogbookPage,
+	LoginPage,
+	NotFoundPage,
+	OffersPage,
+	ReportPage,
 	SupervisorPage,
 } from '@modules';
+import { BrowserRouter, Route, Routes } from 'react-router';
 // import { Auth } from '@common/components';
 import { Layout } from '@common/components';
 
@@ -54,6 +55,10 @@ function App() {
 							element={<EncargadoDashboardPage />}
 						/>
 						<Route path="offers" element={<OffersPage />} />
+						<Route
+							path="my-applications"
+							element={<ApplicationsPage />}
+						/>
 					</Route>
 				</Route>
 

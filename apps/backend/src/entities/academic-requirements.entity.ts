@@ -1,15 +1,15 @@
 import {
-	Entity,
-	PrimaryGeneratedColumn,
 	Column,
 	CreateDateColumn,
-	UpdateDateColumn,
-	ManyToOne,
+	Entity,
 	JoinColumn,
+	ManyToOne,
+	PrimaryGeneratedColumn,
+	UpdateDateColumn,
 } from 'typeorm';
-import { Student } from './students.entity';
-import { OffersType } from './offers-types.entity';
 import { Coordinator } from './coordinators.entity';
+import { OffersType } from './offers-types.entity';
+import { Student } from './students.entity';
 
 export enum AcademicRequirementStatus {
 	Pending = 'pending',
@@ -29,13 +29,13 @@ export class AcademicRequirement {
 	})
 	status: AcademicRequirementStatus;
 
-	@Column({ name: 'student_id' })
-	student_id: number;
+	@Column({ name: 'student_id', type: 'text' })
+	student_id: string;
 
-	@Column({ name: 'internship_type_id' })
+	@Column({ name: 'internship_type_id', type: 'int' })
 	internship_type_id: number;
 
-	@Column({ name: 'updated_by', nullable: true })
+	@Column({ name: 'updated_by', type: 'int' })
 	updated_by: number;
 
 	@ManyToOne(() => Student)
