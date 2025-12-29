@@ -22,7 +22,7 @@ export class OfferOfferType {
 		},
 	)
 	@JoinColumn({ name: 'offer_id' })
-	offer: Promise<Offer>;
+	offer: Offer | Promise<Offer>;
 
 	@ManyToOne(
 		() => OffersType,
@@ -32,5 +32,5 @@ export class OfferOfferType {
 		},
 	)
 	@JoinColumn({ name: 'offer_type_id' })
-	offerType: Promise<OffersType>;
+	offerType: OffersType | Promise<OffersType>;
 }

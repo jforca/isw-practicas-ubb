@@ -283,9 +283,10 @@ export async function updateOne(
 		offer.deadline = data.deadline;
 	if (data.status !== undefined) offer.status = data.status;
 	if (data.internshipCenterId !== undefined) {
-		offer.internshipCenter = Promise.resolve({
+		// Assign a plain object with the id (not a Promise) so TypeORM can build proper update queries
+		offer.internshipCenter = {
 			id: data.internshipCenterId,
-		} as InternshipCenter);
+		} as unknown as InternshipCenter;
 	}
 
 	await offerRepo.save(offer);
@@ -310,10 +311,10 @@ export async function updateOne(
 		const offerOfferTypes = data.offerTypeIds.map(
 			(typeId) => {
 				return offerOfferTypeRepo.create({
-					offer: Promise.resolve({ id } as Offer),
-					offerType: Promise.resolve({
+					offer: { id } as unknown as Offer,
+					offerType: {
 						id: typeId,
-					} as OffersType),
+					} as unknown as OffersType,
 				});
 			},
 		);
