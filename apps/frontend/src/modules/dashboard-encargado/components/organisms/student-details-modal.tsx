@@ -165,7 +165,11 @@ export function StudentDetailsModal({
 																'Oferta eliminada'}
 														</h4>
 														<p className="text-sm opacity-70">
-															{app.offer?.offerType?.name}
+															{
+																app.offer
+																	?.offerOfferTypes?.[0]
+																	?.offerType?.name
+															}
 														</p>
 													</div>
 													<div
