@@ -22,8 +22,8 @@ export function ReportTemplate({
 							Evaluación Encargado
 						</h1>
 						<p className="text-base-content/60 mt-1">
-							Registra la evaluación del encargado del
-							centro de práctica
+							Registra la evaluación del profesor encargado
+							de las prácticas
 						</p>
 					</div>
 				</header>
