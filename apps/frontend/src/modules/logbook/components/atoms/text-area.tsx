@@ -22,7 +22,7 @@ export const TextArea: React.FC<ITextAreaProps> = ({
 				</div>
 			)}
 			<textarea
-				className={`textarea textarea-bordered h-24 ${error ? 'textarea-error' : ''} ${className}`}
+				className={`textarea textarea-bordered h-24 w-full ${error ? 'textarea-error' : ''} ${className}`}
 				{...props}
 			/>
 			{error && (
