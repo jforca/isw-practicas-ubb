@@ -1,5 +1,6 @@
 import '@lib/env';
 import express, { Request, Response } from 'express';
+import path from 'path';
 import morgan from 'morgan';
 import { connectDB } from './config/db.config';
 import { routerApi } from './routes/index.route';
@@ -10,7 +11,10 @@ const app = express();
 
 app.use(morgan('dev'));
 app.use(express.json());
-app.use('/uploads', express.static('uploads'));
+app.use(
+	'/uploads',
+	express.static(path.join(__dirname, 'archives')),
+);
 
 // Ruta principal de bienvenida
 app.get('/', (req: Request, res: Response) => {

@@ -130,8 +130,9 @@ async function deleteReport(req: Request, res: Response) {
 
 		if (isDeleted) {
 			const filePath = path.join(
-				process.cwd(),
-				'uploads',
+				__dirname,
+				'..',
+				'archives',
 				'reports',
 				report.file_path,
 			);

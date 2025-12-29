@@ -28,6 +28,7 @@ export const ReportsPage: React.FC = () => {
 		data: reports,
 		isLoading: isLoadingReports,
 		findReports,
+		removeReport,
 		error: listError,
 	} = UseFindReports();
 	const { createReport, isLoading: isCreating } =
@@ -97,6 +98,7 @@ export const ReportsPage: React.FC = () => {
 
 		const success = await deleteReport(id);
 		if (success) {
+			removeReport(id);
 			findReports(internshipId, searchTerm);
 		} else {
 			alert('Error al eliminar el informe');

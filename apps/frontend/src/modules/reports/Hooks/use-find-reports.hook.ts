@@ -38,7 +38,9 @@ export function UseFindReports() {
 					url += `&title=${encodeURIComponent(search)}`;
 				}
 
-				const response = await fetch(url);
+				const response = await fetch(url, {
+					cache: 'no-store',
+				});
 
 				if (!response.ok) {
 					throw new Error('Error al obtener los informes');
@@ -74,10 +76,18 @@ export function UseFindReports() {
 		[],
 	);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Standard setState pattern
+	const removeReport = useCallback((id: number) => {
+		setData((prev) =>
+			prev.filter((report) => report.id !== id),
+		);
+	}, []);
+
 	return {
 		data,
 		isLoading,
 		error,
 		findReports,
+		removeReport,
 	};
 }
