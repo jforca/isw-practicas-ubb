@@ -19,6 +19,7 @@ import { UseFindManyLogbookEntries } from '../../Hooks/use-find-many-logbook-ent
 import { UseCreateLogbookEntry } from '../../Hooks/use-create-logbook-entry.hook';
 import { UseUpdateLogbookEntry } from '../../Hooks/use-update-logbook-entry.hook';
 import { useAuth } from '../../../../common/hooks/auth.hook';
+import { authClient } from '@lib/auth-client';
 import {
 	UseGetStudentDetails,
 	type IStudentDetails,
@@ -41,6 +42,10 @@ export const LogbookPage: React.FC = () => {
 		title: '',
 		message: '',
 	});
+
+	const { data: sessionData } = authClient.useSession();
+	// biome-ignore lint/suspicious/noExplicitAny: role is added by backend
+	const userRole = (sessionData?.user as any)?.user_role;
 
 	const { getSession } = useAuth();
 	const {
@@ -229,12 +234,14 @@ export const LogbookPage: React.FC = () => {
 						updateFilters({ search: e.target.value })
 					}
 				/>
-				<Button
-					onClick={handleOpenCreate}
-					variant="primary"
-				>
-					+ Nuevo Registro
-				</Button>
+				{userRole !== 'coordinator' && (
+					<Button
+						onClick={handleOpenCreate}
+						variant="primary"
+					>
+						+ Nuevo Registro
+					</Button>
+				)}
 			</div>
 		</div>
 	);
@@ -274,6 +281,7 @@ export const LogbookPage: React.FC = () => {
 					onEdit={handleEdit}
 					onDelete={handleDeleteClick}
 					onView={handleView}
+					readOnly={userRole === 'coordinator'}
 				/>
 			</div>
 		);

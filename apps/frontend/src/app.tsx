@@ -42,7 +42,7 @@ function App() {
 							path="internship-centers"
 							element={<InternshipCentersPage />}
 						/>
-						<Route path="offers" element={<OffersPage />} />
+						{/* Offers moved to shared route */}
 						<Route
 							path="internship/evaluations"
 							element={<EvaluationsPage />}
@@ -57,18 +57,29 @@ function App() {
 						/>
 					</Route>
 
-					{/* Rutas para Alumnos (Student) */}
+					{/* Rutas compartidas Student/Coordinator */}
 					<Route
-						element={<Auth allowedRoles={['student']} />}
+						element={
+							<Auth
+								allowedRoles={['student', 'coordinator']}
+							/>
+						}
 					>
 						<Route
 							path="logbook"
 							element={<LogbookPage />}
 						/>
+						<Route path="offers" element={<OffersPage />} />
 						<Route
 							path="applications-management"
 							element={<ApplicationsManagementPage />}
 						/>
+					</Route>
+
+					{/* Rutas para Alumnos (Student) */}
+					<Route
+						element={<Auth allowedRoles={['student']} />}
+					>
 						<Route
 							path="my-applications"
 							element={<ApplicationsPage />}
@@ -88,7 +99,11 @@ function App() {
 
 					{/* Rutas para Supervisor */}
 					<Route
-						element={<Auth allowedRoles={['supervisor']} />}
+						element={
+							<Auth
+								allowedRoles={['supervisor', 'coordinator']}
+							/>
+						}
 					>
 						<Route
 							path="internship/supervisor"

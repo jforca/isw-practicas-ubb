@@ -47,6 +47,7 @@ type TOfferCardsProps = {
 	onLimitChange: (limit: number) => void;
 	onRefresh: () => void;
 	onApply?: (offerId: number, offerTitle: string) => void;
+	readOnly?: boolean;
 };
 
 export function OfferCards({
@@ -64,6 +65,7 @@ export function OfferCards({
 	onLimitChange,
 	onRefresh,
 	onApply,
+	readOnly = false,
 }: TOfferCardsProps) {
 	const id = useId();
 
@@ -102,6 +104,7 @@ export function OfferCards({
 							internshipCenters={internshipCenters}
 							onRefresh={onRefresh}
 							onApply={onApply}
+							readOnly={readOnly}
 						/>
 					))}
 				</div>
@@ -125,6 +128,7 @@ type TOfferCardProps = {
 	internshipCenters: TInternshipCenterOption[];
 	onRefresh: () => void;
 	onApply?: (offerId: number, offerTitle: string) => void;
+	readOnly?: boolean;
 };
 
 function OfferCard({
@@ -133,6 +137,7 @@ function OfferCard({
 	internshipCenters,
 	onRefresh,
 	onApply,
+	readOnly,
 }: TOfferCardProps) {
 	// Cambiar para soportar múltiples tipos de práctica
 	type TEditForm = {
@@ -532,418 +537,436 @@ function OfferCard({
 						</Modal>
 
 						{/* Modal Editar */}
-						<Card.ToolTip
-							dataTip="Editar"
-							className="tooltip-success"
-						>
-							<button
-								type="button"
-								className="btn btn-success btn-soft rounded-full size-10"
-								onClick={() => {
-									handleOpenEditModal();
-									editModalRef.current?.showModal();
-								}}
-							>
-								<PenLine className="scale-300" />
-							</button>
-						</Card.ToolTip>
-						{createPortal(
-							<dialog ref={editModalRef} className="modal">
-								<div className="modal-box container">
+						{!readOnly && (
+							<>
+								<Card.ToolTip
+									dataTip="Editar"
+									className="tooltip-success"
+								>
 									<button
 										type="button"
-										className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-										onClick={() =>
-											editModalRef.current?.close()
-										}
+										className="btn btn-success btn-soft rounded-full size-10"
+										onClick={() => {
+											handleOpenEditModal();
+											editModalRef.current?.showModal();
+										}}
 									>
-										✕
+										<PenLine className="scale-300" />
 									</button>
-									<h3 className="text-primary title-2 font-bold mb-4">
-										Editar Oferta
-									</h3>
-									<div className="flex flex-col gap-4">
-										{updateError && (
-											<div className="alert alert-error">
-												<span>{updateError}</span>
-											</div>
-										)}
-										<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-											<div className="flex flex-col gap-2 text-base-content/80 sm:col-span-2">
-												<h4>Título *</h4>
-												<input
-													type="text"
-													value={editForm.title}
-													onChange={(e) =>
-														handleInputChange(
-															'title',
-															e.target.value,
-														)
-													}
-													className={getEditInputClass(
-														'title',
-													)}
-													disabled={isUpdating}
-												/>
-												{editErrors.title && (
-													<label className="label">
-														<span className="label-text-alt text-error text-sm">
-															{editErrors.title}
-														</span>
-													</label>
-												)}
-											</div>
-											<div className="flex flex-col gap-2 text-base-content/80">
-												<h4>
-													<GraduationCap
-														size={18}
-														className="inline mr-2"
-													/>
-													Tipo de Práctica *
-												</h4>
-												{/* Checkboxes para Práctica 1 y Práctica 2 */}
-												{(() => {
-													const t1 = offerTypes[0];
-													const t2 = offerTypes[1];
-													return (
-														<div className="flex flex-row gap-4 items-center">
-															<label className="label cursor-pointer inline-flex items-center">
-																<input
-																	type="checkbox"
-																	className="checkbox mr-2"
-																	checked={
-																		!!t1 &&
-																		editForm.offerTypeIds.includes(
-																			t1.id,
-																		)
-																	}
-																	onChange={(e) => {
-																		if (!t1) return;
-																		if (e.target.checked) {
-																			handleInputChange(
-																				'offerTypeIds',
-																				Array.from(
-																					new Set([
-																						...editForm.offerTypeIds,
-																						t1.id,
-																					]),
-																				),
-																			);
-																		} else {
-																			handleInputChange(
-																				'offerTypeIds',
-																				editForm.offerTypeIds.filter(
-																					(id) =>
-																						id !== t1.id,
-																				),
-																			);
-																		}
-																	}}
-																/>
-																<span className="label-text">
-																	Práctica 1
-																</span>
-															</label>
-															<label className="label cursor-pointer inline-flex items-center">
-																<input
-																	type="checkbox"
-																	className="checkbox mr-2"
-																	checked={
-																		!!t2 &&
-																		editForm.offerTypeIds.includes(
-																			t2.id,
-																		)
-																	}
-																	onChange={(e) => {
-																		if (!t2) return;
-																		if (e.target.checked) {
-																			handleInputChange(
-																				'offerTypeIds',
-																				Array.from(
-																					new Set([
-																						...editForm.offerTypeIds,
-																						t2.id,
-																					]),
-																				),
-																			);
-																		} else {
-																			handleInputChange(
-																				'offerTypeIds',
-																				editForm.offerTypeIds.filter(
-																					(id) =>
-																						id !== t2.id,
-																				),
-																			);
-																		}
-																	}}
-																/>
-																<span className="label-text">
-																	Práctica 2
-																</span>
-															</label>
-														</div>
-													);
-												})()}
-												{editErrors.offerTypeIds && (
-													<label className="label">
-														<span className="label-text-alt text-error text-sm">
-															{editErrors.offerTypeIds}
-														</span>
-													</label>
-												)}
-											</div>
-											<div className="flex flex-col gap-2 text-base-content/80">
-												<h4>
-													<Building2
-														size={18}
-														className="inline mr-2"
-													/>
-													Centro de Práctica *
-												</h4>
-												<select
-													value={
-														editForm.internshipCenterId
-													}
-													onChange={(e) =>
-														handleInputChange(
-															'internshipCenterId',
-															Number(e.target.value),
-														)
-													}
-													className="select select-bordered w-full"
-													disabled={isUpdating}
-												>
-													{internshipCenters.map(
-														(center) => (
-															<option
-																key={center.id}
-																value={center.id}
-															>
-																{center.legal_name}
-															</option>
-														),
-													)}
-												</select>
-												{editErrors.internshipCenterId && (
-													<label className="label">
-														<span className="label-text-alt text-error text-sm">
-															{
-																editErrors.internshipCenterId
-															}
-														</span>
-													</label>
-												)}
-											</div>
-											<div className="flex flex-col gap-2 text-base-content/80">
-												<h4>
-													<Calendar
-														size={18}
-														className="inline mr-2"
-													/>
-													Fecha Límite *
-												</h4>
-												<input
-													type="date"
-													value={editForm.deadline}
-													onChange={(e) =>
-														handleInputChange(
-															'deadline',
-															e.target.value,
-														)
-													}
-													className={getEditInputClass(
-														'deadline',
-													)}
-													disabled={isUpdating}
-												/>
-												{editErrors.deadline && (
-													<label className="label">
-														<span className="label-text-alt text-error text-sm">
-															{editErrors.deadline}
-														</span>
-													</label>
-												)}
-											</div>
-											<div className="flex flex-col gap-2 text-base-content/80">
-												<h4>Estado</h4>
-												<select
-													value={editForm.status}
-													onChange={(e) =>
-														handleInputChange(
-															'status',
-															e.target
-																.value as TEditForm['status'],
-														)
-													}
-													className="select select-bordered w-full"
-													disabled={isUpdating}
-												>
-													<option value="published">
-														Publicada
-													</option>
-													<option value="closed">
-														Cerrada
-													</option>
-													<option value="filled">
-														Cubierta
-													</option>
-												</select>
-											</div>
-										</div>
-										<div className="flex flex-col gap-2 text-base-content/80">
-											<h4>Descripción *</h4>
-											<textarea
-												value={editForm.description}
-												onChange={(e) =>
-													handleInputChange(
-														'description',
-														e.target.value,
-													)
+								</Card.ToolTip>
+								{createPortal(
+									<dialog
+										ref={editModalRef}
+										className="modal"
+									>
+										<div className="modal-box container">
+											<button
+												type="button"
+												className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+												onClick={() =>
+													editModalRef.current?.close()
 												}
-												className={getEditTextareaClass(
-													'description',
+											>
+												✕
+											</button>
+											<h3 className="text-primary title-2 font-bold mb-4">
+												Editar Oferta
+											</h3>
+											<div className="flex flex-col gap-4">
+												{updateError && (
+													<div className="alert alert-error">
+														<span>{updateError}</span>
+													</div>
 												)}
-												rows={3}
-												disabled={isUpdating}
-											/>
-											{editErrors.description && (
-												<label className="label">
-													<span className="label-text-alt text-error text-sm">
-														{editErrors.description}
-													</span>
-												</label>
-											)}
-										</div>
-									</div>
-									<div className="modal-action">
-										<button
-											type="button"
-											className="btn btn-error btn-soft"
-											onClick={() =>
-												editModalRef.current?.close()
-											}
-											disabled={isUpdating}
-										>
-											Cancelar
-										</button>
-										<button
-											type="button"
-											className="btn btn-success btn-soft"
-											onClick={handleSaveEdit}
-											disabled={isUpdating}
-										>
-											{isUpdating ? (
-												<>
-													<Loader2
-														size={18}
-														className="animate-spin"
+												<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+													<div className="flex flex-col gap-2 text-base-content/80 sm:col-span-2">
+														<h4>Título *</h4>
+														<input
+															type="text"
+															value={editForm.title}
+															onChange={(e) =>
+																handleInputChange(
+																	'title',
+																	e.target.value,
+																)
+															}
+															className={getEditInputClass(
+																'title',
+															)}
+															disabled={isUpdating}
+														/>
+														{editErrors.title && (
+															<label className="label">
+																<span className="label-text-alt text-error text-sm">
+																	{editErrors.title}
+																</span>
+															</label>
+														)}
+													</div>
+													<div className="flex flex-col gap-2 text-base-content/80">
+														<h4>
+															<GraduationCap
+																size={18}
+																className="inline mr-2"
+															/>
+															Tipo de Práctica *
+														</h4>
+														{/* Checkboxes para Práctica 1 y Práctica 2 */}
+														{(() => {
+															const t1 = offerTypes[0];
+															const t2 = offerTypes[1];
+															return (
+																<div className="flex flex-row gap-4 items-center">
+																	<label className="label cursor-pointer inline-flex items-center">
+																		<input
+																			type="checkbox"
+																			className="checkbox mr-2"
+																			checked={
+																				!!t1 &&
+																				editForm.offerTypeIds.includes(
+																					t1.id,
+																				)
+																			}
+																			onChange={(e) => {
+																				if (!t1) return;
+																				if (
+																					e.target.checked
+																				) {
+																					handleInputChange(
+																						'offerTypeIds',
+																						Array.from(
+																							new Set([
+																								...editForm.offerTypeIds,
+																								t1.id,
+																							]),
+																						),
+																					);
+																				} else {
+																					handleInputChange(
+																						'offerTypeIds',
+																						editForm.offerTypeIds.filter(
+																							(id) =>
+																								id !==
+																								t1.id,
+																						),
+																					);
+																				}
+																			}}
+																		/>
+																		<span className="label-text">
+																			Práctica 1
+																		</span>
+																	</label>
+																	<label className="label cursor-pointer inline-flex items-center">
+																		<input
+																			type="checkbox"
+																			className="checkbox mr-2"
+																			checked={
+																				!!t2 &&
+																				editForm.offerTypeIds.includes(
+																					t2.id,
+																				)
+																			}
+																			onChange={(e) => {
+																				if (!t2) return;
+																				if (
+																					e.target.checked
+																				) {
+																					handleInputChange(
+																						'offerTypeIds',
+																						Array.from(
+																							new Set([
+																								...editForm.offerTypeIds,
+																								t2.id,
+																							]),
+																						),
+																					);
+																				} else {
+																					handleInputChange(
+																						'offerTypeIds',
+																						editForm.offerTypeIds.filter(
+																							(id) =>
+																								id !==
+																								t2.id,
+																						),
+																					);
+																				}
+																			}}
+																		/>
+																		<span className="label-text">
+																			Práctica 2
+																		</span>
+																	</label>
+																</div>
+															);
+														})()}
+														{editErrors.offerTypeIds && (
+															<label className="label">
+																<span className="label-text-alt text-error text-sm">
+																	{editErrors.offerTypeIds}
+																</span>
+															</label>
+														)}
+													</div>
+													<div className="flex flex-col gap-2 text-base-content/80">
+														<h4>
+															<Building2
+																size={18}
+																className="inline mr-2"
+															/>
+															Centro de Práctica *
+														</h4>
+														<select
+															value={
+																editForm.internshipCenterId
+															}
+															onChange={(e) =>
+																handleInputChange(
+																	'internshipCenterId',
+																	Number(e.target.value),
+																)
+															}
+															className="select select-bordered w-full"
+															disabled={isUpdating}
+														>
+															{internshipCenters.map(
+																(center) => (
+																	<option
+																		key={center.id}
+																		value={center.id}
+																	>
+																		{center.legal_name}
+																	</option>
+																),
+															)}
+														</select>
+														{editErrors.internshipCenterId && (
+															<label className="label">
+																<span className="label-text-alt text-error text-sm">
+																	{
+																		editErrors.internshipCenterId
+																	}
+																</span>
+															</label>
+														)}
+													</div>
+													<div className="flex flex-col gap-2 text-base-content/80">
+														<h4>
+															<Calendar
+																size={18}
+																className="inline mr-2"
+															/>
+															Fecha Límite *
+														</h4>
+														<input
+															type="date"
+															value={editForm.deadline}
+															onChange={(e) =>
+																handleInputChange(
+																	'deadline',
+																	e.target.value,
+																)
+															}
+															className={getEditInputClass(
+																'deadline',
+															)}
+															disabled={isUpdating}
+														/>
+														{editErrors.deadline && (
+															<label className="label">
+																<span className="label-text-alt text-error text-sm">
+																	{editErrors.deadline}
+																</span>
+															</label>
+														)}
+													</div>
+													<div className="flex flex-col gap-2 text-base-content/80">
+														<h4>Estado</h4>
+														<select
+															value={editForm.status}
+															onChange={(e) =>
+																handleInputChange(
+																	'status',
+																	e.target
+																		.value as TEditForm['status'],
+																)
+															}
+															className="select select-bordered w-full"
+															disabled={isUpdating}
+														>
+															<option value="published">
+																Publicada
+															</option>
+															<option value="closed">
+																Cerrada
+															</option>
+															<option value="filled">
+																Cubierta
+															</option>
+														</select>
+													</div>
+												</div>
+												<div className="flex flex-col gap-2 text-base-content/80">
+													<h4>Descripción *</h4>
+													<textarea
+														value={editForm.description}
+														onChange={(e) =>
+															handleInputChange(
+																'description',
+																e.target.value,
+															)
+														}
+														className={getEditTextareaClass(
+															'description',
+														)}
+														rows={3}
+														disabled={isUpdating}
 													/>
-													Guardando...
-												</>
-											) : (
-												<>
-													<PenLine size={18} />
-													Guardar Edición
-												</>
-											)}
-										</button>
-									</div>
-								</div>
-								<form
-									method="dialog"
-									className="modal-backdrop"
-								>
-									<button type="submit">close</button>
-								</form>
-							</dialog>,
-							document.body,
+													{editErrors.description && (
+														<label className="label">
+															<span className="label-text-alt text-error text-sm">
+																{editErrors.description}
+															</span>
+														</label>
+													)}
+												</div>
+											</div>
+											<div className="modal-action">
+												<button
+													type="button"
+													className="btn btn-error btn-soft"
+													onClick={() =>
+														editModalRef.current?.close()
+													}
+													disabled={isUpdating}
+												>
+													Cancelar
+												</button>
+												<button
+													type="button"
+													className="btn btn-success btn-soft"
+													onClick={handleSaveEdit}
+													disabled={isUpdating}
+												>
+													{isUpdating ? (
+														<>
+															<Loader2
+																size={18}
+																className="animate-spin"
+															/>
+															Guardando...
+														</>
+													) : (
+														<>
+															<PenLine size={18} />
+															Guardar Edición
+														</>
+													)}
+												</button>
+											</div>
+										</div>
+										<form
+											method="dialog"
+											className="modal-backdrop"
+										>
+											<button type="submit">close</button>
+										</form>
+									</dialog>,
+									document.body,
+								)}
+							</>
 						)}
 
 						{/* Modal Eliminar */}
-						<Card.ToolTip
-							dataTip="Eliminar"
-							className="tooltip-error"
-						>
-							<button
-								type="button"
-								className="btn btn-error btn-soft rounded-full size-10"
-								onClick={() =>
-									deleteModalRef.current?.showModal()
-								}
-							>
-								<Trash className="scale-300" />
-							</button>
-						</Card.ToolTip>
-						{createPortal(
-							<dialog
-								ref={deleteModalRef}
-								className="modal"
-							>
-								<div className="modal-box">
+						{!readOnly && (
+							<>
+								<Card.ToolTip
+									dataTip="Eliminar"
+									className="tooltip-error"
+								>
 									<button
 										type="button"
-										className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+										className="btn btn-error btn-soft rounded-full size-10"
 										onClick={() =>
-											deleteModalRef.current?.close()
+											deleteModalRef.current?.showModal()
 										}
 									>
-										✕
+										<Trash className="scale-300" />
 									</button>
-									<h3 className="text-error title-2 font-bold mb-4">
-										Eliminar Oferta
-									</h3>
-									<p className="text-base-content/80">
-										¿Estás seguro de que deseas eliminar la
-										oferta <strong>"{o.title}"</strong>?
-										Esta acción no se puede deshacer.
-									</p>
-									{deleteError && (
-										<div className="alert alert-error mt-4">
-											<span>{deleteError}</span>
-										</div>
-									)}
-									<div className="modal-action">
-										<button
-											type="button"
-											className="btn btn-ghost"
-											onClick={() =>
-												deleteModalRef.current?.close()
-											}
-											disabled={isDeleting}
-										>
-											Cancelar
-										</button>
-										<button
-											type="button"
-											className="btn btn-error"
-											onClick={handleConfirmDelete}
-											disabled={isDeleting}
-										>
-											{isDeleting ? (
-												<>
-													<Loader2
-														size={18}
-														className="animate-spin"
-													/>
-													Eliminando...
-												</>
-											) : (
-												<>
-													<Trash size={18} />
-													Eliminar
-												</>
+								</Card.ToolTip>
+								{createPortal(
+									<dialog
+										ref={deleteModalRef}
+										className="modal"
+									>
+										<div className="modal-box">
+											<button
+												type="button"
+												className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+												onClick={() =>
+													deleteModalRef.current?.close()
+												}
+											>
+												✕
+											</button>
+											<h3 className="text-error title-2 font-bold mb-4">
+												Eliminar Oferta
+											</h3>
+											<p className="text-base-content/80">
+												¿Estás seguro de que deseas eliminar
+												la oferta{' '}
+												<strong>"{o.title}"</strong>? Esta
+												acción no se puede deshacer.
+											</p>
+											{deleteError && (
+												<div className="alert alert-error mt-4">
+													<span>{deleteError}</span>
+												</div>
 											)}
-										</button>
-									</div>
-								</div>
-								<form
-									method="dialog"
-									className="modal-backdrop"
-								>
-									<button type="submit">close</button>
-								</form>
-							</dialog>,
-							document.body,
+											<div className="modal-action">
+												<button
+													type="button"
+													className="btn btn-ghost"
+													onClick={() =>
+														deleteModalRef.current?.close()
+													}
+													disabled={isDeleting}
+												>
+													Cancelar
+												</button>
+												<button
+													type="button"
+													className="btn btn-error"
+													onClick={handleConfirmDelete}
+													disabled={isDeleting}
+												>
+													{isDeleting ? (
+														<>
+															<Loader2
+																size={18}
+																className="animate-spin"
+															/>
+															Eliminando...
+														</>
+													) : (
+														<>
+															<Trash size={18} />
+															Eliminar
+														</>
+													)}
+												</button>
+											</div>
+										</div>
+										<form
+											method="dialog"
+											className="modal-backdrop"
+										>
+											<button type="submit">close</button>
+										</form>
+									</dialog>,
+									document.body,
+								)}
+							</>
 						)}
 
 						{/* Botón Postular */}

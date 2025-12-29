@@ -7,6 +7,7 @@ import { UseFindReports } from '../../Hooks/use-find-reports.hook';
 import { UseCreateReport } from '../../Hooks/use-create-report.hook';
 import { UseDeleteReport } from '../../Hooks/use-delete-report.hook';
 import { useAuth } from '../../../../common/hooks/auth.hook';
+import { authClient } from '@lib/auth-client';
 import {
 	UseGetStudentDetails,
 	type IStudentDetails,
@@ -15,6 +16,9 @@ import {
 export const ReportsPage: React.FC = () => {
 	const [isUploadModalOpen, setIsUploadModalOpen] =
 		useState(false);
+	const { data: sessionData } = authClient.useSession();
+	// biome-ignore lint/suspicious/noExplicitAny: role is added by backend
+	const userRole = (sessionData?.user as any)?.user_role;
 	const { getSession } = useAuth();
 	const {
 		handleGetStudentDetails,
@@ -119,12 +123,14 @@ export const ReportsPage: React.FC = () => {
 					maxLength={155}
 					onChange={(e) => setSearchTerm(e.target.value)}
 				/>
-				<Button
-					onClick={handleOpenUpload}
-					variant="primary"
-				>
-					+ Subir Informe
-				</Button>
+				{userRole !== 'coordinator' && (
+					<Button
+						onClick={handleOpenUpload}
+						variant="primary"
+					>
+						+ Subir Informe
+					</Button>
+				)}
 			</div>
 		</div>
 	);
@@ -162,6 +168,7 @@ export const ReportsPage: React.FC = () => {
 				<ReportsTable
 					reports={reports}
 					onDelete={handleDelete}
+					readOnly={userRole === 'coordinator'}
 				/>
 			</div>
 		);

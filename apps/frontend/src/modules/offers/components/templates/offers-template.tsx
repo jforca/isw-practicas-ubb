@@ -9,6 +9,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { authClient } from '@lib/auth-client';
 import { ApplyModal } from '@modules/offers/components/organisms/apply-modal';
 import { OfferCards } from '@modules/offers/components/organisms/offer-cards';
 import { OffersHeader } from '@modules/offers/components/organisms/offers-header';
@@ -28,6 +29,11 @@ const OFFER_DESCRIPTION_REGEX =
 	/^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s.,;:!?¿¡\-()/'"%]+$/u;
 
 export function OffersTemplate() {
+	const { data: session, isPending } =
+		authClient.useSession();
+	// biome-ignore lint/suspicious/noExplicitAny: role is added by backend
+	const userRole = (session?.user as any)?.user_role;
+
 	// Hooks de datos
 	const {
 		data: offers,
@@ -72,10 +78,22 @@ export function OffersTemplate() {
 		title: string;
 	} | null>(null);
 
-	// Cargar datos al montar
+	// Cargar datos al montar y aplicar filtros según rol
 	useEffect(() => {
-		handleFindMany(0, pagination.limit);
-	}, [handleFindMany, pagination.limit]);
+		if (isPending) return;
+
+		if (userRole === 'student') {
+			updateFilters({ status: 'published' });
+		} else {
+			handleFindMany(0, pagination.limit);
+		}
+	}, [
+		handleFindMany,
+		pagination.limit,
+		userRole,
+		updateFilters,
+		isPending,
+	]);
 
 	// Estado del formulario de creación (soporta uno o dos tipos)
 	type TCreateForm = {
@@ -299,6 +317,17 @@ export function OffersTemplate() {
 		resetApply();
 	};
 
+	if (isPending) {
+		return (
+			<div className="flex justify-center items-center h-screen">
+				<Loader2
+					className="animate-spin text-primary"
+					size={48}
+				/>
+			</div>
+		);
+	}
+
 	return (
 		<section className="section-base">
 			<OffersHeader />
@@ -313,20 +342,22 @@ export function OffersTemplate() {
 				</div>
 
 				{/* Filtro de estado */}
-				<select
-					className="select select-bordered w-full sm:w-auto"
-					value={filters.status}
-					onChange={(e) =>
-						handleStatusChange(
-							e.target.value as TFilters['status'],
-						)
-					}
-				>
-					<option value="all">Todos los estados</option>
-					<option value="published">Publicadas</option>
-					<option value="closed">Cerradas</option>
-					<option value="filled">Cubiertas</option>
-				</select>
+				{userRole === 'coordinator' && (
+					<select
+						className="select select-bordered w-full sm:w-auto"
+						value={filters.status}
+						onChange={(e) =>
+							handleStatusChange(
+								e.target.value as TFilters['status'],
+							)
+						}
+					>
+						<option value="all">Todos los estados</option>
+						<option value="published">Publicadas</option>
+						<option value="closed">Cerradas</option>
+						<option value="filled">Cubiertas</option>
+					</select>
+				)}
 
 				{/* Filtro de tipo de práctica */}
 				<select
@@ -346,14 +377,16 @@ export function OffersTemplate() {
 				</select>
 
 				{/* Botón de crear */}
-				<button
-					type="button"
-					className="btn btn-primary"
-					onClick={handleOpenCreateModal}
-				>
-					<Plus size={18} />
-					Nueva Oferta
-				</button>
+				{userRole === 'coordinator' && (
+					<button
+						type="button"
+						className="btn btn-primary"
+						onClick={handleOpenCreateModal}
+					>
+						<Plus size={18} />
+						Nueva Oferta
+					</button>
+				)}
 			</div>
 
 			{/* Modal de crear */}
@@ -654,6 +687,7 @@ export function OffersTemplate() {
 				onLimitChange={changeLimit}
 				onRefresh={refresh}
 				onApply={handleOpenApplyModal}
+				readOnly={userRole !== 'coordinator'}
 			/>
 
 			{/* Modal de postulación */}

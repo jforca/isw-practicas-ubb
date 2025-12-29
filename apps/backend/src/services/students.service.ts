@@ -137,7 +137,7 @@ export async function findMany(
 					hasCondition = true;
 				}
 
-				if (derivedStatuses.includes('Aprobada')) {
+				if (derivedStatuses.includes('Aceptada')) {
 					const condition =
 						'app.status = :approved AND internship.id IS NULL';
 					if (hasCondition) {
@@ -220,7 +220,7 @@ export async function findMany(
 							internship.status,
 						);
 					} else {
-						internshipStatus = 'Aprobada';
+						internshipStatus = 'Aceptada';
 					}
 				} else {
 					const offerTypes =

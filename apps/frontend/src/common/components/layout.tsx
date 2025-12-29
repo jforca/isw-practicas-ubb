@@ -105,6 +105,30 @@ export function Layout() {
 							<span className="paragraph-1">Informes</span>
 						</NavLink>
 					</li>
+					<li>
+						<NavLink
+							to="/app/logbook"
+							className={({ isActive }) =>
+								`flex flex-col lg:flex-row items-center gap-1${isActive ? ' text-primary' : ''}`
+							}
+						>
+							<Book size={28} />
+							<span className="paragraph-1">Bitácora</span>
+						</NavLink>
+					</li>
+					<li>
+						<NavLink
+							to="/app/applications-management"
+							className={({ isActive }) =>
+								`flex flex-col lg:flex-row items-center gap-1${isActive ? ' text-primary' : ''}`
+							}
+						>
+							<FileStack size={28} />
+							<span className="paragraph-1">
+								Postulaciones
+							</span>
+						</NavLink>
+					</li>
 				</>
 			);
 		}
@@ -136,19 +160,17 @@ export function Layout() {
 							</span>
 						</NavLink>
 					</li>
-					{/* 
-                    <li>
-                        <NavLink
-                            to="/app/offers"
-                            className={({ isActive }) =>
-                                `flex flex-col lg:flex-row items-center gap-1${isActive ? ' text-primary' : ''}`
-                            }
-                        >
-                            <Briefcase size={28} />
-                            <span className="paragraph-1">Ofertas</span>
-                        </NavLink>
-                    </li> 
-                    */}
+					<li>
+						<NavLink
+							to="/app/offers"
+							className={({ isActive }) =>
+								`flex flex-col lg:flex-row items-center gap-1${isActive ? ' text-primary' : ''}`
+							}
+						>
+							<Briefcase size={28} />
+							<span className="paragraph-1">Ofertas</span>
+						</NavLink>
+					</li>
 				</>
 			);
 		}
@@ -197,97 +219,7 @@ export function Layout() {
 						</h2>
 						<div className="flex-1 hidden lg:flex justify-center">
 							<ul className="menu menu-horizontal">
-								<li>
-									<NavLink
-										to="/app/internship-centers"
-										className={({ isActive }) =>
-											`flex flex-col items-center gap-1${isActive ? ' text-primary' : ''}`
-										}
-									>
-										<Building size={28} />
-										<span className="paragraph-1">
-											Centro de practica
-										</span>
-									</NavLink>
-								</li>
-								<li>
-									<NavLink
-										to="/app/offers"
-										className={({ isActive }) =>
-											`flex flex-col items-center gap-1${isActive ? ' text-primary' : ''}`
-										}
-									>
-										<Briefcase size={28} />
-										<span className="paragraph-1">
-											Ofertas
-										</span>
-									</NavLink>
-								</li>
-								<li>
-									<NavLink
-										to="/app/internship/evaluations"
-										className={({ isActive }) =>
-											`flex flex-col items-center gap-1${isActive ? ' text-primary' : ''}`
-										}
-									>
-										<BookCheck size={28} />
-										<span className="paragraph-1">
-											Evaluaciones
-										</span>
-									</NavLink>
-								</li>
-								<li>
-									<NavLink
-										to="/app/internship/supervisor"
-										className={({ isActive }) =>
-											`flex flex-col items-center gap-1${isActive ? ' text-primary' : ''}`
-										}
-									>
-										<School size={28} />
-										<span className="paragraph-1">
-											Supervisor
-										</span>
-									</NavLink>
-								</li>
-								<li>
-									<NavLink
-										to="/app/students"
-										className={({ isActive }) =>
-											`flex flex-col items-center gap-1${isActive ? ' text-primary' : ''}`
-										}
-									>
-										<UsersRound size={28} />
-										<span className="paragraph-1">
-											Alumnos
-										</span>
-									</NavLink>
-								</li>
-								<li>
-									<NavLink
-										to="/app/logbook"
-										className={({ isActive }) =>
-											`flex flex-col items-center gap-1${isActive ? ' text-primary' : ''}`
-										}
-									>
-										<Book size={28} />
-										<span className="paragraph-1">
-											Bitácora
-										</span>
-									</NavLink>
-								</li>
-								<li>
-									<NavLink
-										to="/app/reports"
-										className={({ isActive }) =>
-											`flex flex-col items-center gap-1${isActive ? ' text-primary' : ''}`
-										}
-									>
-										<FileText size={28} />
-										<span className="paragraph-1">
-											Informe final
-										</span>
-									</NavLink>
-								</li>
+								{renderLinks()}
 							</ul>
 						</div>
 
