@@ -7,7 +7,6 @@ export const TableHead: React.FC<ITableHeadProps> = ({
 	children,
 	...props
 }) => {
-	// DaisyUI maneja los estilos del thead con la clase 'table'
 	return (
 		<th
 			scope="col"

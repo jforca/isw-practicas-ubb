@@ -10,6 +10,7 @@ const app = express();
 
 app.use(morgan('dev'));
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
 
 // Ruta principal de bienvenida
 app.get('/', (req: Request, res: Response) => {
