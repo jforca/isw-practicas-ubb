@@ -3,6 +3,7 @@ import {
 	Offer,
 	OfferStatus,
 } from '@entities/offers.entity';
+import type { DeepPartial } from 'typeorm';
 import { OffersType } from '@entities/offers-types.entity';
 import { OfferOfferType } from '@entities/offer-offer-type.entity';
 import { InternshipCenter } from '@entities/internship-centers.entity';
@@ -225,34 +226,41 @@ export async function createOne(data: TCreateOfferData) {
 		}
 	}
 
-	const newOffer = offerRepo.create({
-		title: data.title,
-		description: data.description,
-		deadline: data.deadline,
-		status: data.status ?? OfferStatus.Published,
-		internshipCenter: Promise.resolve({
-			id: data.internshipCenterId,
-		} as InternshipCenter),
-	});
+	// Usar transacción para evitar inserciones parciales
+	const result = await AppDataSource.manager.transaction(
+		async (manager) => {
+			const newOffer = manager.create(Offer, {
+				title: data.title,
+				description: data.description,
+				deadline: data.deadline,
+				status: data.status ?? OfferStatus.Published,
+				internshipCenter: {
+					id: data.internshipCenterId,
+				} as unknown as InternshipCenter,
+			} as DeepPartial<Offer>);
 
-	const savedOffer = await offerRepo.save(newOffer);
+			const savedOffer = await manager.save(
+				Offer,
+				newOffer,
+			);
 
-	// Crear las relaciones en la tabla intermedia
-	const offerOfferTypes = data.offerTypeIds.map(
-		(typeId) => {
-			return offerOfferTypeRepo.create({
-				offer: Promise.resolve(savedOffer),
-				offerType: Promise.resolve({
-					id: typeId,
-				} as OffersType),
-			});
+			// Crear las relaciones en la tabla intermedia (usar objetos simples para relaciones)
+			const offerOfferTypes = data.offerTypeIds.map(
+				(typeId) =>
+					manager.create(OfferOfferType, {
+						offer: { id: savedOffer.id },
+						offerType: { id: typeId },
+					} as unknown as DeepPartial<OfferOfferType>),
+			);
+
+			await manager.save(OfferOfferType, offerOfferTypes);
+
+			return savedOffer.id;
 		},
 	);
 
-	await offerOfferTypeRepo.save(offerOfferTypes);
-
 	// Recargar con relaciones
-	return findOne(savedOffer.id);
+	return findOne(result);
 }
 
 export async function updateOne(

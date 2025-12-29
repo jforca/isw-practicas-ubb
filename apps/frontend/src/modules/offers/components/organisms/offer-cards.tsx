@@ -427,7 +427,8 @@ function OfferCard({
 					<Building2 size={16} className="text-accent" />
 					<div>
 						<p className="font-medium text-base-content">
-							{o.internshipCenter.legal_name}
+							{o.internshipCenter?.legal_name ??
+								'Sin centro'}
 						</p>
 					</div>
 				</Card.Container>
@@ -484,7 +485,8 @@ function OfferCard({
 												Centro de Práctica
 											</h3>
 											<p className="bg-gray-200 rounded-lg p-2">
-												{o.internshipCenter.legal_name}
+												{o.internshipCenter?.legal_name ??
+													'Sin centro'}
 											</p>
 										</div>
 										<div className="flex flex-col gap-2 text-base-content/80">
@@ -496,7 +498,8 @@ function OfferCard({
 												RUT Empresa
 											</h3>
 											<p className="bg-gray-200 rounded-lg p-2">
-												{o.internshipCenter.company_rut}
+												{o.internshipCenter?.company_rut ??
+													'Sin RUT'}
 											</p>
 										</div>
 										<div className="flex flex-col gap-2 text-base-content/80">
